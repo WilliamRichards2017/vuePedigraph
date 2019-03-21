@@ -1,0 +1,31 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/Users/Trill/.nvm/versions/node/v8.11.3/bin/node',
+1 verbose cli   '/Users/Trill/.nvm/versions/node/v8.11.3/bin/npm',
+1 verbose cli   'start' ]
+2 info using npm@3.10.10
+3 info using node@v8.11.3
+4 verbose run-script [ 'prestart', 'start', 'poststart' ]
+5 info lifecycle iobio-vue-skeleton@0.0.0~prestart: iobio-vue-skeleton@0.0.0
+6 silly lifecycle iobio-vue-skeleton@0.0.0~prestart: no script for prestart, continuing
+7 info lifecycle iobio-vue-skeleton@0.0.0~start: iobio-vue-skeleton@0.0.0
+8 verbose lifecycle iobio-vue-skeleton@0.0.0~start: unsafe-perm in lifecycle true
+9 verbose lifecycle iobio-vue-skeleton@0.0.0~start: PATH: /Users/Trill/.nvm/versions/node/v8.11.3/lib/node_modules/npm/bin/node-gyp-bin:/Users/Trill/WebstormProjects/vue-skeleton/node_modules/.bin:/Users/Trill/anaconda3/bin:/Users/Trill/anaconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.7/bin:/Users/Trill/.nvm/versions/node/v8.11.3/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands
+10 verbose lifecycle iobio-vue-skeleton@0.0.0~start: CWD: /Users/Trill/WebstormProjects/vue-skeleton
+11 silly lifecycle iobio-vue-skeleton@0.0.0~start: Args: [ '-c',
+11 silly lifecycle   './node_modules/webpack/bin/webpack.js && DEBUG=http ./node_modules/nodemon/bin/nodemon.js --inspect --ignore client/ www.js' ]
+12 silly lifecycle iobio-vue-skeleton@0.0.0~start: Returned: code: null  signal: SIGHUP
+13 verbose stack Error: write EIO
+13 verbose stack     at _errnoException (util.js:992:11)
+13 verbose stack     at WriteWrap.afterWrite [as oncomplete] (net.js:864:14)
+14 verbose cwd /Users/Trill/WebstormProjects/vue-skeleton
+15 error Darwin 18.0.0
+16 error argv "/Users/Trill/.nvm/versions/node/v8.11.3/bin/node" "/Users/Trill/.nvm/versions/node/v8.11.3/bin/npm" "start"
+17 error node v8.11.3
+18 error npm  v3.10.10
+19 error code EIO
+20 error errno EIO
+21 error syscall write
+22 error write EIO
+23 error If you need help, you may report this error at:
+23 error     <https://github.com/npm/npm/issues>
+24 verbose exit [ 1, true ]

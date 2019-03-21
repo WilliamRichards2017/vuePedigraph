@@ -1,17 +1,23 @@
 <template>
   <div>
-    {{ greeting }}
+  <PEDHandler :txt=txt />
   </div>
 </template>
 
 <script>
 
+
+  import txt from '../../../static/ped.js';
+
+import PEDHandler from "./../PEDHandler.vue";
 export default {
   name: 'home',
+  components: {PEDHandler},
+  // component: {},
   props: [],
   data() {
     return {
-      greeting: 'hello world!'
+      txt : txt
     }
   },
   methods: {
