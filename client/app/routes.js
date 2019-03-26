@@ -1,6 +1,6 @@
 import jQuery from 'jquery'
-global.jQuery = jQuery
-global.$ = jQuery
+global.jQuery = jQuery;
+global.$ = jQuery;
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
@@ -14,14 +14,14 @@ const routes = [
     path: '/',
     component: Home,
   }
-]
+];
 
 const router = new VueRouter({
   routes
-})
+});
 
 new Vue({
   el: '#app',
   render: h => h(App),
   router
-})
+});

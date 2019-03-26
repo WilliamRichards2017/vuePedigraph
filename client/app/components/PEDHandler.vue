@@ -5,13 +5,30 @@
     <h1 style="color:#123d53;">
       Pedigree Visualizer
     </h1>
+
+    <label for="selectFamily">
     <p>Family IDs</p>
-    <form id="dropdown" style="margin-bottom:15px">
-      <select id='selectFamily' v-model="selectedFamily">
-        <option>Select Family ID</option>
+          <select id='selectFamily' v-model="selectedFamily">
+            <option disabled value="">Select a family ID</option>
+            <option v-for="family in familyIDs">{{family}}</option>
+          </select>
+    </label>
+
+    <label for="selectPhenotype"><p>Phenotypes</p>
+      <select id="selectPhenotype" v-model="selectedPhenotype">
+        <option disabled value="">Select a phenotype</option>
+        <option v-for="phenotype in phenotypes">{{phenotype}}</option>
       </select>
-    </form>
-    <div id="pedigrees"></div>
+    </label>
+
+    <label for="selectGenotype"><p>Genotypes</p>
+      <select id="selectGenotype" v-model="selectedGenotype">
+        <option disabled value="">Select a genotype</option>
+        <option v-for="genotype in genotypes">{{genotype}}</option>
+      </select>
+    </label>
+
+      <div id="pedigrees"></div>
   </div>
 </template>
 
@@ -26,7 +43,32 @@
         txtLines: '',
         pedDict: {},
         familyIDs: [],
-        selectedFamily : null
+        selectedFamily : null,
+        selectedPhenotype : null,
+        selectedGenotype : null,
+        phenotypes: ['Diabetes', 'Cancer', 'Familial pancreatic carcinoma'],
+        genotypes: ['14:19248895_GCAAAC/ACAACG', '14:20142925_G/A', '14:24039463_T/G'],
+        opts: {
+          "targetDiv": "pedigree",
+          "btn_target": "diabetes2_history",
+          "width": 823.3333333333334,
+          "height": 400,
+          "symbol_size": 35,
+          "edit": true,
+          "diseases": [
+            {
+              "type": "diabetes",
+              "colour": "#F68F35"
+            }
+          ],
+
+          "DEBUG": false
+        },
+
+        cachedPhenotypes: [],
+        cachedGenotypes: []
+
+
       }
     },
 
@@ -34,11 +76,17 @@
       this.splitTxt();
       this.populatePedDict();
       this.populateFamilyIDs();
-      this.populateDropdown();
     },
 
     methods: {
-
+      onNodeHoverStart: function(e, nodeId) {
+        let self = this;
+        console.log('Message RECEIVED START! ' + nodeId);
+      },
+      onNodeHoverEnd: function(e, nodeId) {
+        let self = this;
+        console.log('Message RECEIVED END! ' + nodeId);
+      },
       splitTxt() {
         let self = this;
         self.txtLines = self.txt.split(/\r\n|\n/);
@@ -58,7 +106,6 @@
             self.pedDict[familyID].push(line);
           }
         }
-        console.log("pedDict", self.pedDict);
       },
       populateFamilyIDs: function () {
         let self = this;
@@ -67,23 +114,45 @@
             self.familyIDs.push(key);
           }
         }
-        console.log("first", self.familyIDs);
       },
 
-      populateDropdown: function () {
-        let self = this;
-        $(document).ready(function () {
 
-          let select = document.getElementById("selectFamily");
-          console.log("second", self.familyIDs);
-          for (let i = 0; i < self.familyIDs.length; i++) {
-            let opt = self.familyIDs[i];
-            let el = document.createElement("option");
-            el.textContent = opt;
-            el.value = opt;
-            select.appendChild(el);
-          }
-        });
+      mockAffected(threshold) {
+        let i = Math.random();
+
+        console.log(threshold, i);
+
+        if(i < threshold){
+          console.log("i < threshold");
+          return 2;
+        }
+        else{
+          return 0;
+        }
+      },
+
+      mockAlleles(threshold){
+
+        let alleles = ""
+
+        let a1T = Math.random();
+        let a2T = Math.random();
+
+        if(a1T < threshold){
+          alleles += '1/'
+        }
+        else{
+          alleles += '0/'
+        }
+
+        if(a2T < threshold){
+          alleles += '1'
+        }
+        else{
+          alleles += '0'
+        }
+        return alleles;
+
       },
 
       getDataByFamilyID(id) {
@@ -95,47 +164,107 @@
         }
         return data;
       },
+      getPhenotypeLikelyhood(phenotype){
+        if(phenotype==="Diabetes"){
+          return 0.2
+        }
+        else if(phenotype==="Cancer"){
+          return 0.5
+        }
+        else if(phenotype === "Familial pancreatic carcinoma"){
+          return 0.3
+        }
+
+        else{
+          return 0
+        }
+
+      }
     },
     watch : {
       selectedFamily : function(){
 
         let self = this;
-        console.log("inside getOption");
 
         $('#pedigree').remove();
-        $("#pedigrees").append($("<div id='pedigree'></div>"));
+        $('#pedigrees').append($("<div id='pedigree'></div>"));
 
-        var opts = {
-          'targetDiv': 'pedigree',
-          'btn_target': 'pedigree_history',
-          'width': 800,
-          'height': 500,
-          'symbol_size': 35,
-          'store_type': 'array',
-          'diseases': [
-            {'type': 'breast_cancer', 'colour': '#F68F35'},
-            {'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
-            {'type': 'pancreatic_cancer', 'colour': '#4289BA'},
-            {'type': 'prostate_cancer', 'colour': '#D5494A'}],
-          labels: ['age', 'yob'],
-          font_size: '.75em',
-          font_family: 'Helvetica',
-          font_weight: 700,
-          'DEBUG': (pedigree_util.urlParam('debug') !== null),
-          'zoomIn': .3,
-          'zoomOut': 3.,
-        };
 
         let e = self.getDataByFamilyID(self.selectedFamily);
+        self.opts.dataset = io.readLinkage(e);
 
-        opts.dataset = io.readLinkage(e);
+        self.cachedOpts = self.opts;
 
-        console.log(opts.dataset);
 
-        opts = ptree.build(opts);
+        self.opts = ptree.build(self.opts);
+
+        $('#pedigree').on('nodeHoverStart', self.onNodeHoverStart);
+        $('#pedigree').on('nodeHoverEnd', self.onNodeHoverEnd);
+      },
+
+      selectedPhenotype : function(){
+
+        let self = this;
+
+        self.cachedPhenotypes = [];
+
+        $('#pedigree').remove();
+        $('#pedigrees').append($("<div id='pedigree'></div>"));
+
+        let sp = self.selectedPhenotype;
+        let freq = self.getPhenotypeLikelyhood(sp);
+
+
+        let e = self.getDataByFamilyID(self.selectedFamily);
+        self.opts.dataset = io.readLinkage(e);
+
+        for(let i = 0; i < self.opts.dataset.length; i++) {
+          let phen = self.mockAffected(freq);
+          self.opts.dataset[i].affected = phen;
+          self.cachedPhenotypes.push(phen);
+          if(self.cachedGenotypes.length > 0){
+            self.opts.dataset[i].alleles = self.cachedGenotypes[i];
+          }
+        }
+
+        self.opts = ptree.build(self.opts);
+
+
+      },
+
+      selectedGenotype : function(){
+        let self = this;
+
+        self.cachedGenotypes = [];
+
+        console.log(self.selectedGenotype);
+
+        $('#pedigree').remove();
+        $('#pedigrees').append($("<div id='pedigree'></div>"));
+
+        let e = self.getDataByFamilyID(self.selectedFamily);
+        self.opts.dataset = io.readLinkage(e);
+
+        for(let i = 0; i < self.opts.dataset.length; i++) {
+          let a = self.mockAlleles(0.5)
+          self.opts.dataset[i].alleles = a;
+          //self.opts.dataset[i].alleles = '1/1';
+          self.opts.dataset[i].affected = self.cachedPhenotypes[i];
+
+          self.cachedGenotypes.push(a);
+        }
+
+        self.opts = ptree.build(self.opts);
 
       }
-    }
+    },
+
   }
 </script>
+
+<style scoped>
+  label {
+    display: inline-block;
+  }
+</style>
 

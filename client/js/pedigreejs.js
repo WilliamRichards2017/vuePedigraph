@@ -35,7 +35,7 @@
         }]
       });
     }
-  }
+  };
 
   /**
    * Validate age and yob is consistent with current year. The sum of age and
@@ -730,7 +730,7 @@
     }
     recurse(node);
     return ancestors;
-  }
+  };
 
   // test if two nodes are consanguinous partners
   pedigree_util.consanguity = function(node1, node2, opts) {
@@ -746,7 +746,7 @@
       }
     });
     return consanguity;
-  }
+  };
 
   // return a flattened representation of the tree
   pedigree_util.flatten = function(root) {
@@ -898,7 +898,7 @@
     ptree.syncTwins(newdataset, proband);
     opts.dataset = newdataset;
     ptree.rebuild(opts);
-  }
+  };
 
   // add a child to the proband; giveb sex, age, yob and breastfeeding months (optional)
   pedigree_util.proband_add_child = function(opts, sex, age, yob, breastfeeding){
@@ -916,12 +916,12 @@
     opts.dataset = newdataset;
     ptree.rebuild(opts);
     return newchild.name;
-  }
+  };
 
   // check by name if the individual exists
   pedigree_util.exists = function(opts, name){
     return pedigree_util.getNodeByName(pedcache.current(opts), name) !== undefined;
-  }
+  };
 
   // print options and dataset
   pedigree_util.print_opts = function(opts){
@@ -951,6 +951,26 @@
   };
 }(window.pedigree_util = window.pedigree_util || {}, jQuery));
 
+
+function mouseover() {
+  d3.select(this).select("circle").transition()
+    .duration(750)
+    .attr("r", 16);
+
+  let displayId = d3.select(this).data()[0].data.display_name;
+  console.log('Hovering over: ' + displayId);
+  $('#pedigree').trigger('nodeHoverStart', displayId);
+}
+
+function mouseout() {
+  d3.select(this).select("circle").transition()
+    .duration(750)
+    .attr("r", 8);
+
+  let displayId = d3.select(this).data()[0].data.display_name;
+  console.log('Leaving node: ' + displayId);
+  $('#pedigree').trigger('nodeHoverEnd', displayId);
+}
 
 // Pedigree Tree Builder
 (function(ptree, $, undefined) {
@@ -1029,6 +1049,8 @@
       .attr("class", "diagram")
       .attr("transform", "translate("+xtransform+"," + ytransform + ") scale("+zoom+")");
 
+
+
     var top_level = $.map(opts.dataset, function(val, i){return 'top_level' in val && val.top_level ? val : null;});
     var hidden_root = {
       name : 'hidden_root',
@@ -1069,6 +1091,8 @@
       .data(nodes.descendants())
       .enter()
       .append("g")
+      .on("mouseover", mouseover)
+      .on("mouseout", mouseout)
       .attr("transform", function(d, i) {
         return "translate(" + d.x + "," + d.y + ")";
       });
@@ -1311,7 +1335,7 @@
               j = k;
             }
             return path;
-          }
+          };
           path = draw_path(clash, dx, dy1, dy2, parent_node, 0);
         }
 
@@ -1455,7 +1479,7 @@
       if (typeof opts.validate == 'function') {
         if(opts.DEBUG)
           console.log('CALLING CONFIGURED VALIDATION FUNCTION');
-        return opts.validate.call(this, opts);;
+        return opts.validate.call(this, opts);
       }
 
       function create_err(err) {
@@ -1505,7 +1529,7 @@
       if(unconnected.length > 0)
         console.warn("individuals unconnected to pedigree ", unconnected);
     }
-  }
+  };
 
   // check if the object contains a key with a given prefix
   function prefixInObj(prefix, obj) {
@@ -1713,8 +1737,7 @@
     var hgt = adiv.height();
     adiv.remove();
     return hgt;
-  };
-
+  }
   // Add label
   function addLabel(opts, node, size, fx, fy, ftext, class_label) {
     node.filter(function (d) {
@@ -1727,6 +1750,8 @@
       .attr("font-family", opts.font_family)
       .attr("font-size", opts.font_size)
       .attr("font-weight", opts.font_weight)
+      // SJG ADDED
+      .attr('pointer-events', 'none')
       .text(ftext);
   }
 
@@ -2106,7 +2131,7 @@
       // check if pedigree is split
       var unconnected = ptree.unconnected(dataset);
     } catch(err) {
-      utils.messages('Warning', 'Deletion of this pedigree member is disallowed.')
+      utils.messages('Warning', 'Deletion of this pedigree member is disallowed.');
       throw err;
     }
     if(unconnected.length > 0) {
@@ -2183,7 +2208,7 @@
   $(document).on('fhChange', function(e, opts){
     try {
       var id = $('#id_name').val();  // get name from hidden field
-      var node = pedigree_util.getNodeByName(pedcache.current(opts), id)
+      var node = pedigree_util.getNodeByName(pedcache.current(opts), id);
       if(node === undefined)
         $('form > fieldset').prop("disabled", true);
       else
@@ -2191,7 +2216,7 @@
     } catch(err) {
       console.warn(err);
     }
-  })
+  });
 
   pedigree_form.nodeclick = function(node) {
     $('form > fieldset').prop('disabled', false);
@@ -2547,7 +2572,7 @@
         {"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}];
     }
     ptree.rebuild(opts);
-  }
+  };
 
   pbuttons.updateButtons = function(opts) {
     var current = pedcache.get_count(opts);
@@ -2801,293 +2826,295 @@
       .style("stroke", "darkgrey")
       .attr("fill", "white");
 
-    var square = popup_selection.append("text")  // male
-      .attr('font-family', 'FontAwesome')
-      .style("opacity", 0)
-      .attr('font-size', '1.em' )
-      .attr("class", "popup_selection fa-lg fa-square persontype")
-      .attr("transform", "translate(-1000,-100)")
-      .attr("x", font_size/3)
-      .attr("y", font_size*1.5)
-      .text("\uf096 ");
-    var square_title = square.append("svg:title").text("add male");
+    // var square = popup_selection.append("text")  // male
+    //   .attr('font-family', 'FontAwesome')
+    //   .style("opacity", 0)
+    //   .attr('font-size', '1.em' )
+    //   .attr("class", "popup_selection fa-lg fa-square persontype")
+    //   .attr("transform", "translate(-1000,-100)")
+    //   .attr("transform", "translate(-1000,-100)")
+    //   .attr("x", font_size/3)
+    //   .attr("y", font_size*1.5)
+    //   .text("\uf096 ");
+    // var square_title = square.append("svg:title").text("add male");
+    //
+    // var circle = popup_selection.append("text")  // female
+    //   .attr('font-family', 'FontAwesome')
+    //   .style("opacity", 0)
+    //   .attr('font-size', '1.em' )
+    //   .attr("class", "popup_selection fa-lg fa-circle persontype")
+    //   .attr("transform", "translate(-1000,-100)")
+    //   .attr("x", font_size*1.7)
+    //   .attr("y", font_size*1.5)
+    //   .text("\uf10c ");
+    // var circle_title = circle.append("svg:title").text("add female");
 
-    var circle = popup_selection.append("text")  // female
-      .attr('font-family', 'FontAwesome')
-      .style("opacity", 0)
-      .attr('font-size', '1.em' )
-      .attr("class", "popup_selection fa-lg fa-circle persontype")
-      .attr("transform", "translate(-1000,-100)")
-      .attr("x", font_size*1.7)
-      .attr("y", font_size*1.5)
-      .text("\uf10c ");
-    var circle_title = circle.append("svg:title").text("add female");
-
-    var unspecified = popup_selection.append("text")  // unspecified
-      .attr('font-family', 'FontAwesome')
-      .style("opacity", 0)
-      .attr('font-size', '1.em' )
-      .attr("transform", "translate(-1000,-100)")
-      .attr("class", "popup_selection fa-lg fa-unspecified popup_selection_rotate45 persontype")
-      .text("\uf096 ");
-    var unspecified_title = unspecified.append("svg:title").text("add unspecified");
-
-    var dztwin = popup_selection.append("text")  // dizygotic twins
-      .attr('font-family', 'FontAwesome')
-      .style("opacity", 0)
-      .attr("transform", "translate(-1000,-100)")
-      .attr("class", "popup_selection fa-2x fa-angle-up persontype dztwin")
-      .attr("x", font_size*4.6)
-      .attr("y", font_size*1.5)
-      .text("\uf106 ");
-    var dztwin_title = dztwin.append("svg:title").text("add dizygotic/fraternal twins");
-
-    var mztwin = popup_selection.append("text")  // monozygotic twins
-      .attr('font-family', 'FontAwesome')
-      .style("opacity", 0)
-      .attr("transform", "translate(-1000,-100)")
-      .attr("class", "popup_selection fa-2x fa-caret-up persontype mztwin")
-      .attr("x", font_size*6.2)
-      .attr("y", font_size*1.5)
-      .text("\uf0d8");
-    var mztwin_title = mztwin.append("svg:title").text("add monozygotic/identical twins");
-
-    var add_person = {};
-    // click the person type selection
-    d3.selectAll(".persontype")
-      .on("click", function () {
-        var newdataset = ptree.copy_dataset(opts.dataset);
-        var mztwin = d3.select(this).classed("mztwin");
-        var dztwin = d3.select(this).classed("dztwin");
-        var twin_type;
-        var sex;
-        if(mztwin || dztwin) {
-          sex = add_person.node.datum().data.sex;
-          twin_type = (mztwin ? "mztwin" : "dztwin");
-        } else {
-          sex = d3.select(this).classed("fa-square") ? 'M' : (d3.select(this).classed("fa-circle") ? 'F' : 'U');
-        }
-
-        if(add_person.type === 'addsibling')
-          ptree.addsibling(newdataset, add_person.node.datum().data, sex, false, twin_type);
-        else if(add_person.type === 'addchild')
-          ptree.addchild(newdataset, add_person.node.datum().data, (twin_type ? 'U' : sex), (twin_type ? 2 : 1), twin_type);
-        else
-          return;
-        opts.dataset = newdataset;
-        ptree.rebuild(opts);
-        d3.selectAll('.popup_selection').style("opacity", 0);
-        add_person = {};
-      })
-      .on("mouseover", function() {
-        if(add_person.node)
-          add_person.node.select('rect').style("opacity", 0.2);
-        d3.selectAll('.popup_selection').style("opacity", 1);
-        // add tooltips to font awesome widgets
-        if(add_person.type === 'addsibling'){
-          if(d3.select(this).classed("fa-square"))
-            square_title.text("add brother");
-          else
-            circle_title.text("add sister");
-        } else if(add_person.type === 'addchild'){
-          if(d3.select(this).classed("fa-square"))
-            square_title.text("add son");
-          else
-            circle_title.text("add daughter");
-        }
-      });
+    // var unspecified = popup_selection.append("text")  // unspecified
+    //   .attr('font-family', 'FontAwesome')
+    //   .style("opacity", 0)
+    //   .attr('font-size', '1.em' )
+    //   .attr("transform", "translate(-1000,-100)")
+    //   .attr("class", "popup_selection fa-lg fa-unspecified popup_selection_rotate45 persontype")
+    //   .text("\uf096 ");
+    // var unspecified_title = unspecified.append("svg:title").text("add unspecified");
+    //
+    // var dztwin = popup_selection.append("text")  // dizygotic twins
+    //   .attr('font-family', 'FontAwesome')
+    //   .style("opacity", 0)
+    //   .attr("transform", "translate(-1000,-100)")
+    //   .attr("class", "popup_selection fa-2x fa-angle-up persontype dztwin")
+    //   .attr("x", font_size*4.6)
+    //   .attr("y", font_size*1.5)
+    //   .text("\uf106 ");
+    // var dztwin_title = dztwin.append("svg:title").text("add dizygotic/fraternal twins");
+    //
+    // var mztwin = popup_selection.append("text")  // monozygotic twins
+    //   .attr('font-family', 'FontAwesome')
+    //   .style("opacity", 0)
+    //   .attr("transform", "translate(-1000,-100)")
+    //   .attr("class", "popup_selection fa-2x fa-caret-up persontype mztwin")
+    //   .attr("x", font_size*6.2)
+    //   .attr("y", font_size*1.5)
+    //   .text("\uf0d8");
+    // var mztwin_title = mztwin.append("svg:title").text("add monozygotic/identical twins");
+    //
+    // var add_person = {};
+    // // click the person type selection
+    // d3.selectAll(".persontype")
+    //   .on("click", function () {
+    //     var newdataset = ptree.copy_dataset(opts.dataset);
+    //     var mztwin = d3.select(this).classed("mztwin");
+    //     var dztwin = d3.select(this).classed("dztwin");
+    //     var twin_type;
+    //     var sex;
+    //     if(mztwin || dztwin) {
+    //       sex = add_person.node.datum().data.sex;
+    //       twin_type = (mztwin ? "mztwin" : "dztwin");
+    //     } else {
+    //       sex = d3.select(this).classed("fa-square") ? 'M' : (d3.select(this).classed("fa-circle") ? 'F' : 'U');
+    //     }
+    //
+    //     if(add_person.type === 'addsibling')
+    //       ptree.addsibling(newdataset, add_person.node.datum().data, sex, false, twin_type);
+    //     else if(add_person.type === 'addchild')
+    //       ptree.addchild(newdataset, add_person.node.datum().data, (twin_type ? 'U' : sex), (twin_type ? 2 : 1), twin_type);
+    //     else
+    //       return;
+    //     opts.dataset = newdataset;
+    //     ptree.rebuild(opts);
+    //     d3.selectAll('.popup_selection').style("opacity", 0);
+    //     add_person = {};
+    //   })
+    //   .on("mouseover", function() {
+    //     if(add_person.node)
+    //       add_person.node.select('rect').style("opacity", 0.2);
+    //     d3.selectAll('.popup_selection').style("opacity", 1);
+    //     // add tooltips to font awesome widgets
+    //     if(add_person.type === 'addsibling'){
+    //       if(d3.select(this).classed("fa-square"))
+    //         square_title.text("add brother");
+    //       else
+    //         circle_title.text("add sister");
+    //     } else if(add_person.type === 'addchild'){
+    //       if(d3.select(this).classed("fa-square"))
+    //         square_title.text("add son");
+    //       else
+    //         circle_title.text("add daughter");
+    //     }
+    //   });
 
     // handle mouse out of popup selection
-    d3.selectAll(".popup_selection").on("mouseout", function () {
-      // hide rect and popup selection
-      if(add_person.node !== undefined && highlight.indexOf(add_person.node.datum()) == -1)
-        add_person.node.select('rect').style("opacity", 0);
-      d3.selectAll('.popup_selection').style("opacity", 0);
-    });
+    // FIXME: SJG TOOK OUT
+    // d3.selectAll(".popup_selection").on("mouseout", function () {
+    //   // hide rect and popup selection
+    //   if(add_person.node !== undefined && highlight.indexOf(add_person.node.datum()) == -1)
+    //     add_person.node.select('rect').style("opacity", 0);
+    //   d3.selectAll('.popup_selection').style("opacity", 0);
+    // });
 
 
     // drag line between nodes to create partners
     drag_handle(opts);
 
     // rectangle used to highlight on mouse over
-    node.append("rect")
-      .filter(function (d) {
-        return d.data.hidden && !opts.DEBUG ? false : true;
-      })
-      .attr("class", 'indi_rect')
-      .attr("rx", 6)
-      .attr("ry", 6)
-      .attr("x", function(d) { return - 0.75*opts.symbol_size; })
-      .attr("y", function(d) { return - opts.symbol_size; })
-      .attr("width",  (1.5 * opts.symbol_size)+'px')
-      .attr("height", (2 * opts.symbol_size)+'px')
-      .style("stroke", "black")
-      .style("stroke-width", 0.7)
-      .style("opacity", 0)
-      .attr("fill", "lightgrey");
+    // node.append("rect")
+    //   .filter(function (d) {
+    //     return d.data.hidden && !opts.DEBUG ? false : true;
+    //   })
+    //   .attr("class", 'indi_rect')
+    //   .attr("rx", 6)
+    //   .attr("ry", 6)
+    //   .attr("x", function(d) { return - 0.75*opts.symbol_size; })
+    //   .attr("y", function(d) { return - opts.symbol_size; })
+    //   .attr("width",  (1.5 * opts.symbol_size)+'px')
+    //   .attr("height", (2 * opts.symbol_size)+'px')
+    //   .style("stroke", "black")
+    //   .style("stroke-width", 0.7)
+    //   .style("opacity", 0)
+    //   .attr("fill", "lightgrey");
 
     // widgets
     var fx = function(d) {return off - 0.75*opts.symbol_size;};
     var fy = opts.symbol_size -2;
     var off = 0;
     var widgets = {
-      'addchild':   {'text': '\uf063', 'title': 'add child',   'fx': fx, 'fy': fy},
-      'addsibling': {'text': '\uf234', 'title': 'add sibling', 'fx': fx, 'fy': fy},
-      'addpartner': {'text': '\uf0c1', 'title': 'add partner', 'fx': fx, 'fy': fy},
-      'addparents': {
-        'text': '\uf062', 'title': 'add parents',
-        'fx': - 0.75*opts.symbol_size,
-        'fy': - opts.symbol_size + 11
-      },
-      'delete': {
-        'text': 'X', 'title': 'delete',
-        'fx': opts.symbol_size/2 - 1,
-        'fy': - opts.symbol_size + 12,
-        'styles': {"font-weight": "bold", "fill": "darkred", "font-family": "monospace"}
-      }
+      // 'addchild':   {'text': '\uf063', 'title': 'add child',   'fx': fx, 'fy': fy},
+      // 'addsibling': {'text': '\uf234', 'title': 'add sibling', 'fx': fx, 'fy': fy},
+      // 'addpartner': {'text': '\uf0c1', 'title': 'add partner', 'fx': fx, 'fy': fy},
+      // 'addparents': {
+      //   'text': '\uf062', 'title': 'add parents',
+      //   'fx': - 0.75*opts.symbol_size,
+      //   'fy': - opts.symbol_size + 11
+      // },
+      // 'delete': {
+      //   'text': 'X', 'title': 'delete',
+      //   'fx': opts.symbol_size/2 - 1,
+      //   'fy': - opts.symbol_size + 12,
+      //   'styles': {"font-weight": "bold", "fill": "darkred", "font-family": "monospace"}
+      // }
     };
 
-    if(opts.edit) {
-      widgets.settings = {'text': '\uf013', 'title': 'settings', 'fx': -font_size/2+2, 'fy': -opts.symbol_size + 11};
-    }
-
-    for(var key in widgets) {
-      var widget = node.append("text")
-        .filter(function (d) {
-          return  (d.data.hidden && !opts.DEBUG ? false : true) &&
-            !((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') &&
-            !(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
-            !(d.data.parent_node === undefined && key === 'addchild') &&
-            !((d.data.noparents === undefined && d.data.top_level === undefined) && key === 'addparents');
-        })
-        .attr("class", key)
-        .style("opacity", 0)
-        .attr('font-family', 'FontAwesome')
-        .attr("xx", function(d){return d.x;})
-        .attr("yy", function(d){return d.y;})
-        .attr("x", widgets[key].fx)
-        .attr("y", widgets[key].fy)
-        .attr('font-size', '0.9em' )
-        .text(widgets[key].text);
-
-      if('styles' in widgets[key])
-        for(var style in widgets[key].styles){
-          widget.attr(style, widgets[key].styles[style]);
-        }
-
-      widget.append("svg:title").text(widgets[key].title);
-      off += 17;
-    }
+    // if(opts.edit) {
+    //   widgets.settings = {'text': '\uf013', 'title': 'settings', 'fx': -font_size/2+2, 'fy': -opts.symbol_size + 11};
+    // }
+    //
+    // for(var key in widgets) {
+    //   var widget = node.append("text")
+    //     .filter(function (d) {
+    //       return  (d.data.hidden && !opts.DEBUG ? false : true) &&
+    //         !((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') &&
+    //         !(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
+    //         !(d.data.parent_node === undefined && key === 'addchild') &&
+    //         !((d.data.noparents === undefined && d.data.top_level === undefined) && key === 'addparents');
+    //     })
+    //     .attr("class", key)
+    //     .style("opacity", 0)
+    //     .attr('font-family', 'FontAwesome')
+    //     .attr("xx", function(d){return d.x;})
+    //     .attr("yy", function(d){return d.y;})
+    //     .attr("x", widgets[key].fx)
+    //     .attr("y", widgets[key].fy)
+    //     .attr('font-size', '0.9em' )
+    //     .text(widgets[key].text);
+    //
+    //   if('styles' in widgets[key])
+    //     // for(var style in widgets[key].styles){
+    //     //   widget.attr(style, widgets[key].styles[style]);
+    //     // }
+    //
+    //   widget.append("svg:title").text(widgets[key].title);
+    //   off += 17;
+    // }
 
     // add sibling or child
-    d3.selectAll(".addsibling, .addchild")
-      .on("mouseover", function () {
-        var type = d3.select(this).attr('class');
-        d3.selectAll('.popup_selection').style("opacity", 1);
-        add_person = {'node': d3.select(this.parentNode), 'type': type};
-
-        //var translate = getTranslation(d3.select('.diagram').attr("transform"));
-        var x = parseInt(d3.select(this).attr("xx")) + parseInt(d3.select(this).attr("x"));
-        var y = parseInt(d3.select(this).attr("yy")) + parseInt(d3.select(this).attr("y"));
-        d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
-        d3.selectAll('.popup_selection_rotate45')
-          .attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
-      });
+    // d3.selectAll(".addsibling, .addchild")
+    //   .on("mouseover", function () {
+    //     var type = d3.select(this).attr('class');
+    //     d3.selectAll('.popup_selection').style("opacity", 1);
+    //     add_person = {'node': d3.select(this.parentNode), 'type': type};
+    //
+    //     //var translate = getTranslation(d3.select('.diagram').attr("transform"));
+    //     var x = parseInt(d3.select(this).attr("xx")) + parseInt(d3.select(this).attr("x"));
+    //     var y = parseInt(d3.select(this).attr("yy")) + parseInt(d3.select(this).attr("y"));
+    //     d3.selectAll('.popup_selection').attr("transform", "translate("+x+","+(y+2)+")");
+    //     d3.selectAll('.popup_selection_rotate45')
+    //       .attr("transform", "translate("+(x+3*font_size)+","+(y+(font_size*1.2))+") rotate(45)");
+    //   });
 
     // handle widget clicks
-    d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings")
-      .on("click", function () {
-        d3.event.stopPropagation();
-        var opt = d3.select(this).attr('class');
-        var d = d3.select(this.parentNode).datum();
-        if(opts.DEBUG) {
-          console.log(opt);
-        }
-
-        var newdataset;
-        if(opt === 'settings') {
-          if(typeof opts.edit === 'function') {
-            opts.edit(opts, d);
-          } else {
-            openEditDialog(opts, d);
-          }
-        } else if(opt === 'delete') {
-          newdataset = ptree.copy_dataset(opts.dataset);
-          function onDone(opts, dataset) {
-            // assign new dataset and rebuild pedigree
-            opts.dataset = dataset;
-            ptree.rebuild(opts);
-          }
-          ptree.delete_node_dataset(newdataset, d.data, opts, onDone);
-        } else if(opt === 'addparents') {
-          newdataset = ptree.copy_dataset(opts.dataset);
-          opts.dataset = newdataset;
-          ptree.addparents(opts, newdataset, d.data.name);
-          ptree.rebuild(opts);
-        } else if(opt === 'addpartner') {
-          newdataset = ptree.copy_dataset(opts.dataset);
-          ptree.addpartner(opts, newdataset, d.data.name);
-          opts.dataset = newdataset;
-          ptree.rebuild(opts);
-        }
-        // trigger fhChange event
-        $(document).trigger('fhChange', [opts]);
-      });
+    // d3.selectAll(".addchild, .addpartner, .addparents, .delete, .settings")
+    //   .on("click", function () {
+    //     d3.event.stopPropagation();
+    //     var opt = d3.select(this).attr('class');
+    //     var d = d3.select(this.parentNode).datum();
+    //     if(opts.DEBUG) {
+    //       console.log(opt);
+    //     }
+    //
+    //     var newdataset;
+    //     if(opt === 'settings') {
+    //       if(typeof opts.edit === 'function') {
+    //         opts.edit(opts, d);
+    //       } else {
+    //         openEditDialog(opts, d);
+    //       }
+    //     } else if(opt === 'delete') {
+    //       newdataset = ptree.copy_dataset(opts.dataset);
+    //       function onDone(opts, dataset) {
+    //         // assign new dataset and rebuild pedigree
+    //         opts.dataset = dataset;
+    //         ptree.rebuild(opts);
+    //       }
+    //       ptree.delete_node_dataset(newdataset, d.data, opts, onDone);
+    //     } else if(opt === 'addparents') {
+    //       newdataset = ptree.copy_dataset(opts.dataset);
+    //       opts.dataset = newdataset;
+    //       ptree.addparents(opts, newdataset, d.data.name);
+    //       ptree.rebuild(opts);
+    //     } else if(opt === 'addpartner') {
+    //       newdataset = ptree.copy_dataset(opts.dataset);
+    //       ptree.addpartner(opts, newdataset, d.data.name);
+    //       opts.dataset = newdataset;
+    //       ptree.rebuild(opts);
+    //     }
+    //     // trigger fhChange event
+    //     $(document).trigger('fhChange', [opts]);
+    //   });
 
     // other mouse events
     var highlight = [];
 
-    node.filter(function (d) { return !d.data.hidden; })
-      .on("click", function (d) {
-        if (d3.event.ctrlKey) {
-          if(highlight.indexOf(d) == -1)
-            highlight.push(d);
-          else
-            highlight.splice(highlight.indexOf(d), 1);
-        } else
-          highlight = [d];
-
-        if('nodeclick' in opts) {
-          opts.nodeclick(d.data);
-          d3.selectAll(".indi_rect").style("opacity", 0);
-          d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) != -1;}).style("opacity", 0.5);
-        }
-      })
-      .on("mouseover", function(d){
-        d3.event.stopPropagation();
-        last_mouseover = d;
-        if(dragging) {
-          if(dragging.data.name !== last_mouseover.data.name &&
-            dragging.data.sex !== last_mouseover.data.sex) {
-            d3.select(this).select('rect').style("opacity", 0.2);
-          }
-          return;
-        }
-        d3.select(this).select('rect').style("opacity", 0.2);
-        d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
-        d3.select(this).selectAll('.indi_details').style("opacity", 0);
-        setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size-2, 0, d.x+","+(d.y+2));
-      })
-      .on("mouseout", function(d){
-        if(dragging)
-          return;
-
-        d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 0);
-        if(highlight.indexOf(d) == -1)
-          d3.select(this).select('rect').style("opacity", 0);
-        d3.select(this).selectAll('.indi_details').style("opacity", 1);
-        // hide popup if it looks like the mouse is moving north
-        if(d3.mouse(this)[1] < 0.8*opts.symbol_size)
-          d3.selectAll('.popup_selection').style("opacity", 0);
-        if(!dragging) {
-          // hide popup if it looks like the mouse is moving north, south or west
-          if(Math.abs(d3.mouse(this)[1]) > 0.25*opts.symbol_size ||
-            Math.abs(d3.mouse(this)[1]) < -0.25*opts.symbol_size ||
-            d3.mouse(this)[0] < 0.2*opts.symbol_size){
-            setLineDragPosition(0, 0, 0, 0);
-          }
-        }
-      });
+    // node.filter(function (d) { return !d.data.hidden; })
+    //   .on("click", function (d) {
+    //     if (d3.event.ctrlKey) {
+    //       if(highlight.indexOf(d) == -1)
+    //         highlight.push(d);
+    //       else
+    //         highlight.splice(highlight.indexOf(d), 1);
+    //     } else
+    //       highlight = [d];
+    //
+    //     if('nodeclick' in opts) {
+    //       opts.nodeclick(d.data);
+    //       d3.selectAll(".indi_rect").style("opacity", 0);
+    //       d3.selectAll('.indi_rect').filter(function(d) {return highlight.indexOf(d) != -1;}).style("opacity", 0.5);
+    //     }
+    //   })
+    //   .on("mouseover", function(d){
+    //     d3.event.stopPropagation();
+    //     last_mouseover = d;
+    //     if(dragging) {
+    //       if(dragging.data.name !== last_mouseover.data.name &&
+    //         dragging.data.sex !== last_mouseover.data.sex) {
+    //         d3.select(this).select('rect').style("opacity", 0.2);
+    //       }
+    //       return;
+    //     }
+    //     d3.select(this).select('rect').style("opacity", 0.2);
+    //     d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
+    //     d3.select(this).selectAll('.indi_details').style("opacity", 0);
+    //     setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size-2, 0, d.x+","+(d.y+2));
+    //   })
+    //   .on("mouseout", function(d){
+    //     if(dragging)
+    //       return;
+    //
+    //     d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 0);
+    //     if(highlight.indexOf(d) == -1)
+    //       d3.select(this).select('rect').style("opacity", 0);
+    //     d3.select(this).selectAll('.indi_details').style("opacity", 1);
+    //     // hide popup if it looks like the mouse is moving north
+    //     if(d3.mouse(this)[1] < 0.8*opts.symbol_size)
+    //       d3.selectAll('.popup_selection').style("opacity", 0);
+    //     if(!dragging) {
+    //       // hide popup if it looks like the mouse is moving north, south or west
+    //       if(Math.abs(d3.mouse(this)[1]) > 0.25*opts.symbol_size ||
+    //         Math.abs(d3.mouse(this)[1]) < -0.25*opts.symbol_size ||
+    //         d3.mouse(this)[0] < 0.2*opts.symbol_size){
+    //         setLineDragPosition(0, 0, 0, 0);
+    //       }
+    //     }
+    //   });
   };
 
   // drag line between nodes to create partners
@@ -3129,7 +3156,7 @@
       d3.selectAll('.line_drag_selection')
         .attr("stroke","black");
       dragging = undefined;
-      return;
+
     }
 
     function drag(d) {
@@ -3246,7 +3273,9 @@
       pedigree_form.save(opts);
     });
     pedigree_form.update(opts);
-    return;
+
   }
 
 }(window.widgets = window.widgets || {}, jQuery));
+
+
