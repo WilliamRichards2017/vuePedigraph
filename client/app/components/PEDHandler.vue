@@ -82,6 +82,8 @@
       onNodeHoverStart: function(e, nodeId) {
         let self = this;
         console.log('Message RECEIVED START! ' + nodeId);
+
+        // TODO: get your matching family IDs, use d3 or jquery to select nodes w/ those IDs, update css class
       },
       onNodeHoverEnd: function(e, nodeId) {
         let self = this;
