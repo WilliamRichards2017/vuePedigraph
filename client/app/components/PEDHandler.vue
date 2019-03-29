@@ -34,6 +34,8 @@
 
 <script>
   import * as pedigreejs from '../../js/pedigreejs'
+  import family from '../../js/family'
+
 
   export default {
     name: 'PEDHandler',
@@ -66,7 +68,8 @@
         },
 
         cachedPhenotypes: [],
-        cachedGenotypes: []
+        cachedGenotypes: [],
+        families: {}
 
 
       }
@@ -75,13 +78,18 @@
     beforeMount() {
       this.splitTxt();
       this.populatePedDict();
-      this.populateFamilyIDs();
+      this.populateFamilies();
     },
 
     methods: {
       onNodeHoverStart: function(e, nodeId) {
         let self = this;
         console.log('Message RECEIVED START! ' + nodeId);
+
+        let fam = self.families[self.selectedFamily];
+
+        let ans = fam.getAllAnscestors(nodeId.toString());
+        console.log(ans);
 
         // TODO: get your matching family IDs, use d3 or jquery to select nodes w/ those IDs, update css class
       },
@@ -109,13 +117,17 @@
           }
         }
       },
-      populateFamilyIDs: function () {
+      populateFamilies: function () {
         let self = this;
         for (let key in self.pedDict) {
           if (self.pedDict.hasOwnProperty(key)) {
             self.familyIDs.push(key);
+            let pedLines = self.pedDict[key];
+            let fam = new family(key, pedLines);
+            self.families[fam.familyID] = fam;
           }
         }
+        console.log(self.families);
       },
 
 
