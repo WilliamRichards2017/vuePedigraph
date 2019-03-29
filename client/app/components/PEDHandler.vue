@@ -69,7 +69,8 @@
 
         cachedPhenotypes: [],
         cachedGenotypes: [],
-        families: {}
+        families: {},
+        highlightedFamilyIDs: []
 
 
       }
@@ -88,10 +89,9 @@
 
         let fam = self.families[self.selectedFamily];
 
-        let ans = fam.getAllAnscestors(nodeId.toString());
-        let des = fam.getAllDescendants(nodeId.toString());
-        console.log("anscestors", ans);
-        console.log("descendants", des);
+        self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
+
+        console.log("highlighted nodes ", self.highlightedFamilyIDs);
 
         // TODO: get your matching family IDs, use d3 or jquery to select nodes w/ those IDs, update css class
       },
@@ -136,10 +136,7 @@
       mockAffected(threshold) {
         let i = Math.random();
 
-        console.log(threshold, i);
-
         if(i < threshold){
-          console.log("i < threshold");
           return 2;
         }
         else{
@@ -180,6 +177,7 @@
         }
         return data;
       },
+
       getPhenotypeLikelyhood(phenotype){
         if(phenotype==="Diabetes"){
           return 0.2

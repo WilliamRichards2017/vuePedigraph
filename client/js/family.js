@@ -66,12 +66,23 @@ export default class family {
     return anscestorIDs;
   }
 
+  getFamily(id){
+
+    let self = this;
+
+    let ans = self.getAllAnscestors(id);
+    let des = self.getAllDescendants(id);
+
+    let fam = ans.concat(des);
+
+    return fam;
+  }
+
 
   getChildren(id) {
     let self = this;
     let individualID = parseInt(id);
 
-    console.log("getChildren id", individualID);
 
     let children = [];
 
@@ -80,21 +91,32 @@ export default class family {
       // check if the property/key is defined in the object itself, not in parent
       if (self.pedLines.hasOwnProperty(key)) {
         if(self.pedLines[key].maternalID == individualID || self.pedLines[key].paternalID == individualID){
-          console.log("found kid", self.pedLines[key].indiviualID);
           children.push(self.pedLines[key])
         }
       }
     }
 
-    console.log("children", children);
     return children;
   }
 
   getAllDescendants(individualID) {
-    let self = this;
-    let children = self.getChildren(individualID);
-    return children;
+      let self = this;
+      let children = self.getChildren(individualID);
 
+      let currentChildren = self.getChildren(individualID);
+      let grandChildren = [];
+
+      for (let i = 0; i < currentChildren.length; i++) {
+        let pl = currentChildren[i];
+
+        let gc = self.getChildren(currentChildren[i].individualID);
+        grandChildren = grandChildren.concat(gc);
+      }
+
+      children = children.concat(grandChildren);
+      let descendantIDs = this.pedLinesToIDs(children);
+
+      return descendantIDs;
   }
 
   pedLinesToIDs(pedLines) {
