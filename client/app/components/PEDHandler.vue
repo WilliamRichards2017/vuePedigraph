@@ -89,7 +89,9 @@
         let fam = self.families[self.selectedFamily];
 
         let ans = fam.getAllAnscestors(nodeId.toString());
-        console.log(ans);
+        let des = fam.getAllDescendants(nodeId.toString());
+        console.log("anscestors", ans);
+        console.log("descendants", des);
 
         // TODO: get your matching family IDs, use d3 or jquery to select nodes w/ those IDs, update css class
       },

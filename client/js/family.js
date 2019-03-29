@@ -1,24 +1,20 @@
-
 import pedLine from './pedLine.js'
 
 export default class family {
-  constructor(familyID, pedTxt){
+  constructor(familyID, pedTxt) {
     // console.log(pedTxt);
     this.familyID = familyID;
     this.pedTxt = pedTxt;
     this.pedLines = {};
-
     this.anscestors = [];
     this.descendants = [];
-
-
     this.populatePEDLines();
     // console.log(this.pedLines);
   }
 
-  populatePEDLines(){
+  populatePEDLines() {
     let self = this;
-    for(let i = 0; i < self.pedTxt.length; i++){
+    for (let i = 0; i < self.pedTxt.length; i++) {
       let line = self.pedTxt[i];
       let pl = new pedLine(line);
 
@@ -27,10 +23,8 @@ export default class family {
   }
 
 
-  getParents(pedLine){
-
+  getParents(pedLine) {
     let self = this;
-
     let pl = pedLine;
     let parents = [];
 
@@ -41,34 +35,18 @@ export default class family {
     if (self.pedLines.hasOwnProperty(pl.paternalID.toString())) {
       parents.push(self.pedLines[pl.paternalID.toString()]);
     }
-
-
-    console.log(parents);
-
     return parents;
   }
 
-  getChildren(pedLine){
-
-  }
 
   getAllAnscestors(id) {
-
-
     let self = this;
-
     let pl = this.pedLines[id.toString()];
-    console.log("getAllAnscestors", pl);
-
     let parents = [];
-
     let currentParents = self.getParents(pl);
-
-    console.log("currentParents", currentParents)
-
     let grandparents = [];
 
-    for(let i = 0; i < currentParents.length; i++) {
+    for (let i = 0; i < currentParents.length; i++) {
       let pl = currentParents[i];
       console.log(pl);
 
@@ -83,24 +61,48 @@ export default class family {
 
 
     parents = currentParents.concat(grandparents);
-
     let anscestorIDs = this.pedLinesToIDs(parents);
 
     return anscestorIDs;
   }
 
-  pedLinesToIDs(pedLines){
-    let ids = [];
 
-    for(let i = 0; i < pedLines.length; i++){
-      ids.push(pedLines[i].individualID);
+  getChildren(id) {
+    let self = this;
+    let individualID = parseInt(id);
+
+    console.log("getChildren id", individualID);
+
+    let children = [];
+
+
+    for (var key in self.pedLines) {
+      // check if the property/key is defined in the object itself, not in parent
+      if (self.pedLines.hasOwnProperty(key)) {
+        if(self.pedLines[key].maternalID == individualID || self.pedLines[key].paternalID == individualID){
+          console.log("found kid", self.pedLines[key].indiviualID);
+          children.push(self.pedLines[key])
+        }
+      }
     }
 
-    return ids;
+    console.log("children", children);
+    return children;
+  }
+
+  getAllDescendants(individualID) {
+    let self = this;
+    let children = self.getChildren(individualID);
+    return children;
 
   }
 
-  getAllDescendants(individualID){
+  pedLinesToIDs(pedLines) {
+    let ids = [];
+    for (let i = 0; i < pedLines.length; i++) {
+      ids.push(pedLines[i].individualID);
+    }
+    return ids;
 
   }
 }
