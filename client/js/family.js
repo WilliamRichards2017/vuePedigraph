@@ -70,8 +70,8 @@ export default class family {
 
     let self = this;
 
-    let ans = self.getAllAnscestors(id);
-    let des = self.getAllDescendants(id);
+    let ans = self.getAllAnscestors(id).toString();
+    let des = self.getAllDescendants(id).toString();
 
     let fam = ans.concat(des);
 

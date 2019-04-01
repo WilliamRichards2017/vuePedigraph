@@ -92,26 +92,44 @@
 
         self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
 
-        console.log("highlighted nodes ", self.highlightedFamilyIDs);
         self.highlightFamily();
 
         // TODO: get your matching family IDs, use d3 or jquery to select nodes w/ those IDs, update css class
       },
 
+      notHighlighted(id){
+
+        let self = this;
+
+        console.log("id", id);
+        console.log("highlighted nodes ", self.highlightedFamilyIDs);
+
+        if(self.highlightedFamilyIDs.includes(id)){
+          return false;
+        }
+
+          return true;
+      },
+
       highlightFamily(){
+
+        let self = this;
+
         let parentNodes = d3.selectAll(".node").nodes().map(function(d) { return d.parentNode; });
 
         parentNodes.forEach( function(n) {
-          // n.childNodes[0].style('fill', red);
 
-          let cn = n.childNodes[0];
 
-          let childNode = d3.select(cn);
 
-3
-          console.log("child node", childNode);
-          // console.log("parentNode", n.parentNode);
-          childNode.style('fill', "red");
+          let node = n.nextSibling.childNodes[0];
+          let nodeToHightlight = d3.select(node);
+
+
+
+          if(self.notHighlighted(n.id.toString())) {
+            console.log("applying styling");
+            nodeToHightlight.style('opacity', 0.5);
+          }
         }
       )
 
