@@ -952,14 +952,14 @@
 }(window.pedigree_util = window.pedigree_util || {}, jQuery));
 
 
-function mouseover() {
+function click() {
   d3.select(this).select("circle").transition()
     .duration(750)
     .attr("r", 16);
 
   let displayId = d3.select(this).data()[0].data.display_name;
-  console.log('Hovering over: ' + displayId);
-  $('#pedigree').trigger('nodeHoverStart', displayId);
+  console.log('clicked: ' + displayId);
+  $('#pedigree').trigger('nodeClick', displayId);
 }
 
 function mouseout() {
@@ -1091,8 +1091,8 @@ function mouseout() {
       .data(nodes.descendants())
       .enter()
       .append("g")
-      .on("mouseover", mouseover)
-      .on("mouseout", mouseout)
+      .on("click", click)
+      // .on("mouseout", mouseout)
       .attr("transform", function(d, i) {
         return "translate(" + d.x + "," + d.y + ")";
       });

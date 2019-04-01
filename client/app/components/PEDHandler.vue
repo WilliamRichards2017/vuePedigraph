@@ -80,10 +80,11 @@
       this.splitTxt();
       this.populatePedDict();
       this.populateFamilies();
+      this.highlightFamily();
     },
 
     methods: {
-      onNodeHoverStart: function(e, nodeId) {
+      onNodeClick: function(e, nodeId) {
         let self = this;
         console.log('Message RECEIVED START! ' + nodeId);
 
@@ -92,13 +93,48 @@
         self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
 
         console.log("highlighted nodes ", self.highlightedFamilyIDs);
+        self.highlightFamily();
 
         // TODO: get your matching family IDs, use d3 or jquery to select nodes w/ those IDs, update css class
       },
-      onNodeHoverEnd: function(e, nodeId) {
-        let self = this;
-        console.log('Message RECEIVED END! ' + nodeId);
+
+      highlightFamily(){
+        let parentNodes = d3.selectAll(".node").nodes().map(function(d) { return d.parentNode; });
+
+        parentNodes.forEach( function(n) {
+          // n.childNodes[0].style('fill', red);
+
+          let cn = n.childNodes[0];
+
+          let childNode = d3.select(cn);
+
+3
+          console.log("child node", childNode);
+          // console.log("parentNode", n.parentNode);
+          childNode.style('fill', "red");
+        }
+      )
+
+        // for(let i = 0; i < parentNodes.length; i++){
+        //   let id = nodes[i].id;
+        //   //if(notHighlighted(id))
+        //   if(id == 8126) {
+        //
+        //
+        //     console.log(typeof nodes[i], nodes[i]);
+        //
+        //
+        //     // console.log(nodes[i].children());
+        //
+        //    //d3.select("#8126").style("opacity", 0.5);
+        //
+        //
+        //     // nodes[i].style("opacity", function() { return 0.5});
+        //
+        //   }
+        // }
       },
+
       splitTxt() {
         let self = this;
         self.txtLines = self.txt.split(/\r\n|\n/);
@@ -212,8 +248,8 @@
 
         self.opts = ptree.build(self.opts);
 
-        $('#pedigree').on('nodeHoverStart', self.onNodeHoverStart);
-        $('#pedigree').on('nodeHoverEnd', self.onNodeHoverEnd);
+        $('#pedigree').on('nodeClick', self.onNodeClick);
+        // $('#pedigree').on('nodeHoverEnd', self.onNodeHoverEnd);
       },
 
       selectedPhenotype : function(){
