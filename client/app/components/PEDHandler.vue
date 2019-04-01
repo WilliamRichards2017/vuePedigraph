@@ -121,14 +121,25 @@
 
 
 
-          let node = n.nextSibling.childNodes[0];
-          let nodeToHightlight = d3.select(node);
+          let nodeToHightlight = d3.select(n.nextSibling.childNodes[0]);
+
+          let border = d3.select(n.previousSibling);
+
+          let txt = d3.select(n.nextSibling.nextSibling.nextSibling.nextSibling);
 
 
 
           if(self.notHighlighted(n.id.toString())) {
             console.log("applying styling");
-            nodeToHightlight.style('opacity', 0.5);
+            nodeToHightlight.style('opacity', 0.2);
+            border.style('opacity', 0.2);
+            txt.style("opacity", 0.2);
+          }
+          else{
+            nodeToHightlight.style('opacity', 1);
+            border.style('opacity', 1);
+            txt.style('opacity', 1);
+
           }
         }
       )
