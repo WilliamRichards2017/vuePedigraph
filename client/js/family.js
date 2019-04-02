@@ -38,6 +38,25 @@ export default class family {
     return parents;
   }
 
+  getAllSpouses(id){
+
+    let self = this;
+    let spouses = [];
+
+    let children = self.getChildren(id);
+
+    for(let i = 0; i < children.length; i++){
+      if(! (children[i].maternalID.toString() === id.toString())){
+        spouses.push(children[i].maternalID);
+      }
+      else if(! (children[i].paternalID.toString() === id)){
+        spouses.push(children[i].paternalID.toString());
+      }
+    }
+    return spouses;
+
+  }
+
 
   getAllAnscestors(id) {
     let self = this;
@@ -72,8 +91,10 @@ export default class family {
 
     let ans = self.getAllAnscestors(id).toString();
     let des = self.getAllDescendants(id).toString();
+    let spouses = self.getAllSpouses(id).toString();
 
-    let fam = ans.concat(des).concat(id.toString());
+
+    let fam = spouses.concat(ans.concat(des).concat(id.toString()));
 
     return fam;
   }

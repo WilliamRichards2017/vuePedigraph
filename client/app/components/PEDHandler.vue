@@ -28,6 +28,11 @@
       </select>
     </label>
 
+
+    <button id="zoom_in">+</button>
+    <button id="zoom_out">-</button>
+
+
       <div id="pedigrees"></div>
   </div>
 </template>
@@ -48,7 +53,9 @@
         selectedFamily : null,
         selectedPhenotype : null,
         selectedGenotype : null,
-        phenotypes: ['Diabetes', 'Cancer', 'Familial pancreatic carcinoma'],
+        // zoom: d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoomed);
+
+      phenotypes: ['Diabetes', 'Cancer', 'Familial pancreatic carcinoma'],
         genotypes: ['14:19248895_GCAAAC/ACAACG', '14:20142925_G/A', '14:24039463_T/G'],
         opts: {
           "targetDiv": "pedigree",
