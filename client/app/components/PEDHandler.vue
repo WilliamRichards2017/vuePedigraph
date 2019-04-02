@@ -28,23 +28,30 @@
       </select>
     </label>
 
+    <toggle v-model="isolateFamily" color="#253DB9">Isolate selected Family</toggle>
 
-    <button id="zoom_in">+</button>
-    <button id="zoom_out">-</button>
+    <div id="pedigrees">
 
+    </div>
 
-      <div id="pedigrees"></div>
   </div>
 </template>
 
 <script>
   import * as pedigreejs from '../../js/pedigreejs'
   import family from '../../js/family'
+  import toggle from './toggle.vue'
+
+
+
 
 
   export default {
     name: 'PEDHandler',
     props: ['txt'],
+    components: {
+      toggle
+    },
     data() {
       return {
         txtLines: '',
@@ -53,7 +60,6 @@
         selectedFamily : null,
         selectedPhenotype : null,
         selectedGenotype : null,
-        // zoom: d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoomed);
 
       phenotypes: ['Diabetes', 'Cancer', 'Familial pancreatic carcinoma'],
         genotypes: ['14:19248895_GCAAAC/ACAACG', '14:20142925_G/A', '14:24039463_T/G'],
@@ -77,7 +83,8 @@
         cachedPhenotypes: [],
         cachedGenotypes: [],
         families: {},
-        highlightedFamilyIDs: []
+        highlightedFamilyIDs: [],
+        isolateFamily: false
 
 
       }
@@ -104,7 +111,7 @@
         // TODO: get your matching family IDs, use d3 or jquery to select nodes w/ those IDs, update css class
       },
 
-      notHighlighted(id){
+      notHighlighted: function(id){
 
         let self = this;
 
@@ -118,23 +125,15 @@
           return true;
       },
 
-      highlightFamily(){
+      highlightFamily: function(){
 
         let self = this;
-
         let parentNodes = d3.selectAll(".node").nodes().map(function(d) { return d.parentNode; });
 
         parentNodes.forEach( function(n) {
-
-
-
           let nodeToHightlight = d3.select(n.nextSibling.childNodes[0]);
-
           let border = d3.select(n.previousSibling);
-
           let txt = d3.select(n.nextSibling.nextSibling.nextSibling.nextSibling);
-
-
 
           if(self.notHighlighted(n.id.toString())) {
             console.log("applying styling");
@@ -151,27 +150,32 @@
         }
       )
 
-        // for(let i = 0; i < parentNodes.length; i++){
-        //   let id = nodes[i].id;
-        //   //if(notHighlighted(id))
-        //   if(id == 8126) {
-        //
-        //
-        //     console.log(typeof nodes[i], nodes[i]);
-        //
-        //
-        //     // console.log(nodes[i].children());
-        //
-        //    //d3.select("#8126").style("opacity", 0.5);
-        //
-        //
-        //     // nodes[i].style("opacity", function() { return 0.5});
-        //
-        //   }
-        // }
       },
 
-      splitTxt() {
+      rebuildPed: function(opts){
+        $('#pedigree').remove();
+        $('#pedigrees').append($("<div id='pedigree'></div>"));
+        self.opts = ptree.build(self.opts);
+        $('#pedigree').on('nodeClick', self.onNodeClick);
+
+      },
+
+      buildPedFromIDs : function(ids){
+        let self = this;
+        let ped = "";
+        let pedLines = self.families[self.selectedFamily].pedLines;
+
+        for(let i = 0; i < ids.length; i++){
+          let line = pedLines[ids[i]].line;
+          // console.log(line);
+          ped = ped + line + '\n';
+        }
+        console.log("ped", ped);
+        return ped;
+      },
+
+
+    splitTxt : function() {
         let self = this;
         self.txtLines = self.txt.split(/\r\n|\n/);
       },
@@ -205,7 +209,7 @@
       },
 
 
-      mockAffected(threshold) {
+      mockAffected: function(threshold) {
         let i = Math.random();
 
         if(i < threshold){
@@ -216,9 +220,9 @@
         }
       },
 
-      mockAlleles(threshold){
+      mockAlleles: function(threshold){
 
-        let alleles = ""
+        let alleles = "";
 
         let a1T = Math.random();
         let a2T = Math.random();
@@ -240,7 +244,7 @@
 
       },
 
-      getDataByFamilyID(id) {
+      getDataByFamilyID: function(id) {
         let self = this;
         let strArr = self.pedDict[id];
         let data = '';
@@ -250,7 +254,7 @@
         return data;
       },
 
-      getPhenotypeLikelyhood(phenotype){
+      getPhenotypeLikelyhood: function(phenotype){
         if(phenotype==="Diabetes"){
           return 0.2
         }
@@ -276,6 +280,7 @@
         $('#pedigrees').append($("<div id='pedigree'></div>"));
 
 
+
         let e = self.getDataByFamilyID(self.selectedFamily);
         self.opts.dataset = io.readLinkage(e);
 
@@ -286,6 +291,32 @@
 
         $('#pedigree').on('nodeClick', self.onNodeClick);
         // $('#pedigree').on('nodeHoverEnd', self.onNodeHoverEnd);
+      },
+
+      isolateFamily: function(){
+        // let self = this;
+        //
+        // $('#pedigree').remove();
+        // $('#pedigrees').append($("<div id='pedigree'></div>"));
+        //
+        // console.log(self.isolateFamily);
+        //
+        // if(self.isolateFamily){
+        //   let e = self.buildPedFromIDs(self.highlightedFamilyIDs);
+        //   console.log("e", e);
+        //
+        //   self.opts.dataset = io.readLinkage(e);
+        //   self.cachedOpts = self.opts;
+        //   self.opts = ptree.build(self.opts);
+        // }
+        //
+        // else{
+        //   let e = self.getDataByFamilyID(self.selectedFamily);
+        //   self.opts.dataset = io.readLinkage(e);
+        //   self.cachedOpts = self.opts;
+        //   self.opts = ptree.build(self.opts);
+        // }
+
       },
 
       selectedPhenotype : function(){
@@ -332,7 +363,7 @@
         self.opts.dataset = io.readLinkage(e);
 
         for(let i = 0; i < self.opts.dataset.length; i++) {
-          let a = self.mockAlleles(0.5)
+          let a = self.mockAlleles(0.5);
           self.opts.dataset[i].alleles = a;
           //self.opts.dataset[i].alleles = '1/1';
           self.opts.dataset[i].affected = self.cachedPhenotypes[i];
@@ -346,9 +377,12 @@
     },
 
   }
+
+
 </script>
 
 <style scoped>
+
   label {
     display: inline-block;
   }

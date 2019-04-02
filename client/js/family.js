@@ -46,11 +46,15 @@ export default class family {
     let children = self.getChildren(id);
 
     for(let i = 0; i < children.length; i++){
-      if(! (children[i].maternalID.toString() === id.toString())){
-        spouses.push(children[i].maternalID);
+      if(! (children[i].maternalID.toString() === id.toString())) {
+        if (!spouses.includes(children[i].maternalID.toString())) {
+          spouses.push(children[i].maternalID.toString());
+        }
       }
       else if(! (children[i].paternalID.toString() === id)){
-        spouses.push(children[i].paternalID.toString());
+        if (!spouses.includes(children[i].paternalID.toString())) {
+          spouses.push(children[i].paternalID.toString());
+        }
       }
     }
     return spouses;
@@ -70,11 +74,11 @@ export default class family {
       console.log(pl);
 
       if (self.pedLines.hasOwnProperty(pl.maternalID.toString())) {
-        grandparents.push(self.pedLines[pl.maternalID.toString()]);
+        grandparents.push(self.pedLines[pl.maternalID]);
       }
 
       if (self.pedLines.hasOwnProperty(pl.paternalID.toString())) {
-        grandparents.push(self.pedLines[pl.paternalID.toString()]);
+        grandparents.push(self.pedLines[pl.paternalID]);
       }
     }
 
@@ -143,7 +147,7 @@ export default class family {
   pedLinesToIDs(pedLines) {
     let ids = [];
     for (let i = 0; i < pedLines.length; i++) {
-      ids.push(pedLines[i].individualID);
+      ids.push(pedLines[i].individualID.toString());
     }
     return ids;
 
