@@ -1,4 +1,3 @@
-
 <template>
 
   <div id='container' style="margin:50px" align="center">
@@ -55,6 +54,7 @@
     data() {
       return {
         txtLines: '',
+        txtDict: {},
         pedDict: {},
         familyIDs: [],
         selectedFamily : null,
@@ -92,19 +92,25 @@
 
     beforeMount() {
       this.splitTxt();
+      this.populateTxtDict();
       this.populatePedDict();
       this.populateFamilies();
+      this.rebuildPedDict();
       this.highlightFamily();
     },
 
     methods: {
       onNodeClick: function(e, nodeId) {
         let self = this;
-        console.log('Message RECEIVED START! ' + nodeId);
+        // console.log('Message RECEIVED START! ' + nodeId);
 
         let fam = self.families[self.selectedFamily];
 
         self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
+        for(let i = 0; i < self.highlightedFamilyIDs.length; i++){
+          // console.log("indiv id", self.highlightedFamilyIDs[i]);
+        }
+
 
         self.highlightFamily();
 
@@ -114,9 +120,9 @@
       notHighlighted: function(id){
 
         let self = this;
-
-        console.log("id", id);
-        console.log("highlighted nodes ", self.highlightedFamilyIDs);
+        //
+        // console.log("id", id);
+        // console.log("highlighted nodes ", self.highlightedFamilyIDs);
 
         if(self.highlightedFamilyIDs.includes(id)){
           return false;
@@ -136,7 +142,7 @@
           let txt = d3.select(n.nextSibling.nextSibling.nextSibling.nextSibling);
 
           if(self.notHighlighted(n.id.toString())) {
-            console.log("applying styling");
+            // console.log("applying styling");
             nodeToHightlight.style('opacity', 0.2);
             border.style('opacity', 0.2);
             txt.style("opacity", 0.2);
@@ -160,24 +166,53 @@
 
       },
 
+
       buildPedFromIDs : function(ids){
+
+        console.log("Inside buildPedFromIDs");
+        console.log(ids);
         let self = this;
-        let ped = "";
-        let pedLines = self.families[self.selectedFamily].pedLines;
+
+        let txtLines = [];
 
         for(let i = 0; i < ids.length; i++){
-          let line = pedLines[ids[i]].line;
-          // console.log(line);
-          ped = ped + line + '\n';
+
+
+          let txtLine = self.txtDict[parseInt(ids[i])];
+          txtLines.push(txtLine);
+
+          console.log("txtLine", txtLine);
         }
-        console.log("ped", ped);
-        return ped;
+
+        let familyId =  txtLines[0].split(/\s+/).slice(0,1);
+        let newFam = new family(familyId, txtLines);
+
+        console.log("newFam", newFam);
+
+        let famTxt = newFam.famToTxt();
+        console.log(famTxt);
+        return famTxt;
+
       },
+
 
 
     splitTxt : function() {
         let self = this;
         self.txtLines = self.txt.split(/\r\n|\n/);
+      },
+
+
+      populateTxtDict: function() {
+        let self = this;
+        for (let i = 0; i < self.txtLines.length; i++) {
+          let line = self.txtLines[i];
+          let individualID =  line.split(/\s+/).slice(1,2);
+
+          self.txtDict[individualID] = line;
+        }
+
+        console.log("txtDict", self.txtDict);
       },
 
       populatePedDict: function () {
@@ -195,6 +230,24 @@
           }
         }
       },
+
+      rebuildPedDict(){
+        let self = this;
+        for (let key in self.pedDict) {
+          let line = self.pedDict[key].line;
+          let familyID = self.pedDict[key].familyID
+
+          if (self.pedDict[familyID]) {
+            this.pedDict[familyID].push(line);
+
+          } else {
+            self.pedDict[familyID] = [];
+            self.pedDict[familyID].push(line);
+          }
+        }
+
+      },
+
       populateFamilies: function () {
         let self = this;
         for (let key in self.pedDict) {
@@ -205,7 +258,7 @@
             self.families[fam.familyID] = fam;
           }
         }
-        console.log(self.families);
+        // console.log(self.families);
       },
 
 
@@ -246,11 +299,16 @@
 
       getDataByFamilyID: function(id) {
         let self = this;
-        let strArr = self.pedDict[id];
+
+        let fam = self.families[id];
+
         let data = '';
-        for (let i = 0; i < strArr.length; i++) {
-          data = data.concat(strArr[i] + '\n');
+
+        for(let key in fam.pedLines){
+          let line = fam.pedLines[key].line;
+          data = data.concat(line + '\n');
         }
+        // console.log("zeroed out lines is", data);
         return data;
       },
 
@@ -294,28 +352,29 @@
       },
 
       isolateFamily: function(){
-        // let self = this;
-        //
-        // $('#pedigree').remove();
-        // $('#pedigrees').append($("<div id='pedigree'></div>"));
-        //
+        let self = this;
+
+
+        $('#pedigree').remove();
+        $('#pedigrees').append($("<div id='pedigree'></div>"));
+
         // console.log(self.isolateFamily);
-        //
-        // if(self.isolateFamily){
-        //   let e = self.buildPedFromIDs(self.highlightedFamilyIDs);
-        //   console.log("e", e);
-        //
-        //   self.opts.dataset = io.readLinkage(e);
-        //   self.cachedOpts = self.opts;
-        //   self.opts = ptree.build(self.opts);
-        // }
-        //
-        // else{
-        //   let e = self.getDataByFamilyID(self.selectedFamily);
-        //   self.opts.dataset = io.readLinkage(e);
-        //   self.cachedOpts = self.opts;
-        //   self.opts = ptree.build(self.opts);
-        // }
+
+        if(self.isolateFamily){
+          let e = self.buildPedFromIDs(self.highlightedFamilyIDs);
+          // console.log("e", e);
+
+          self.opts.dataset = io.readLinkage(e);
+          self.cachedOpts = self.opts;
+          self.opts = ptree.build(self.opts);
+        }
+
+        else{
+          let e = self.getDataByFamilyID(self.selectedFamily);
+          self.opts.dataset = io.readLinkage(e);
+          self.cachedOpts = self.opts;
+          self.opts = ptree.build(self.opts);
+        }
 
       },
 
@@ -354,7 +413,7 @@
 
         self.cachedGenotypes = [];
 
-        console.log(self.selectedGenotype);
+        // console.log(self.selectedGenotype);
 
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));

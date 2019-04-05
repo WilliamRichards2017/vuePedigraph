@@ -16,6 +16,21 @@ export default class pedLine{
     this.populateLine();
   }
 
+  rebuildTxt(){
+
+    // console.log("rebuilding pedLine");
+
+    let self = this;
+
+    self.line = '';
+    self.line = self.line + self.familyID;
+    self.line = self.line + ' ' + self.individualID;
+    self.line = self.line + ' ' + self.paternalID;
+    self.line = self.line + ' ' + self.maternalID;
+    self.line = self.line + ' ' + self.sexID;
+  }
+
+
   populateLine(){
 
     let self = this;
