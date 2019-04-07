@@ -40,7 +40,7 @@
   import * as pedigreejs from '../../js/pedigreejs'
   import family from '../../js/family'
   import toggle from './toggle.vue'
-
+  import {mockAffected, mockAlleles, getPhenotypeLikelyhood} from '../../js/mock'
 
 
 
@@ -65,17 +65,9 @@
         genotypes: ['14:19248895_GCAAAC/ACAACG', '14:20142925_G/A', '14:24039463_T/G'],
         opts: {
           "targetDiv": "pedigree",
-          "btn_target": "diabetes2_history",
           "width": 823.3333333333334,
           "height": 400,
           "symbol_size": 35,
-          "edit": true,
-          "diseases": [
-            {
-              "type": "diabetes",
-              "colour": "#F68F35"
-            }
-          ],
 
           "DEBUG": false
         },
@@ -84,7 +76,8 @@
         cachedGenotypes: [],
         families: {},
         highlightedFamilyIDs: [],
-        isolateFamily: false
+        isolateFamily: false,
+        isolatedPedTxt: []
 
 
       }
@@ -102,27 +95,15 @@
     methods: {
       onNodeClick: function(e, nodeId) {
         let self = this;
-        // console.log('Message RECEIVED START! ' + nodeId);
-
         let fam = self.families[self.selectedFamily];
 
         self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
-        for(let i = 0; i < self.highlightedFamilyIDs.length; i++){
-          // console.log("indiv id", self.highlightedFamilyIDs[i]);
-        }
-
-
         self.highlightFamily();
 
-        // TODO: get your matching family IDs, use d3 or jquery to select nodes w/ those IDs, update css class
       },
 
       notHighlighted: function(id){
-
         let self = this;
-        //
-        // console.log("id", id);
-        // console.log("highlighted nodes ", self.highlightedFamilyIDs);
 
         if(self.highlightedFamilyIDs.includes(id)){
           return false;
@@ -153,66 +134,36 @@
             txt.style('opacity', 1);
 
           }
-        }
-      )
-
+        });
       },
 
-      rebuildPed: function(opts){
-        $('#pedigree').remove();
-        $('#pedigrees').append($("<div id='pedigree'></div>"));
-        self.opts = ptree.build(self.opts);
-        $('#pedigree').on('nodeClick', self.onNodeClick);
+      isolatePedTxt : function(ids){
 
-      },
-
-
-      buildPedFromIDs : function(ids){
-
-        console.log("Inside buildPedFromIDs");
-        console.log(ids);
         let self = this;
-
         let txtLines = [];
-
         for(let i = 0; i < ids.length; i++){
-
-
           let txtLine = self.txtDict[parseInt(ids[i])];
           txtLines.push(txtLine);
-
-          console.log("txtLine", txtLine);
         }
 
         let familyId =  txtLines[0].split(/\s+/).slice(0,1);
         let newFam = new family(familyId, txtLines);
-
-        console.log("newFam", newFam);
-
-        let famTxt = newFam.famToTxt();
-        console.log(famTxt);
-        return famTxt;
-
+        let txt = newFam.famToTxt();
+        return txt;
       },
 
-
-
-    splitTxt : function() {
+      splitTxt : function() {
         let self = this;
         self.txtLines = self.txt.split(/\r\n|\n/);
       },
-
 
       populateTxtDict: function() {
         let self = this;
         for (let i = 0; i < self.txtLines.length; i++) {
           let line = self.txtLines[i];
           let individualID =  line.split(/\s+/).slice(1,2);
-
           self.txtDict[individualID] = line;
         }
-
-        console.log("txtDict", self.txtDict);
       },
 
       populatePedDict: function () {
@@ -235,7 +186,7 @@
         let self = this;
         for (let key in self.pedDict) {
           let line = self.pedDict[key].line;
-          let familyID = self.pedDict[key].familyID
+          let familyID = self.pedDict[key].familyID;
 
           if (self.pedDict[familyID]) {
             this.pedDict[familyID].push(line);
@@ -258,44 +209,8 @@
             self.families[fam.familyID] = fam;
           }
         }
-        // console.log(self.families);
       },
 
-
-      mockAffected: function(threshold) {
-        let i = Math.random();
-
-        if(i < threshold){
-          return 2;
-        }
-        else{
-          return 0;
-        }
-      },
-
-      mockAlleles: function(threshold){
-
-        let alleles = "";
-
-        let a1T = Math.random();
-        let a2T = Math.random();
-
-        if(a1T < threshold){
-          alleles += '1/'
-        }
-        else{
-          alleles += '0/'
-        }
-
-        if(a2T < threshold){
-          alleles += '1'
-        }
-        else{
-          alleles += '0'
-        }
-        return alleles;
-
-      },
 
       getDataByFamilyID: function(id) {
         let self = this;
@@ -308,27 +223,30 @@
           let line = fam.pedLines[key].line;
           data = data.concat(line + '\n');
         }
-        // console.log("zeroed out lines is", data);
         return data;
       },
 
-      getPhenotypeLikelyhood: function(phenotype){
-        if(phenotype==="Diabetes"){
-          return 0.2
-        }
-        else if(phenotype==="Cancer"){
-          return 0.5
-        }
-        else if(phenotype === "Familial pancreatic carcinoma"){
-          return 0.3
-        }
 
-        else{
-          return 0
-        }
+      addNewPhenotypesToOpts: function(opts){
+        let self = this;
 
+        let sp = self.selectedPhenotype;
+        let freq = getPhenotypeLikelyhood(sp);
+
+        self.cachedPhenotypes = [];
+
+        for(let i = 0; i < opts.dataset.length; i++) {
+          let phen = mockAffected(freq);
+          opts.dataset[i].affected = phen;
+          self.cachedPhenotypes.push(phen);
+          if(self.cachedGenotypes.length > 0){
+            opts.dataset[i].alleles = self.cachedGenotypes[i];
+          }
+        }
+        return opts.dataset;
       }
     },
+
     watch : {
       selectedFamily : function(){
 
@@ -337,101 +255,61 @@
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
 
-
-
-        let e = self.getDataByFamilyID(self.selectedFamily);
-        self.opts.dataset = io.readLinkage(e);
-
-        self.cachedOpts = self.opts;
-
-
+        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+        self.opts.dataset = io.readLinkage(self.pedTxt);
         self.opts = ptree.build(self.opts);
 
         $('#pedigree').on('nodeClick', self.onNodeClick);
-        // $('#pedigree').on('nodeHoverEnd', self.onNodeHoverEnd);
       },
 
       isolateFamily: function(){
         let self = this;
-
-
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
 
-        // console.log(self.isolateFamily);
-
         if(self.isolateFamily){
-          let e = self.buildPedFromIDs(self.highlightedFamilyIDs);
-          // console.log("e", e);
-
-          self.opts.dataset = io.readLinkage(e);
-          self.cachedOpts = self.opts;
+          self.isolatedPedTxt = self.isolatePedTxt(self.highlightedFamilyIDs);
+          self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
           self.opts = ptree.build(self.opts);
         }
-
         else{
-          let e = self.getDataByFamilyID(self.selectedFamily);
-          self.opts.dataset = io.readLinkage(e);
-          self.cachedOpts = self.opts;
+          self.opts.dataset = io.readLinkage(self.pedTxt);
           self.opts = ptree.build(self.opts);
         }
-
+        $('#pedigree').on('nodeClick', self.onNodeClick);
       },
 
       selectedPhenotype : function(){
-
         let self = this;
-
-        self.cachedPhenotypes = [];
-
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
 
-        let sp = self.selectedPhenotype;
-        let freq = self.getPhenotypeLikelyhood(sp);
-
-
-        let e = self.getDataByFamilyID(self.selectedFamily);
-        self.opts.dataset = io.readLinkage(e);
-
-        for(let i = 0; i < self.opts.dataset.length; i++) {
-          let phen = self.mockAffected(freq);
-          self.opts.dataset[i].affected = phen;
-          self.cachedPhenotypes.push(phen);
-          if(self.cachedGenotypes.length > 0){
-            self.opts.dataset[i].alleles = self.cachedGenotypes[i];
-          }
-        }
-
+        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+        self.opts.dataset = io.readLinkage(self.pedTxt);
+        self.opts.dataset = self.addNewPhenotypesToOpts(self.opts);
         self.opts = ptree.build(self.opts);
-
-
       },
 
       selectedGenotype : function(){
         let self = this;
+        $('#pedigree').remove();
+        $('#pedigrees').append($("<div id='pedigree'></div>"));
 
         self.cachedGenotypes = [];
 
-        // console.log(self.selectedGenotype);
-
-        $('#pedigree').remove();
-        $('#pedigrees').append($("<div id='pedigree'></div>"));
 
         let e = self.getDataByFamilyID(self.selectedFamily);
         self.opts.dataset = io.readLinkage(e);
 
         for(let i = 0; i < self.opts.dataset.length; i++) {
-          let a = self.mockAlleles(0.5);
+          let a = mockAlleles(0.5);
           self.opts.dataset[i].alleles = a;
           //self.opts.dataset[i].alleles = '1/1';
           self.opts.dataset[i].affected = self.cachedPhenotypes[i];
 
           self.cachedGenotypes.push(a);
         }
-
         self.opts = ptree.build(self.opts);
-
       }
     },
 
