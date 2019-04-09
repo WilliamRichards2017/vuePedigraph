@@ -40,6 +40,7 @@ export default class family {
 
       if(! (MI===0) ){
         if (!(self.pedLines.hasOwnProperty(MI))) {
+          self.pedLines[key].paternalID = 0;
           self.pedLines[key].maternalID = 0;
           self.pedLines[key].line = self.rebuildTxt(self.pedLines[key]);
         }
@@ -48,6 +49,7 @@ export default class family {
       if(! (PI===0) ){
         if (! (self.pedLines.hasOwnProperty(PI))) {
           self.pedLines[key].paternalID = 0;
+          self.pedLines[key].maternalID = 0;
           self.pedLines[key].line = self.rebuildTxt(self.pedLines[key]);
         }
       }
@@ -59,7 +61,6 @@ export default class family {
     for (let i = 0; i < self.pedTxt.length; i++) {
       let line = self.pedTxt[i];
       let pl = new pedLine(line);
-
       self.pedLines[pl.individualID] = pl;
     }
   }
@@ -112,7 +113,6 @@ export default class family {
 
     for (let i = 0; i < currentParents.length; i++) {
       let pl = currentParents[i];
-      console.log(pl);
 
       if (self.pedLines.hasOwnProperty(pl.maternalID.toString())) {
         grandparents.push(self.pedLines[pl.maternalID]);
@@ -126,6 +126,7 @@ export default class family {
 
     parents = currentParents.concat(grandparents);
     let anscestorIDs = this.pedLinesToIDs(parents);
+
 
     return anscestorIDs;
   }
