@@ -3,6 +3,7 @@ import jQuery from 'jquery';
 import 'd3';
 import Vue from 'vue';
 
+
 window.jQuery = jQuery;
 window.$ = jQuery;
 // require('../js/iobio.viz.js');

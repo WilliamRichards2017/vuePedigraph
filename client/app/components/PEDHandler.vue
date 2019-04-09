@@ -1,33 +1,47 @@
 <template>
+  <div id='container' align="center">
 
-  <div id='container' style="margin:50px" align="center">
-    <h1 style="color:#123d53;">
-      Pedigree Visualizer
-    </h1>
+    <v-toolbar dark
+      color="#123d53"
 
-    <label for="selectFamily">
-    <p>Family IDs</p>
-          <select id='selectFamily' v-model="selectedFamily">
-            <option disabled value="">Select a family ID</option>
-            <option v-for="family in familyIDs">{{family}}</option>
-          </select>
-    </label>
+    >
 
-    <label for="selectPhenotype"><p>Phenotypes</p>
-      <select id="selectPhenotype" v-model="selectedPhenotype">
-        <option disabled value="">Select a phenotype</option>
-        <option v-for="phenotype in phenotypes">{{phenotype}}</option>
-      </select>
-    </label>
+      <v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>
 
-    <label for="selectGenotype"><p>Genotypes</p>
-      <select id="selectGenotype" v-model="selectedGenotype">
-        <option disabled value="">Select a genotype</option>
-        <option v-for="genotype in genotypes">{{genotype}}</option>
-      </select>
-    </label>
+      <v-spacer></v-spacer>
 
-    <toggle v-model="isolateFamily" color="#253DB9">Isolate selected Family</toggle>
+
+          <v-select id='selectFamily'
+            :items="familyIDs" label="Select Family ID" v-model="selectedFamily"
+          >
+          </v-select>
+
+      <v-spacer></v-spacer>
+
+
+        <v-select id="selectPhenotype"
+                  :items="phenotypes" label="Select Phenotype" v-model="selectedPhenotype"
+        >
+
+        </v-select>
+
+      <v-spacer></v-spacer>
+
+
+        <v-select id="selectGenotype"
+                  :items="genotypes" label="Select Genotype" v-model="selectedGenotype"
+                  >
+
+        </v-select>
+
+      <v-spacer></v-spacer>
+
+
+      <v-switch v-model="isolateFamily"
+                :label="'Isolate Selected Nodes'" ></v-switch>
+    </v-toolbar>
+
+
 
     <div id="pedigrees">
 
@@ -40,7 +54,12 @@
   import * as pedigreejs from '../../js/pedigreejs'
   import family from '../../js/family'
   import toggle from './toggle.vue'
+  import navigation from './navigation.vue'
+  import TAS from '../../static/TAS2R38';
   import {mockAffected, mockAlleles, getPhenotypeLikelyhood} from '../../js/mock'
+  import 'vuetify'
+
+  console.log("TAS", TAS);
 
 
 
@@ -49,6 +68,7 @@
     name: 'PEDHandler',
     props: ['txt'],
     components: {
+      navigation,
       toggle
     },
     data() {
@@ -62,11 +82,9 @@
         selectedGenotype : null,
 
       phenotypes: ['Diabetes', 'Cancer', 'Familial pancreatic carcinoma'],
-        genotypes: ['14:19248895_GCAAAC/ACAACG', '14:20142925_G/A', '14:24039463_T/G'],
+        genotypes: ['14:19248895_GCAAAC/ACAACG', '14:20142925_G/A', '14:24039463_T/G', '7:141973615_C/A'],
         opts: {
           "targetDiv": "pedigree",
-          "width": 823.3333333333334,
-          "height": 400,
           "symbol_size": 35,
 
           "DEBUG": false
@@ -104,6 +122,8 @@
 
       notHighlighted: function(id){
         let self = this;
+
+        // console.log(self.highlightedFamilyIDs);
 
         if(self.highlightedFamilyIDs.includes(id)){
           return false;
@@ -220,9 +240,11 @@
         let data = '';
 
         for(let key in fam.pedLines){
-          let line = fam.pedLines[key].line;
-          data = data.concat(line + '\n');
+          let line = fam.pedLines[key].line + '\n';
+          console.log("line", line);
+          data = data.concat(line);
         }
+        console.log("data", data);
         return data;
       },
 
@@ -288,6 +310,8 @@
         self.opts.dataset = io.readLinkage(self.pedTxt);
         self.opts.dataset = self.addNewPhenotypesToOpts(self.opts);
         self.opts = ptree.build(self.opts);
+        $('#pedigree').on('nodeClick', self.onNodeClick);
+
       },
 
       selectedGenotype : function(){
@@ -310,6 +334,8 @@
           self.cachedGenotypes.push(a);
         }
         self.opts = ptree.build(self.opts);
+        $('#pedigree').on('nodeClick', self.onNodeClick);
+
       }
     },
 
@@ -318,10 +344,11 @@
 
 </script>
 
-<style scoped>
+<style>
 
-  label {
-    display: inline-block;
+  #pedigrees {
+    margin-top: 3px;
   }
+
 </style>
 

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="wrapper">
   <PEDHandler :txt=txt />
   </div>
 </template>
@@ -25,3 +25,9 @@ export default {
   }
 }
 </script>
+
+<style>
+  #wrapper {
+    height: 100%;
+  }
+</style>

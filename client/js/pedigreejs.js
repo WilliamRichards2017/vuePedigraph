@@ -185,7 +185,7 @@
     if(el.constructor !== Array)
       el = [el];
 
-    var width = $(window).width()*2/3;
+    var width = $(window).width()-10;
     var height = $(window).height()-40;
     var cssFiles = [
       '/static/css/output.css',
@@ -1018,11 +1018,12 @@ function mouseout() {
 
     if(opts.DEBUG)
       pedigree_util.print_opts(opts);
-    var svg_dimensions = get_svg_dimensions(opts);
     var svg = d3.select("#"+opts.targetDiv)
       .append("svg:svg")
-      .attr("width", svg_dimensions.width)
-      .attr("height", svg_dimensions.height);
+      .attr("width", "99%")
+      .attr("height", 500);
+
+
 
     svg.append("rect")
       .attr("width", "100%")

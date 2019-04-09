@@ -16,7 +16,7 @@ export default class family {
     line = line + ' ' + pedLine.individualID;
     line = line + ' ' + pedLine.paternalID;
     line = line + ' ' + pedLine.maternalID;
-    line = line + ' ' + pedLine.sexID + ' 0\n';
+    line = line + ' ' + pedLine.sexID + ' 0';
     return line;
   }
 
@@ -27,7 +27,7 @@ export default class family {
     for(let key in self.pedLines){
       let line = self.pedLines[key];
       let lineTxt = self.rebuildTxt(line);
-      txt = txt + lineTxt;
+      txt = txt + lineTxt + '\n';
     }
     return txt;
   }
