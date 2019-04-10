@@ -12,7 +12,11 @@
 
 
           <v-select id='selectFamily'
-            :items="familyIDs" label="Select Family ID" v-model="selectedFamily"
+            :items="familyIDs"
+                    label="Select Family ID"
+                    v-model="selectedFamily"
+                    @change="resetValues()"
+
           >
           </v-select>
 
@@ -80,6 +84,7 @@
         txtDict: {},
         pedDict: {},
         PTCPhenotypes: {},
+        TASGenotypes: TAS,
         familyIDs: [],
         selectedFamily : null,
         selectedPhenotype : null,
@@ -114,6 +119,13 @@
     },
 
     methods: {
+      resetValues: function(){
+        let self = this;
+        self.selectedPhenotype = null;
+        self.selectedGenotype = null;
+
+      },
+
       onNodeClick: function(e, nodeId) {
         let self = this;
         let fam = self.families[self.selectedFamily];
@@ -213,6 +225,7 @@
         self.PTCPhenotypes = PHandler.replacedIDs;
       },
 
+
       rebuildPedDict(){
         let self = this;
         for (let key in self.pedDict) {
@@ -252,10 +265,8 @@
 
         for(let key in fam.pedLines){
           let line = fam.pedLines[key].line + '\n';
-          console.log("line", line);
           data = data.concat(line);
         }
-        console.log("data", data);
         return data;
       },
 
@@ -267,21 +278,29 @@
 
 
         if(self.selectedPhenotype === "PTC Sensitivity" ){
-          console.log("selected PTC Sensitivity Phenotype");
 
           for (let i = 0; i < opts.dataset.length; i++) {
               let id = opts.dataset[i].name;
 
-              let aff = self.PTCPhenotypes[id];
-              if(aff > 5){
+              let sens = self.PTCPhenotypes[id];
+
+              let aff = 0;
+
+              if(sens < 4 ){
                 aff = 2;
-              }
-              else{
-                aff = 0;
               }
               opts.dataset[i].affected = aff;
 
-              self.cachedPhenotypes.push(aff);
+
+
+
+            let nid = self.opts.dataset[i].name.toString();
+            let allele = self.TASGenotypes[nid];
+            self.opts.dataset[i].alleles =  sens + "," + allele;
+
+
+
+            self.cachedPhenotypes.push(aff);
             }
           }
 
@@ -339,8 +358,12 @@
         self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
         self.opts.dataset = io.readLinkage(self.pedTxt);
         self.opts.dataset = self.addNewPhenotypesToOpts(self.opts);
+
+
         self.opts = ptree.build(self.opts);
         $('#pedigree').on('nodeClick', self.onNodeClick);
+
+
 
       },
 
@@ -352,12 +375,28 @@
         self.cachedGenotypes = [];
 
 
-        let e = self.getDataByFamilyID(self.selectedFamily);
-        self.opts.dataset = io.readLinkage(e);
+        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+        self.opts.dataset = io.readLinkage(self.pedTxt);
 
         if (self.selectedGenotype === '7:141973615_C/A'){
 
-        }
+
+            for (let i = 0; i < self.opts.dataset.length; i++) {
+              let id = self.opts.dataset[i].name.toString();
+              console.log("id", id);
+
+              console.log("self.genotypes", self.genotypes);
+
+              let allele = self.TASGenotypes[id];
+
+              console.log("allele", allele);
+
+              self.opts.dataset[i].alleles = allele;
+              self.opts.dataset[i].affected = self.cachedPhenotypes[i];
+
+              self.cachedGenotypes.push(allele);
+            }
+          }
 
         else {
           for (let i = 0; i < self.opts.dataset.length; i++) {

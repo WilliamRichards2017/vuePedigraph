@@ -1,11 +1,10 @@
-import PTC from '../static/PTC';
-import idMap from '../static/idMap';
 
+import TAS from '../static/TAS2R38';
 
 
 export default class PhenotypeHandler {
   constructor() {
-    this.PTC = PTC;
+    this.TAS = TAS;
     this.idMap = idMap;
     this.replacedIDs = {};
     this.replacePTCIDs();
