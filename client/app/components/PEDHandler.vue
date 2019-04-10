@@ -90,8 +90,13 @@
         selectedPhenotype : null,
         selectedGenotype : null,
 
-      phenotypes: [ 'PTC Sensitivity', 'Familial pancreatic carcinoma'],
-        genotypes: ['14:19248895_GCAAAC/ACAACG', '7:141973615_C/A'],
+      // phenotypes: [ 'PTC Sensitivity', 'Familial pancreatic carcinoma'],
+      //   genotypes: ['14:19248895_GCAAAC/ACAACG', '7:141973615_C/A'],
+
+        phenotypes: [ 'PTC Sensitivity'],
+        genotypes: ['7:141973615_C/A'],
+
+
         opts: {
           "targetDiv": "pedigree",
           "symbol_size": 35,
@@ -101,6 +106,8 @@
 
         cachedPhenotypes: [],
         cachedGenotypes: [],
+        cachedGTDict: {},
+        cachedPTDict: {},
         families: {},
         highlightedFamilyIDs: [],
         isolateFamily: false,
@@ -129,6 +136,8 @@
       onNodeClick: function(e, nodeId) {
         let self = this;
         let fam = self.families[self.selectedFamily];
+
+        console.log("fam");
 
         self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
         self.highlightFamily();
@@ -286,19 +295,16 @@
 
               let aff = 0;
 
-              if(sens < 9 ){
+              if(sens < 8 ){
                 aff = 2;
               }
               opts.dataset[i].affected = aff;
 
 
-
-
-            let nid = self.opts.dataset[i].name.toString();
-            let allele = self.TASGenotypes[nid];
-            self.opts.dataset[i].alleles =  sens + "," + allele;
-
-
+            //Label Debug
+            // let nid = self.opts.dataset[i].name.toString();
+            // let allele = self.TASGenotypes[nid];
+            // self.opts.dataset[i].alleles =  sens + "," + allele;
 
             self.cachedPhenotypes.push(aff);
             }
@@ -343,6 +349,20 @@
         if(self.isolateFamily){
           self.isolatedPedTxt = self.isolatePedTxt(self.highlightedFamilyIDs);
           self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
+
+
+          for (let i = 0; i < self.opts.dataset.length; i++) {
+            let id = self.opts.dataset[i].name.toString();
+
+          }
+
+
+            self.opts.dataset[i].alleles = self.cachedAll;
+            self.opts.dataset[i].affected = self.cachedPhenotypes[i];
+
+
+
+
           self.opts = ptree.build(self.opts);
         }
         else{
@@ -385,16 +405,16 @@
 
             for (let i = 0; i < self.opts.dataset.length; i++) {
               let id = self.opts.dataset[i].name.toString();
-              console.log("id", id);
 
-              console.log("self.genotypes", self.genotypes);
 
-              let allele = self.TASGenotypes[id];
+              let allele = self.TASGenotypes[id].split(";");
 
-              console.log("allele", allele);
+              let nid = self.opts.dataset[i].name;
+              let sens = self.PTCPhenotypes[nid];
 
-              self.opts.dataset[i].alleles = allele;
+              self.opts.dataset[i].alleles = sens + ":" + allele;
               self.opts.dataset[i].affected = self.cachedPhenotypes[i];
+
 
               self.cachedGenotypes.push(allele);
             }
