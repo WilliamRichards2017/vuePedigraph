@@ -18,14 +18,12 @@
 
       <v-spacer></v-spacer>
 
-
         <v-select id="selectPhenotype"
                   :items="phenotypes" label="Select Phenotype" v-model="selectedPhenotype"
         >
         </v-select>
 
       <v-spacer></v-spacer>
-
 
         <v-select id="selectGenotype"
                   :items="genotypes" label="Select Genotype" v-model="selectedGenotype"
@@ -37,8 +35,6 @@
       <v-switch v-model="isolateFamily"
                 :label="'Isolate Selected Nodes'" ></v-switch>
     </v-toolbar>
-
-
 
     <div id="pedigrees">
     </div>
@@ -84,6 +80,8 @@
 
         phenotypes: [ 'PTC Sensitivity'],
         genotypes: ['7:141973615_C/A'],
+        cachedPhenotypes: {},
+        cachedGenotypes: {},
 
 
         opts: {
@@ -93,8 +91,6 @@
           "DEBUG": false
         },
 
-        cachedPhenotypes: [],
-        cachedGenotypes: {},
         families: {},
         highlightedFamilyIDs: [],
         isolateFamily: false,
@@ -257,11 +253,11 @@
 
       addNewPhenotypesToOpts: function(opts){
         let self = this;
-        self.cachedPhenotypes = [];
+        self.cachedPhenotypes = {};
 
         if(self.selectedPhenotype === "PTC Sensitivity" ){
           for (let i = 0; i < opts.dataset.length; i++) {
-              let id = opts.dataset[i].name;
+              let id = parseInt(opts.dataset[i].name);
               let sens = self.PTCPhenotypes[id];
               let aff = 0;
               if(sens < 8 ){
@@ -275,7 +271,7 @@
             // let allele = self.TASGenotypes[nid];
             // self.opts.dataset[i].alleles =  sens + "," + allele;
 
-            self.cachedPhenotypes.push(aff);
+            self.cachedPhenotypes[id] = aff;
             }
           }
         //Toggle mock phenotype.
@@ -325,6 +321,14 @@
               let all = self.cachedGenotypes[id].toString();
               self.opts.dataset[i].alleles = all;
             }
+
+
+            if (self.cachedPhenotypes.hasOwnProperty(id)) {
+              let aff = self.cachedPhenotypes[id];
+              console.log("aff", aff);
+              self.opts.dataset[i].affected = aff;
+            }
+
           }
           self.opts = ptree.build(self.opts);
         }
@@ -336,7 +340,9 @@
 
             if (self.cachedGenotypes.hasOwnProperty(id)) {
               let all = self.cachedGenotypes[id].toString();
+              let aff = self.cachedPhenotypes[id];
               self.opts.dataset[i].alleles = all;
+              self.opts.dataset[i].affected = aff;
             }
           }
           self.opts = ptree.build(self.opts);
@@ -367,17 +373,28 @@
         self.opts.dataset = io.readLinkage(self.pedTxt);
 
         if (self.selectedGenotype === '7:141973615_C/A'){
-            for (let i = 0; i < self.opts.dataset.length; i++) {
-              let id = self.opts.dataset[i].name.toString();
-              let allele = self.TASGenotypes[id].split(";")[0];
-              let nid = self.opts.dataset[i].name;
 
+          console.log("Cached Phenotypes", self.cachedPhenotypes);
+
+
+          for (let i = 0; i < self.opts.dataset.length; i++) {
+              let id = parseInt(self.opts.dataset[i].name);
+              let allele = self.TASGenotypes[id].split(";")[0];
               // let sens = self.PTCPhenotypes[nid];
               // self.opts.dataset[i].alleles = sens + ":" + allele;
 
               self.opts.dataset[i].alleles = allele;
-              self.opts.dataset[i].affected = self.cachedPhenotypes[i];
-              self.cachedGenotypes[nid] = allele;
+
+
+
+              if (self.cachedPhenotypes.hasOwnProperty(id)) {
+
+                console.log("id", id);
+                console.log("cachedPhenotype", self.cachedPhenotypes[id]);
+
+                self.opts.dataset[i].affected = self.cachedPhenotypes[id];
+              }
+              self.cachedGenotypes[id] = allele;
             }
           }
         //Toggle mock genotype
