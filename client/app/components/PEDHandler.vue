@@ -3,20 +3,16 @@
 
     <v-toolbar dark
       color="#123d53"
-
     >
-
       <v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>
 
       <v-spacer></v-spacer>
-
 
           <v-select id='selectFamily'
             :items="familyIDs"
                     label="Select Family ID"
                     v-model="selectedFamily"
                     @change="resetValues()"
-
           >
           </v-select>
 
@@ -26,7 +22,6 @@
         <v-select id="selectPhenotype"
                   :items="phenotypes" label="Select Phenotype" v-model="selectedPhenotype"
         >
-
         </v-select>
 
       <v-spacer></v-spacer>
@@ -35,11 +30,9 @@
         <v-select id="selectGenotype"
                   :items="genotypes" label="Select Genotype" v-model="selectedGenotype"
                   >
-
         </v-select>
 
       <v-spacer></v-spacer>
-
 
       <v-switch v-model="isolateFamily"
                 :label="'Isolate Selected Nodes'" ></v-switch>
@@ -48,9 +41,7 @@
 
 
     <div id="pedigrees">
-
     </div>
-
   </div>
 </template>
 
@@ -68,8 +59,6 @@
 
   import {mockAffected, mockAlleles, getPhenotypeLikelyhood} from '../../js/mock'
   import 'vuetify'
-
-
 
   export default {
     name: 'PEDHandler',
@@ -105,9 +94,7 @@
         },
 
         cachedPhenotypes: [],
-        cachedGenotypes: [],
-        cachedGTDict: {},
-        cachedPTDict: {},
+        cachedGenotypes: {},
         families: {},
         highlightedFamilyIDs: [],
         isolateFamily: false,
@@ -146,13 +133,9 @@
 
       notHighlighted: function(id){
         let self = this;
-
-        // console.log(self.highlightedFamilyIDs);
-
         if(self.highlightedFamilyIDs.includes(id)){
           return false;
         }
-
           return true;
       },
 
@@ -167,7 +150,6 @@
           let txt = d3.select(n.nextSibling.nextSibling.nextSibling.nextSibling);
 
           if(self.notHighlighted(n.id.toString())) {
-            // console.log("applying styling");
             nodeToHightlight.style('opacity', 0.2);
             border.style('opacity', 0.2);
             txt.style("opacity", 0.2);
@@ -182,9 +164,9 @@
       },
 
       isolatePedTxt : function(ids){
-
         let self = this;
         let txtLines = [];
+
         for(let i = 0; i < ids.length; i++){
           let txtLine = self.txtDict[parseInt(ids[i])];
           txtLines.push(txtLine);
@@ -218,7 +200,6 @@
 
           if (self.pedDict[familyID]) {
             this.pedDict[familyID].push(line);
-
           } else {
             self.pedDict[familyID] = [];
             self.pedDict[familyID].push(line);
@@ -228,9 +209,7 @@
 
       populatePTC: function(){
         let self = this;
-
         let PHandler = new PhenotypeHandler();
-
         self.PTCPhenotypes = PHandler.replacedIDs;
       },
 
@@ -243,13 +222,11 @@
 
           if (self.pedDict[familyID]) {
             this.pedDict[familyID].push(line);
-
           } else {
             self.pedDict[familyID] = [];
             self.pedDict[familyID].push(line);
           }
         }
-
       },
 
       populateFamilies: function () {
@@ -267,9 +244,7 @@
 
       getDataByFamilyID: function(id) {
         let self = this;
-
         let fam = self.families[id];
-
         let data = '';
 
         for(let key in fam.pedLines){
@@ -282,24 +257,18 @@
 
       addNewPhenotypesToOpts: function(opts){
         let self = this;
-
         self.cachedPhenotypes = [];
 
-
         if(self.selectedPhenotype === "PTC Sensitivity" ){
-
           for (let i = 0; i < opts.dataset.length; i++) {
               let id = opts.dataset[i].name;
-
               let sens = self.PTCPhenotypes[id];
-
               let aff = 0;
-
               if(sens < 8 ){
                 aff = 2;
               }
               opts.dataset[i].affected = aff;
-
+              opts.dataset[i].alleles = self.cachedGenotypes[id];
 
             //Label Debug
             // let nid = self.opts.dataset[i].name.toString();
@@ -321,7 +290,6 @@
         //     }
         //   }
         // }
-
         return opts.dataset;
       }
     },
@@ -350,23 +318,27 @@
           self.isolatedPedTxt = self.isolatePedTxt(self.highlightedFamilyIDs);
           self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
 
-
           for (let i = 0; i < self.opts.dataset.length; i++) {
-            let id = self.opts.dataset[i].name.toString();
+            let id = parseInt(self.opts.dataset[i].name);
 
+            if (self.cachedGenotypes.hasOwnProperty(id)) {
+              let all = self.cachedGenotypes[id].toString();
+              self.opts.dataset[i].alleles = all;
+            }
           }
-
-
-            self.opts.dataset[i].alleles = self.cachedAll;
-            self.opts.dataset[i].affected = self.cachedPhenotypes[i];
-
-
-
-
           self.opts = ptree.build(self.opts);
         }
         else{
           self.opts.dataset = io.readLinkage(self.pedTxt);
+
+          for (let i = 0; i < self.opts.dataset.length; i++) {
+            let id = parseInt(self.opts.dataset[i].name);
+
+            if (self.cachedGenotypes.hasOwnProperty(id)) {
+              let all = self.cachedGenotypes[id].toString();
+              self.opts.dataset[i].alleles = all;
+            }
+          }
           self.opts = ptree.build(self.opts);
         }
         $('#pedigree').on('nodeClick', self.onNodeClick);
@@ -380,13 +352,9 @@
         self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
         self.opts.dataset = io.readLinkage(self.pedTxt);
         self.opts.dataset = self.addNewPhenotypesToOpts(self.opts);
-
-
         self.opts = ptree.build(self.opts);
+
         $('#pedigree').on('nodeClick', self.onNodeClick);
-
-
-
       },
 
       selectedGenotype : function(){
@@ -394,32 +362,24 @@
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
 
-        self.cachedGenotypes = [];
-
-
+        self.cachedGenotypes = {};
         self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
         self.opts.dataset = io.readLinkage(self.pedTxt);
 
         if (self.selectedGenotype === '7:141973615_C/A'){
-
-
             for (let i = 0; i < self.opts.dataset.length; i++) {
               let id = self.opts.dataset[i].name.toString();
-
-
-              let allele = self.TASGenotypes[id].split(";");
-
+              let allele = self.TASGenotypes[id].split(";")[0];
               let nid = self.opts.dataset[i].name;
-              let sens = self.PTCPhenotypes[nid];
 
-              self.opts.dataset[i].alleles = sens + ":" + allele;
+              // let sens = self.PTCPhenotypes[nid];
+              // self.opts.dataset[i].alleles = sens + ":" + allele;
+
+              self.opts.dataset[i].alleles = allele;
               self.opts.dataset[i].affected = self.cachedPhenotypes[i];
-
-
-              self.cachedGenotypes.push(allele);
+              self.cachedGenotypes[nid] = allele;
             }
           }
-
         //Toggle mock genotype
         //
         // else {
@@ -433,16 +393,12 @@
         //   }
         // }
 
-
         self.opts = ptree.build(self.opts);
         $('#pedigree').on('nodeClick', self.onNodeClick);
 
       }
     },
-
   }
-
-
 </script>
 
 <style>
