@@ -286,7 +286,7 @@
 
               let aff = 0;
 
-              if(sens < 4 ){
+              if(sens < 9 ){
                 aff = 2;
               }
               opts.dataset[i].affected = aff;
@@ -303,17 +303,19 @@
             self.cachedPhenotypes.push(aff);
             }
           }
+        //Toggle mock phenotype.
+        //
+        // else if(self.selectedPhenotype === "Familial pancreatic carcinoma") {
+        //   for (let i = 0; i < opts.dataset.length; i++) {
+        //     let phen = mockAffected(0.5);
+        //     opts.dataset[i].affected = phen;
+        //     self.cachedPhenotypes.push(phen);
+        //     if (self.cachedGenotypes.length > 0) {
+        //       opts.dataset[i].alleles = self.cachedGenotypes[i];
+        //     }
+        //   }
+        // }
 
-        else if(self.selectedPhenotype === "Familial pancreatic carcinoma") {
-          for (let i = 0; i < opts.dataset.length; i++) {
-            let phen = mockAffected(0.5);
-            opts.dataset[i].affected = phen;
-            self.cachedPhenotypes.push(phen);
-            if (self.cachedGenotypes.length > 0) {
-              opts.dataset[i].alleles = self.cachedGenotypes[i];
-            }
-          }
-        }
         return opts.dataset;
       }
     },
@@ -398,16 +400,20 @@
             }
           }
 
-        else {
-          for (let i = 0; i < self.opts.dataset.length; i++) {
-            let a = mockAlleles(0.5);
-            self.opts.dataset[i].alleles = a;
-            //self.opts.dataset[i].alleles = '1/1';
-            self.opts.dataset[i].affected = self.cachedPhenotypes[i];
+        //Toggle mock genotype
+        //
+        // else {
+        //   for (let i = 0; i < self.opts.dataset.length; i++) {
+        //     let a = mockAlleles(0.5);
+        //     self.opts.dataset[i].alleles = a;
+        //     //self.opts.dataset[i].alleles = '1/1';
+        //     self.opts.dataset[i].affected = self.cachedPhenotypes[i];
+        //
+        //     self.cachedGenotypes.push(a);
+        //   }
+        // }
 
-            self.cachedGenotypes.push(a);
-          }
-        }
+
         self.opts = ptree.build(self.opts);
         $('#pedigree').on('nodeClick', self.onNodeClick);
 
