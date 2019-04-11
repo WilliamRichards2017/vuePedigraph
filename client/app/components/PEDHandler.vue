@@ -72,10 +72,15 @@
         PTCPhenotypes: {},
         TASGenotypes: TAS,
 
+        phenotypes: ['PTC Sensitivity'],
+        genotypes: ['7:141972755_C/T'],
+        nullPhenIds: [],
+
         cachedPhenotypes: {},
         cachedGenotypes: {},
-        phenotypes: ['PTC Sensitivity'],
-        genotypes: ['7:141973615_C/A'],
+        cachedNulls: [],
+
+
         // phenotypes: [ 'PTC Sensitivity', 'Familial pancreatic carcinoma'],
         // genotypes: ['14:19248895_GCAAAC/ACAACG', '7:141973615_C/A'],
 
@@ -112,6 +117,7 @@
         let self = this;
         self.selectedPhenotype = null;
         self.selectedGenotype = null;
+
       },
 
       onNodeClick: function (e, nodeId) {
@@ -144,6 +150,12 @@
             console.log("aff", aff);
             opts.dataset[i].affected = aff;
           }
+
+          console.log("cachedNull", self.cachedNulls, "id", id);
+          if (self.cachedNulls.includes(id)) {
+            opts.dataset[i].yob = "Phen. N/A";
+          }
+
         }
         return opts;
       },
@@ -153,6 +165,9 @@
         let parentNodes = d3.selectAll(".node").nodes().map(function (d) {
           return d.parentNode;
         });
+
+        console.log("parentNodes", parentNodes);
+
 
         parentNodes.forEach(function (n) {
           let nodeToHightlight = d3.select(n.nextSibling.childNodes[0]);
@@ -265,63 +280,50 @@
         let self = this;
         self.cachedPhenotypes = {};
 
+
         if (self.selectedPhenotype === "PTC Sensitivity") {
           for (let i = 0; i < opts.dataset.length; i++) {
             let id = parseInt(opts.dataset[i].name);
             let sens = self.PTCPhenotypes[id];
+
+            if (typeof sens === 'undefined'){
+                opts.dataset[i].yob = 'Phen. N/A';
+                self.cachedNulls.push(id);
+            }
+
             let aff = 0;
             if (sens < 8) {
               aff = 2;
             }
             opts.dataset[i].affected = aff;
             self.cachedPhenotypes[id] = aff;
-            //Label Debug
-            let nid = self.opts.dataset[i].name.toString();
-            let allele = self.TASGenotypes[nid];
-            self.opts.dataset[i].alleles = sens + "," + allele;
+
+            // Label Debug
+            // let nid = self.opts.dataset[i].name.toString();
+            // let allele = self.TASGenotypes[nid];
+            // self.opts.dataset[i].alleles = sens + "," + allele;
           }
+
           self.opts = self.addCachedValuesToOpts(self.opts);
         }
-        //Toggle mock phenotype.
-        //
-        // else if(self.selectedPhenotype === "Familial pancreatic carcinoma") {
-        //   for (let i = 0; i < opts.dataset.length; i++) {
-        //     let phen = mockAffected(0.5);
-        //     opts.dataset[i].affected = phen;
-        //     self.cachedPhenotypes.push(phen);
-        //     if (self.cachedGenotypes.length > 0) {
-        //       opts.dataset[i].alleles = self.cachedGenotypes[i];
-        //     }
-        //   }
-        // }
+
         return opts.dataset;
       },
 
       addNewGenotypesToOpts: function (opts) {
         let self = this;
-        if (self.selectedGenotype === '7:141973615_C/A') {
+        if (self.selectedGenotype === '7:141972755_C/T' ) {
           for (let i = 0; i < opts.dataset.length; i++) {
             let id = parseInt(opts.dataset[i].name);
             let allele = self.TASGenotypes[id].split(";")[0];
 
             opts.dataset[i].alleles = allele;
             self.cachedGenotypes[id] = allele;
-            opts = self.addCachedValuesToOpts(opts);
           }
+          self.opts = self.addCachedValuesToOpts(opts);
+
           return opts;
         }
-        //Toggle mock genotype
-        //
-        // else {
-        //   for (let i = 0; i < self.opts.dataset.length; i++) {
-        //     let a = mockAlleles(0.5);
-        //     self.opts.dataset[i].alleles = a;
-        //     //self.opts.dataset[i].alleles = '1/1';
-        //     self.opts.dataset[i].affected = self.cachedPhenotypes[i];
-        //
-        //     self.cachedGenotypes.push(a);
-        //   }
-        // }
       }
     },
 
@@ -378,7 +380,7 @@
         self.cachedGenotypes = {};
         self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
         self.opts.dataset = io.readLinkage(self.pedTxt);
-        self.opts = self.addNewGenotypesToOpts(self.opts);
+        self.opts.dataset = self.addNewGenotypesToOpts(self.opts);
         self.opts = ptree.build(self.opts);
         $('#pedigree').on('nodeClick', self.onNodeClick);
 

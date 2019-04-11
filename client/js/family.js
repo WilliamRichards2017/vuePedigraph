@@ -12,18 +12,14 @@ export default class family {
 
   rebuildTxt(pedLine){
     let line = '';
-    line = line + pedLine.familyID;
-    line = line + ' ' + pedLine.individualID;
-    line = line + ' ' + pedLine.paternalID;
-    line = line + ' ' + pedLine.maternalID;
-    line = line + ' ' + pedLine.sexID + ' 0';
+    line = line + pedLine.familyID + ' ' + pedLine.individualID + ' ' + pedLine.paternalID + ' ' + pedLine.maternalID + ' ' + pedLine.sexID + ' 0';
     return line;
   }
 
   famToTxt(){
     let self = this;
-
     let txt = '';
+
     for(let key in self.pedLines){
       let line = self.pedLines[key];
       let lineTxt = self.rebuildTxt(line);
