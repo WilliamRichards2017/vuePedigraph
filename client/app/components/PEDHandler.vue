@@ -110,6 +110,7 @@
       this.populatePTC();
       this.rebuildPedDict();
       this.highlightFamily();
+      this.selectedFamily = '1444';
     },
 
     methods: {
@@ -314,6 +315,7 @@
         let self = this;
         if (self.selectedGenotype === '7:141972755_C/T' ) {
           for (let i = 0; i < opts.dataset.length; i++) {
+            console.log("opts.dataset[i]", opts.dataset[i]);
             let id = parseInt(opts.dataset[i].name);
             let allele = self.TASGenotypes[id].split(";")[0];
 
@@ -322,8 +324,9 @@
           }
           self.opts = self.addCachedValuesToOpts(opts);
 
-          return opts;
         }
+        return opts.dataset;
+
       }
     },
 
