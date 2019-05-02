@@ -316,7 +316,7 @@
       if(attr.length > 6) {
         indi.alleles = "";
         for(var j=6; j<attr.length; j+=2) {
-          indi.alleles += attr[j] + "/" + attr[j+1] + ";";
+          indi.alleles += attr[j] + "/" + attr[j+1];
         }
       }
 
@@ -1020,8 +1020,9 @@ function mouseout() {
       pedigree_util.print_opts(opts);
     var svg = d3.select("#"+opts.targetDiv)
       .append("svg:svg")
-      .attr("width", "99%")
+      .attr("width", "100%")
       .attr("height", 500);
+
 
 
 
@@ -1034,7 +1035,10 @@ function mouseout() {
       .style("fill", opts.background) // or none
       .style("stroke-width", 1);
 
-    var xytransform = pedcache.getposition(opts);  // cached position
+    // var xytransform = pedcache.getposition(opts);  // cached position
+
+    var xytransform = [0, 0];
+
     var xtransform = xytransform[0];
     var ytransform = xytransform[1];
     var zoom = 1;
@@ -1235,7 +1239,7 @@ function mouseout() {
               var alleles = "";
               var vars = d.data.alleles.split(';');
               for(var ivar = 0;ivar < vars.length;ivar++) {
-                if(vars[ivar] !== "") alleles += vars[ivar] + ';';
+                if(vars[ivar] !== "") alleles += vars[ivar];
               }
               return alleles;
             } else if(label === 'age') {
@@ -3200,7 +3204,7 @@ function mouseout() {
     table += "<tr><td style='text-align:right'>Age</td><td><input class='form-control' type='number' id='id_age' min='0' max='120' name='age' style='width:7em' value="+
       (d.data.age ? d.data.age : "")+"></td></tr>";
 
-    table += "<tr><td style='text-align:right'>Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1900' max='2050' name='yob' style='width:7em' value="+
+    table += "<tr><td style='text-align:right; color:grey'>Year Of Birth</td><td><input class='form-control' type='number' id='id_yob' min='1900' max='2050' name='yob' style='width:7em' value="+
       (d.data.yob ? d.data.yob : "")+"></td></tr>";
 
     table += '<tr><td colspan="2" id="id_sex">' +

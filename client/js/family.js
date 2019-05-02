@@ -61,6 +61,17 @@ export default class family {
     }
   }
 
+
+  getFamily(id){
+
+    let self = this;
+    let ans = self.getAllAnscestors(id);
+    let des = self.getAllDescendants(id);
+    let spouses = self.getAllSpouses(id);
+    let fam = spouses.concat(ans.concat(des).concat(id));
+    return fam;
+  }
+
   getParents(pedLine) {
     let self = this;
     let pl = pedLine;
@@ -74,6 +85,22 @@ export default class family {
       parents.push(self.pedLines[pl.paternalID.toString()]);
     }
     return parents;
+  }
+
+  getChildren(id) {
+    let self = this;
+    let individualID = parseInt(id);
+
+    let children = [];
+
+    for (var key in self.pedLines) {
+      if (self.pedLines.hasOwnProperty(key)) {
+        if(self.pedLines[key].maternalID === individualID || self.pedLines[key].paternalID === individualID){
+          children.push(self.pedLines[key])
+        }
+      }
+    }
+    return children;
   }
 
   getAllSpouses(id){
@@ -99,7 +126,6 @@ export default class family {
 
   }
 
-
   getAllAnscestors(id) {
     let self = this;
     let pl = this.pedLines[id.toString()];
@@ -119,58 +145,49 @@ export default class family {
       }
     }
 
-
     parents = currentParents.concat(grandparents);
     let anscestorIDs = this.pedLinesToIDs(parents);
-
 
     return anscestorIDs;
   }
 
-  getFamily(id){
-
-    let self = this;
-    let ans = self.getAllAnscestors(id);
-    let des = self.getAllDescendants(id);
-    let spouses = self.getAllSpouses(id);
-    let fam = spouses.concat(ans.concat(des).concat(id));
-    return fam;
-  }
-
-
-  getChildren(id) {
-    let self = this;
-    let individualID = parseInt(id);
-
-    let children = [];
-
-    for (var key in self.pedLines) {
-      if (self.pedLines.hasOwnProperty(key)) {
-        if(self.pedLines[key].maternalID == individualID || self.pedLines[key].paternalID == individualID){
-          children.push(self.pedLines[key])
-        }
-      }
-    }
-    return children;
-  }
-
   getAllDescendants(individualID) {
-      let self = this;
-      let children = self.getChildren(individualID);
+    let self = this;
+    let children = self.getChildren(individualID);
 
-      let currentChildren = self.getChildren(individualID);
-      let grandChildren = [];
+    let currentChildren = self.getChildren(individualID);
 
-      for (let i = 0; i < currentChildren.length; i++) {
-        let pl = currentChildren[i];
-        let gc = self.getChildren(currentChildren[i].individualID);
-        grandChildren = grandChildren.concat(gc);
-      }
-      children = children.concat(grandChildren);
-      let descendantIDs = this.pedLinesToIDs(children);
+    let childrenSpouses = [];
 
-      return descendantIDs;
+    for(let i = 0; i < currentChildren.length; i++){
+      let childSpouseIDs = self.getAllSpouses(currentChildren[i].individualID);
+        for(let i = 0; i < childSpouseIDs.length; i++) {
+          if(self.pedLines.hasOwnProperty(childSpouseIDs[i])) {
+            let childSpouse = self.pedLines[childSpouseIDs[i]];
+            console.log("childSpouse", childSpouse);
+            childrenSpouses = childrenSpouses.concat(childSpouse);
+          }
+        }
+    }
+    children = children.concat(childrenSpouses);
+
+    console.log("children", children);
+
+    let grandChildren = [];
+
+    for (let i = 0; i < currentChildren.length; i++) {
+      let pl = currentChildren[i];
+      let gc = self.getChildren(pl.individualID);
+      console.log("grandchildren", gc);
+      grandChildren = grandChildren.concat(gc);
+    }
+    children = children.concat(grandChildren);
+
+    let descendantIDs = this.pedLinesToIDs(children);
+
+    return descendantIDs;
   }
+
 
   pedLinesToIDs(pedLines) {
     let ids = [];

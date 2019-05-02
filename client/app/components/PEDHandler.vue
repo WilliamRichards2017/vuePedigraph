@@ -97,6 +97,7 @@
 
         opts: {
           "targetDiv": "pedigree",
+          labels: ['alleles', 'NA']
         }
 
       }
@@ -110,7 +111,7 @@
       this.populatePTC();
       this.rebuildPedDict();
       this.highlightFamily();
-      this.selectedFamily = '1444';
+      this.selectedFamily = '1463';
     },
 
     methods: {
@@ -152,9 +153,9 @@
             opts.dataset[i].affected = aff;
           }
 
-          console.log("cachedNull", self.cachedNulls, "id", id);
+          // console.log("cachedNull", self.cachedNulls, "id", id);
           if (self.cachedNulls.includes(id)) {
-            opts.dataset[i].yob = "Phen. N/A";
+            opts.dataset[i].NA = " **";
           }
 
         }
@@ -287,19 +288,25 @@
             let id = parseInt(opts.dataset[i].name);
             let sens = self.PTCPhenotypes[id];
 
-            if (typeof sens === 'undefined'){
-                opts.dataset[i].yob = 'Phen. N/A';
+            if (typeof sens === 'undefined' || sens ==='nan'){
+                opts.dataset[i].NA = ' **';
                 self.cachedNulls.push(id);
             }
 
+            else if(typeof sens === 'string'){
+              if(sens.includes('>') || sens.includes('<')){
+                sens = sens.slice(-1);
+              }
+            }
+
             let aff = 0;
-            if (sens < 8) {
+            if (sens < 7) {
               aff = 2;
             }
             opts.dataset[i].affected = aff;
             self.cachedPhenotypes[id] = aff;
 
-            // Label Debug
+            // // Label Debug
             // let nid = self.opts.dataset[i].name.toString();
             // let allele = self.TASGenotypes[nid];
             // self.opts.dataset[i].alleles = sens + "," + allele;
@@ -353,11 +360,14 @@
           self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
+
         }
         else{
           self.opts.dataset = io.readLinkage(self.pedTxt);
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
+          ptree.build(self.opts)
+
         }
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
@@ -394,8 +404,12 @@
 
 <style>
 
-  #pedigrees {
-    margin-top: 3px;
+  #pedigrees svg>rect {
+    background-color: rgb(240, 250, 254);
+  }
+
+  #pedigrees svg {
+    height: -webkit-fill-available;
   }
 
 </style>
