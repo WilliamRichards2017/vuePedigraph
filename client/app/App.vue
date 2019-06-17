@@ -17,5 +17,6 @@
 }
 </script>
 
-<style lang="sass">
+<style lang="scss">
+  html, body {margin: 0; height: 100%; overflow: hidden};
 </style>
