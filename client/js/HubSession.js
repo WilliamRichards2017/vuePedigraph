@@ -14,6 +14,15 @@ export default class HubSession {
     return new Promise((resolve, reject) => {
       let modelInfos = [];
 
+      let project = null;
+
+      self.promiseGetFilesForProject(projectId)
+        .then( data => {
+          project = data;
+          console.log("project", project);
+          }
+        )
+
 
       self.promiseGetSampleInfo(projectId, sampleId, isPedigree)
         .then( data => {
@@ -94,7 +103,7 @@ export default class HubSession {
               }
               Promise.all(promises).then(response => {
 
-                resolve({'modelInfos': modelInfos, 'rawPedigree': rawPedigree});
+                resolve({'modelInfos': modelInfos, 'rawPedigree': rawPedigree, 'project' : project});
               })
                 .catch(error => {
                   reject(error);
@@ -115,7 +124,7 @@ export default class HubSession {
   promiseGetProject(project_id) {
     let self = this;
     return new Promise(function(resolve, reject) {
-      self.getProject(idProject)
+      self.getProject(project_id)
         .done(data => {
           resolve(data);
         })

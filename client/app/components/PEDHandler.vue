@@ -109,6 +109,7 @@
         hubSession: null,
         hubRawPedigree: null,
         parsedUrl: null,
+        project: null,
 
         opts: {
           "targetDiv": "pedigree",
@@ -120,23 +121,8 @@
 
     beforeMount() {
 
-      console.log("before mount in Ped Handler");
 
       localStorage.setItem('hub-iobio-tkn', this.token_type + ' ' + this.access_token);
-
-      console.log("localStorage in PedHandler", localStorage);
-
-
-
-      // this.populateHubSession();
-
-      console.log(this.sample_id);
-      console.log(this.project_id);
-
-      console.log(typeof this.is_pedigree);
-      console.log(this.access_token);
-
-
 
       // this.splitTxt();
       // this.populateTxtDict();
@@ -189,6 +175,21 @@
 
       },
 
+      populateDropdownsFromHub: function(){
+        let self = this;
+
+        self.familyIDs = [];
+
+        console.log("project in populateDropdowns", self.project);
+
+        for(let i = 0; i < self.project.data.length; i++){
+          let id = self.project.data[i].id;
+          console.log("id in project:", self.project.data[i].id);
+          console.log("typeof familyids", self.familyIDs);
+          self.familyIDs = self.familyIDs.push(id);
+        }
+      },
+
       hubToTxt: function(){
         let self = this;
 
@@ -200,29 +201,38 @@
 
           let pedLine = "";
 
+          let paternal_id = "0";
+          let maternal_id = "0";
+
           let ped = value["pedigree"];
           let name = value["name"];
           let id = value["id"];
-          let kindrid_id = value["kindred_id"];
 
-          let paternal_id = "0";
-          let maternal_id = "0";
           let sex = ped["sex"];
           let affection_status = ped["affection_status"];
+          let kindred_id = ped["kindred_id"];
+
 
           console.log("ped", ped);
           console.log("name", name);
 
           if(ped.hasOwnProperty("paternal_id")){
             paternal_id = ped["paternal_id"];
+            console.log("paternal_id", typeof paternal_id);
+            if(typeof paternal_id === "object"){
+              paternal_id = "0";
+            }
           }
 
           if(ped.hasOwnProperty("maternal_id")){
             maternal_id = ped["maternal_id"];
+            if(typeof maternal_id === "object"){
+              maternal_id = "0";
+            }
           }
 
 
-          pedLine = pedLine + kindrid_id + " " + id + " " + paternal_id + " " + maternal_id + " " + sex + " " + affection_status + "\n";
+          pedLine = pedLine + kindred_id + " " + id + " " + paternal_id + " " + maternal_id + " " + sex + " " + affection_status + "\n";
 
 
           console.log("pedLine is:", pedLine);
@@ -515,9 +525,14 @@
       self.promiseHubSession().then(data => {
 
           self.hubRawPedigree = data.rawPedigree;
-          //call methods here
+          self.project = data.project;
+
+          console.log("self.project");
+
 
           self.buildPedFromHub();
+
+          self.populateDropdownsFromHub();
 
         });
 
