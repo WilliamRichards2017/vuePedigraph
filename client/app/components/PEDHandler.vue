@@ -1,39 +1,39 @@
 <template>
-  <div id='container' align="center">
+  <div align="center" id='container'>
 
-    <v-toolbar dark
-               color="#123d53"
+    <v-toolbar color="#123d53"
+               dark
     >
       <v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>
 
       <v-spacer></v-spacer>
 
-      <v-select id='selectFamily'
-                :items="familyIDs"
+      <v-select :items="familyIDs"
+                @change="resetValues()"
+                id='selectFamily'
                 label="Select Family ID"
                 v-model="selectedFamily"
-                @change="resetValues()"
       >
       </v-select>
 
       <v-spacer></v-spacer>
 
-      <v-select id="selectPhenotype"
-                :items="phenotypes" label="Select Phenotype" v-model="selectedPhenotype"
+      <v-select :items="phenotypes"
+                id="selectPhenotype" label="Select Phenotype" v-model="selectedPhenotype"
       >
       </v-select>
 
       <v-spacer></v-spacer>
 
-      <v-select id="selectGenotype"
-                :items="genotypes" label="Select Genotype" v-model="selectedGenotype"
+      <v-select :items="genotypes"
+                id="selectGenotype" label="Select Genotype" v-model="selectedGenotype"
       >
       </v-select>
 
       <v-spacer></v-spacer>
 
-      <v-switch v-model="isolateFamily"
-                :label="'Isolate Selected Nodes'"></v-switch>
+      <v-switch :label="'Isolate Selected Nodes'"
+                v-model="isolateFamily"></v-switch>
     </v-toolbar>
 
     <div id="pedigrees">
@@ -91,6 +91,8 @@
         cachedGenotypes: {},
         cachedNulls: [],
 
+        isUpload: false,
+
 
         // phenotypes: [ 'PTC Sensitivity', 'Familial pancreatic carcinoma'],
         // genotypes: ['14:19248895_GCAAAC/ACAACG', '7:141973615_C/A'],
@@ -124,6 +126,14 @@
 
       localStorage.setItem('hub-iobio-tkn', this.token_type + ' ' + this.access_token);
 
+      let self = this;
+
+
+      console.log("typeof sample_id", typeof self.sample_id);
+      if(typeof self.sample_id !== "undefined"){
+        self.isUpload = true;
+      }
+
       // this.splitTxt();
       // this.populateTxtDict();
       // this.populatePedDict();
@@ -143,59 +153,40 @@
 
       },
 
-      promiseHubSession: function () {
+      initHubSession(){
         let self = this;
         self.hubSession = new HubSession();
-
-        let isPed = false;
-
-        if(self.is_pedigree === "true"){
-          isPed = true;
-        }
-
-        return self.hubSession.promiseInit(self.sample_id, self.source, isPed, self.project_id);
       },
 
-      buildPed: function () {
+      promiseHubSession: function (sampleId) {
         let self = this;
-        $('#pedigree').remove();
-        $('#pedigrees').append($("<div id='pedigree'></div>"));
-
-        self.opts.dataset = io.readLinkage(self.pedTxt);
-        console.log(self.pedTxt);
-        self.opts = ptree.build(self.opts);
-
-        $('#pedigree').on('nodeClick', self.onNodeClick);
+        return self.hubSession.promiseInit(sampleId, self.source, self.is_pedigree, self.project_id);
       },
 
-      buildPedFromHub: function(){
+      buildPedFromSampleId(sampleId){
         let self = this;
-        self.hubToTxt();
-        self.buildPed();
-
+        self.promiseHubSession(sampleId).then(data => {
+          self.hubRawPedigree = data.rawPedigree;
+          self.buildPedFromHub();
+        });
       },
 
       populateDropdownsFromHub: function(){
         let self = this;
-
-        self.familyIDs = [];
-
-        console.log("project in populateDropdowns", self.project);
-
         for(let i = 0; i < self.project.data.length; i++){
           let id = self.project.data[i].id;
-          console.log("id in project:", self.project.data[i].id);
-          console.log("typeof familyids", self.familyIDs);
-          self.familyIDs = self.familyIDs.push(id);
-        }
+          self.familyIDs.push(id);
+        }R
       },
 
-      hubToTxt: function(){
+      buildPedFromHub: function(){
+
+        $('#pedigree').remove();
+        $('#pedigrees').append($("<div id='pedigree'></div>"));
+
         let self = this;
 
         self.pedTxt = "";
-
-        console.log("rawPedigree inside hubToTxt", self.hubRawPedigree);
 
         for (const [key, value] of Object.entries(self.hubRawPedigree)) {
 
@@ -241,7 +232,14 @@
 
         }
 
-        console.log(self.pedTxt)
+        // console.log("pedTxt inside hubToTxt", self.pedTxt);
+
+        self.opts.dataset = io.readLinkage(self.pedTxt);
+        console.log(self.pedTxt);
+        self.opts = ptree.build(self.opts);
+
+        $('#pedigree').on('nodeClick', self.onNodeClick);
+
 
       },
 
@@ -462,12 +460,10 @@
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
 
-        // self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
-        self.opts.dataset = io.readLinkage(self.pedTxt);
-        console.log(self.pedTxt);
-        self.opts = ptree.build(self.opts);
+        self.buildPedFromHub();
 
-        $('#pedigree').on('nodeClick', self.onNodeClick);
+        console.log("self.PedTxt in selectedFamily", self.pedTxt);
+
       },
 
       isolateFamily: function () {
@@ -520,23 +516,14 @@
     },
 
     mounted() {
+
       let self = this;
 
-      self.promiseHubSession().then(data => {
-
-          self.hubRawPedigree = data.rawPedigree;
-          self.project = data.project;
-
-          console.log("self.project");
-
-
-          self.buildPedFromHub();
-
-          self.populateDropdownsFromHub();
-
-        });
-
-
+      if(self.isUpload){
+        self.initHubSession();
+        self.buildPedFromSampleId(self.sample_id);
+        // self.populateDropdownsFromHub();
+      }
     }
 
   }

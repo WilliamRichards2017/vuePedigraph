@@ -1038,10 +1038,10 @@ function mouseout() {
     svg.append("rect").attr("x",5).attr("y",40).attr("width", 20).attr("height", 20).style("fill", "lightgrey");
 
 
-    svg.append("text").attr("x", 35).attr("y", 20).text("Unaffected Female").style("font-size", "15px").attr("alignment-baseline","middle")
-    svg.append("text").attr("x", 35).attr("y", 50).text("Affected Male").style("font-size", "15px").attr("alignment-baseline","middle")
-    svg.append("text").attr("x", 5).attr("y", 83).text("**").style("font-size", "20px").attr("alignment-baseline","middle")
-    svg.append("text").attr("x", 35).attr("y", 80).text("Phenotype N/A").style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", 35).attr("y", 20).text("Unaffected Female").style("font-size", "15px").attr("alignment-baseline","middle");
+    svg.append("text").attr("x", 35).attr("y", 50).text("Affected Male").style("font-size", "15px").attr("alignment-baseline","middle");
+    svg.append("text").attr("x", 5).attr("y", 83).text("**").style("font-size", "20px").attr("alignment-baseline","middle");
+    svg.append("text").attr("x", 35).attr("y", 80).text("Phenotype N/A").style("font-size", "15px").attr("alignment-baseline","middle");
 
 
 
