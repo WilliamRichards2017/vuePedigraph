@@ -16,12 +16,14 @@ export default class HubSession {
 
       let project = null;
 
-      self.promiseGetFilesForProject(projectId)
+      self.promiseGetProject(projectId)
         .then( data => {
           project = data;
           console.log("project", project);
           }
         );
+
+
 
 
       self.promiseGetSampleInfo(projectId, sampleId, isPedigree)
@@ -112,6 +114,19 @@ export default class HubSession {
     let self = this;
     return new Promise(function(resolve, reject) {
       self.getProject(project_id)
+        .done(data => {
+          resolve(data);
+        })
+        .fail(error => {
+          reject("Error getting project " + project_id + ": " + error);
+        });
+    });
+  }
+
+  promiseGetProjectSamples(project_id) {
+    let self = this;
+    return new Promise(function(resolve, reject) {
+      self.getProjectSamples(project_id)
         .done(data => {
           resolve(data);
         })
@@ -369,6 +384,19 @@ export default class HubSession {
     let self = this;
     return $.ajax({
       url: self.api + '/projects/' + projectId,
+      type: 'GET',
+      contentType: 'application/json',
+      headers: {
+        'Authorization': localStorage.getItem('hub-iobio-tkn')
+      }
+    });
+  }
+
+
+  getProjectSamples(projectId) {
+    let self = this;
+    return $.ajax({
+      url: self.api + '/projects/' + projectId + '/samples/list',
       type: 'GET',
       contentType: 'application/json',
       headers: {

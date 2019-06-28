@@ -112,6 +112,8 @@
         hubRawPedigree: null,
         parsedUrl: null,
         project: null,
+        samples: null,
+        familySampleDict: null,
 
         opts: {
           "targetDiv": "pedigree",
@@ -128,8 +130,6 @@
 
       let self = this;
 
-
-      console.log("typeof sample_id", typeof self.sample_id);
       if(typeof self.sample_id !== "undefined"){
         self.isUpload = true;
       }
@@ -146,6 +146,62 @@
     },
 
     methods: {
+
+      setPedTxtFromFamily(){
+        let self = this;
+
+        console.log("self.familySampleDict in setPedTxtFromFamily", self.familySampleDict);
+
+        const fam = self.familySampleDict[self.selectedFamily];
+
+
+        console.log("selected family", self.selectedFamily);
+        console.log("fam for selected family", fam);
+
+        let sample_id = fam[0];
+
+        console.log("sample id for new selected family", sample_id);
+
+        self.buildPedFromSampleId(sample_id);
+      },
+
+
+      buildFamilySampleDict(){
+
+        let self = this;
+
+        self.familySampleDict = {};
+
+        self.hubSession.promiseGetProjectSamples(self.project_id).then(data => {
+
+          const samples = data.data;
+
+          for(let i = 0; i < samples.length; i++){
+
+            const kindred_id = samples[i].pedigree["kindred_id"];
+
+            // console.log("kindred_id", kindred_id);
+
+
+            if(!(kindred_id in self.familySampleDict)){
+              self.familySampleDict[kindred_id] = [];
+              self.familySampleDict[kindred_id].push(samples[i].id);
+            }
+
+            else{
+              self.familySampleDict[kindred_id].push(samples[i].id);
+            }
+
+          }
+
+          // console.log("self.familySampleDict", self.familySampleDict);
+          self.populateDropdownsFromFamDict();
+
+
+        })
+
+      },
+
       resetValues: function () {
         let self = this;
         self.selectedPhenotype = null;
@@ -171,13 +227,30 @@
         });
       },
 
-      populateDropdownsFromHub: function(){
+      buildPedFromSelectedFamily(sampleId){
         let self = this;
-        for(let i = 0; i < self.project.data.length; i++){
-          let id = self.project.data[i].id;
-          self.familyIDs.push(id);
-        }R
+        self.promiseHubSession(sampleId).then(data => {
+          self.hubRawPedigree = data.rawPedigree;
+          self.buildPedFromHub();
+        });
       },
+
+      populateDropdownsFromFamDict: function(){
+        let self = this;
+
+        console.log("self.familySampleDict in dropdown", self.familySampleDict);
+
+        for (let key in self.familySampleDict) {
+          // check if the property/key is defined in the object itself, not in parent
+          if (self.familySampleDict.hasOwnProperty(key)) {
+            // console.log(key, self.familySampleDict[key]);
+            self.familyIDs.push(key);
+          }
+        }
+
+  },
+
+
 
       buildPedFromHub: function(){
 
@@ -204,8 +277,8 @@
           let kindred_id = ped["kindred_id"];
 
 
-          console.log("ped", ped);
-          console.log("name", name);
+          // console.log("ped", ped);
+          // console.log("name", name);
 
           if(ped.hasOwnProperty("paternal_id")){
             paternal_id = ped["paternal_id"];
@@ -226,7 +299,7 @@
           pedLine = pedLine + kindred_id + " " + id + " " + paternal_id + " " + maternal_id + " " + sex + " " + affection_status + "\n";
 
 
-          console.log("pedLine is:", pedLine);
+          // console.log("pedLine is:", pedLine);
 
           self.pedTxt = self.pedTxt + pedLine;
 
@@ -460,9 +533,11 @@
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
 
-        self.buildPedFromHub();
+        self.setPedTxtFromFamily();
 
-        console.log("self.PedTxt in selectedFamily", self.pedTxt);
+
+
+        // console.log("self.PedTxt in selectedFamily", self.pedTxt);
 
       },
 
@@ -522,7 +597,7 @@
       if(self.isUpload){
         self.initHubSession();
         self.buildPedFromSampleId(self.sample_id);
-        // self.populateDropdownsFromHub();
+        self.buildFamilySampleDict();
       }
     }
 
