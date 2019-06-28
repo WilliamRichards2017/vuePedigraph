@@ -167,39 +167,24 @@
 
 
       buildFamilySampleDict(){
-
         let self = this;
-
         self.familySampleDict = {};
-
         self.hubSession.promiseGetProjectSamples(self.project_id).then(data => {
-
           const samples = data.data;
-
           for(let i = 0; i < samples.length; i++){
 
             const kindred_id = samples[i].pedigree["kindred_id"];
-
-            // console.log("kindred_id", kindred_id);
-
 
             if(!(kindred_id in self.familySampleDict)){
               self.familySampleDict[kindred_id] = [];
               self.familySampleDict[kindred_id].push(samples[i].id);
             }
-
             else{
               self.familySampleDict[kindred_id].push(samples[i].id);
             }
-
           }
-
-          // console.log("self.familySampleDict", self.familySampleDict);
           self.populateDropdownsFromFamDict();
-
-
         })
-
       },
 
       resetValues: function () {
@@ -227,14 +212,6 @@
         });
       },
 
-      buildPedFromSelectedFamily(sampleId){
-        let self = this;
-        self.promiseHubSession(sampleId).then(data => {
-          self.hubRawPedigree = data.rawPedigree;
-          self.buildPedFromHub();
-        });
-      },
-
       populateDropdownsFromFamDict: function(){
         let self = this;
 
@@ -247,10 +224,7 @@
             self.familyIDs.push(key);
           }
         }
-
-  },
-
-
+      },
 
       buildPedFromHub: function(){
 
@@ -262,23 +236,15 @@
         self.pedTxt = "";
 
         for (const [key, value] of Object.entries(self.hubRawPedigree)) {
-
           let pedLine = "";
-
           let paternal_id = "0";
           let maternal_id = "0";
-
           let ped = value["pedigree"];
           let name = value["name"];
           let id = value["id"];
-
           let sex = ped["sex"];
           let affection_status = ped["affection_status"];
           let kindred_id = ped["kindred_id"];
-
-
-          // console.log("ped", ped);
-          // console.log("name", name);
 
           if(ped.hasOwnProperty("paternal_id")){
             paternal_id = ped["paternal_id"];
@@ -287,33 +253,19 @@
               paternal_id = "0";
             }
           }
-
           if(ped.hasOwnProperty("maternal_id")){
             maternal_id = ped["maternal_id"];
             if(typeof maternal_id === "object"){
               maternal_id = "0";
             }
           }
-
-
           pedLine = pedLine + kindred_id + " " + id + " " + paternal_id + " " + maternal_id + " " + sex + " " + affection_status + "\n";
-
-
-          // console.log("pedLine is:", pedLine);
-
           self.pedTxt = self.pedTxt + pedLine;
-
         }
-
-        // console.log("pedTxt inside hubToTxt", self.pedTxt);
-
         self.opts.dataset = io.readLinkage(self.pedTxt);
-        console.log(self.pedTxt);
         self.opts = ptree.build(self.opts);
 
         $('#pedigree').on('nodeClick', self.onNodeClick);
-
-
       },
 
       onNodeClick: function (e, nodeId) {
@@ -340,18 +292,14 @@
             let all = self.cachedGenotypes[id].toString();
             opts.dataset[i].alleles = all;
           }
-
           if (self.cachedPhenotypes.hasOwnProperty(id)) {
             let aff = self.cachedPhenotypes[id];
             console.log("aff", aff);
             opts.dataset[i].affected = aff;
           }
-
-          // console.log("cachedNull", self.cachedNulls, "id", id);
           if (self.cachedNulls.includes(id)) {
             opts.dataset[i].NA = " **";
           }
-
         }
         return opts;
       },
@@ -361,8 +309,6 @@
         let parentNodes = d3.selectAll(".node").nodes().map(function (d) {
           return d.parentNode;
         });
-
-
 
         parentNodes.forEach(function (n) {
           let nodeToHightlight = d3.select(n.nextSibling.childNodes[0]);
@@ -488,23 +434,19 @@
                 sens = sens.slice(-1);
               }
             }
-
             let aff = 0;
             if (sens < 7) {
               aff = 2;
             }
             opts.dataset[i].affected = aff;
             self.cachedPhenotypes[id] = aff;
-
             // // Label Debug
             // let nid = self.opts.dataset[i].name.toString();
             // let allele = self.TASGenotypes[nid];
             // self.opts.dataset[i].alleles = sens + "," + allele;
           }
-
           self.opts = self.addCachedValuesToOpts(self.opts);
         }
-
         return opts.dataset;
       },
 
@@ -520,10 +462,8 @@
             self.cachedGenotypes[id] = allele;
           }
           self.opts = self.addCachedValuesToOpts(opts);
-
         }
         return opts.dataset;
-
       }
     },
 
@@ -534,11 +474,6 @@
         $('#pedigrees').append($("<div id='pedigree'></div>"));
 
         self.setPedTxtFromFamily();
-
-
-
-        // console.log("self.PedTxt in selectedFamily", self.pedTxt);
-
       },
 
       isolateFamily: function () {
@@ -591,9 +526,7 @@
     },
 
     mounted() {
-
       let self = this;
-
       if(self.isUpload){
         self.initHubSession();
         self.buildPedFromSampleId(self.sample_id);

@@ -17,9 +17,6 @@ export default class pedLine{
   }
 
   rebuildTxt(){
-
-    // console.log("rebuilding pedLine");
-
     let self = this;
 
     self.line = '';
@@ -32,7 +29,6 @@ export default class pedLine{
 
 
   populateLine(){
-
     let self = this;
 
     let cols = self.line.split(/(\s+)/).filter(function (e) {
