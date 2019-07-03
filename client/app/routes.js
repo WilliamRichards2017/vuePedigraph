@@ -11,7 +11,6 @@ import Home from './components/pages/Home.vue'
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.css'
 
-
 Vue.use(VueRouter);
 Vue.use(Vuetify);
 
@@ -19,7 +18,6 @@ const routes = [
   {
     path: '/',
     component: Home,
-
 
     props: (route) => ({
       sample_id: route.query.sample_id,

@@ -1,14 +1,33 @@
 <template>
   <div id="wrapper">
-  <PEDHandler :txt="txt" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source"
+
+
+    <div v-if="launchedFrom===null">
+
+    <v-btn small v-on:click="launchedFrom ='U'">Upload data</v-btn>
+    <v-btn small v-on:click="launchedFrom ='H'">Launch from mosaic</v-btn>
+    <v-btn small v-on:click="launchedFrom ='D'">Try with demo data</v-btn>
+
+    </div>
+
+    <PEDHandler
+      v-if="launchedFrom === 'H'"
+      :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source"
   />
+
+
+    <PEDHandler
+      v-if="launchedFrom === 'D'"
+      :launchedFrom="launchedFrom" :txt="demoTxt"
+     />
+
   </div>
 </template>
 
 <script>
 
 
-  import txt from '../../../static/ped.js';
+  import demoTxt from '../../../static/ped.js';
 
 import PEDHandler from "./../PEDHandler.vue";
 export default {
@@ -26,7 +45,8 @@ export default {
   },
   data() {
     return {
-      txt : txt
+      demoTxt : demoTxt,
+      launchedFrom : null,
     }
   },
   methods: {

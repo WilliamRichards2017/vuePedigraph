@@ -67,7 +67,8 @@
       token_type: null,
       expires_in: null,
       is_pedigree: null,
-      source: null
+      source: null,
+      launchedFrom: null
 
     },
     components: {
@@ -90,8 +91,6 @@
         cachedPhenotypes: {},
         cachedGenotypes: {},
         cachedNulls: [],
-
-        isUpload: false,
 
 
         // phenotypes: [ 'PTC Sensitivity', 'Familial pancreatic carcinoma'],
@@ -128,24 +127,38 @@
 
       localStorage.setItem('hub-iobio-tkn', this.token_type + ' ' + this.access_token);
 
-      let self = this;
-
-      if(typeof self.sample_id !== "undefined"){
-        self.isUpload = true;
-      }
-
-      // this.splitTxt();
-      // this.populateTxtDict();
-      // this.populatePedDict();
-      // this.populateFamilies();
-      // this.populatePTC();
-      // this.rebuildPedDict();
-      // this.highlightFamily();
-      // this.selectedFamily = '1463';
-
     },
 
     methods: {
+
+      buildFromDemo(){
+        let self = this;
+
+        self.pedTxt = self.txt;
+
+        self.splitTxt();
+        self.populateTxtDict();
+        self.populatePedDict();
+        self.populateFamilies();
+        console.log("self.families after populateFamilies()", self.families);
+        self.populatePTC();
+        self.rebuildPedDict();
+        self.highlightFamily();
+        self.selectedFamily = '1463';
+      },
+
+      buildFromHub(){
+
+        let self = this;
+        self.initHubSession();
+        self.buildPedFromSampleId(self.sample_id);
+        self.buildFamilySampleDict();
+
+      },
+
+      buildFromUpload(){
+        console.log("launched from upload");
+      },
 
       setPedTxtFromFamily(){
         let self = this;
@@ -344,7 +357,7 @@
 
       splitTxt: function () {
         let self = this;
-        self.txtLines = self.txt.split(/\r\n|\n/);
+        self.txtLines = self.pedTxt.split(/\r\n|\n/);
       },
 
       populateTxtDict: function () {
@@ -361,6 +374,7 @@
         for (let i = 0; i < self.txtLines.length; i++) {
           let line = self.txtLines[i];
           let familyID = line.replace(/ .*/, '');
+          console.log("familyID in populatePedDict", familyID);
 
           if (self.pedDict[familyID]) {
             this.pedDict[familyID].push(line);
@@ -420,7 +434,6 @@
         let self = this;
         self.cachedPhenotypes = {};
 
-
         if (self.selectedPhenotype === "PTC Sensitivity") {
           for (let i = 0; i < opts.dataset.length; i++) {
             let id = parseInt(opts.dataset[i].name);
@@ -473,7 +486,16 @@
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
 
-        self.setPedTxtFromFamily();
+        if(self.launchedFrom === "H") {
+          self.setPedTxtFromFamily();
+        }
+        else if(self.launchedFrom === "D"){
+          self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+          self.opts.dataset = io.readLinkage(self.pedTxt);
+          self.opts = ptree.build(self.opts);
+
+          $('#pedigree').on('nodeClick', self.onNodeClick)
+        }
       },
 
       isolateFamily: function () {
@@ -527,10 +549,21 @@
 
     mounted() {
       let self = this;
-      if(self.isUpload){
-        self.initHubSession();
-        self.buildPedFromSampleId(self.sample_id);
-        self.buildFamilySampleDict();
+
+      console.log("self.launchedFrom", self.launchedFrom);
+      if(self.launchedFrom === "H"){
+
+        console.log("launched from hub");
+        self.buildFromHub();
+      }
+
+      if(self.launchedFrom === "D") {
+        console.log("launched from demo");
+        self.buildFromDemo();
+      }
+
+      if(self.launchedFrom === "U"){
+        self.buildFromUpload();
       }
     }
 
