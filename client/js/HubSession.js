@@ -1,15 +1,15 @@
 
 export default class HubSession {
-  constructor() {
+  constructor(source) {
     this.vcf = null;
     this.samples = null;
     this.url = null;
-    this.apiVersion =  '/apiv1';
+    this.source = source;
+    this.api = source + '/apiv1';
   }
 
   promiseInit(sampleId, source, isPedigree, projectId ) {
     let self = this;
-    self.api = source + self.apiVersion;
 
     return new Promise((resolve, reject) => {
       let modelInfos = [];
@@ -395,6 +395,9 @@ export default class HubSession {
 
   getProjectSamples(projectId) {
     let self = this;
+
+    console.log("self.api inside getProjectSamples", self.api);
+
     return $.ajax({
       url: self.api + '/projects/' + projectId + '/samples/list',
       type: 'GET',

@@ -28,6 +28,7 @@
 
 
   import demoTxt from '../../../static/ped.js';
+  import pedTxtBuilder from '../../../js/pedTxtBuilder'
 
 import PEDHandler from "./../PEDHandler.vue";
 export default {
@@ -51,6 +52,23 @@ export default {
   },
   methods: {
 
+    buildTxt: function(){
+      let self = this;
+
+      let hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.source);
+
+      hubTxt.promiseGetPedTxt()
+        .then((pedTxt) => {
+          self.demoTxt = pedTxt;
+          console.log("self.demoTxt inside Home", self.demoTxt);
+        })
+
+    }
+
+  },
+
+  mounted(){
+    this.buildTxt();
   }
 }
 </script>

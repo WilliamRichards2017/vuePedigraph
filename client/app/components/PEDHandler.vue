@@ -62,6 +62,7 @@
     props: {
       txt: null,
       sample_id: null,
+      family_id: null,
       project_id: null,
       access_token: null,
       token_type: null,
@@ -140,12 +141,12 @@
         self.populateTxtDict();
         self.populatePedDict();
         self.populateFamilies();
-        console.log("self.families after populateFamilies()", self.families);
         self.populatePTC();
         self.rebuildPedDict();
         self.highlightFamily();
         self.selectedFamily = '1463';
       },
+
 
       buildFromHub(){
 
@@ -153,7 +154,6 @@
         self.initHubSession();
         self.buildPedFromSampleId(self.sample_id);
         self.buildFamilySampleDict();
-
       },
 
       buildFromUpload(){
@@ -163,20 +163,13 @@
       setPedTxtFromFamily(){
         let self = this;
 
-        console.log("self.familySampleDict in setPedTxtFromFamily", self.familySampleDict);
-
         const fam = self.familySampleDict[self.selectedFamily];
-
-
-        console.log("selected family", self.selectedFamily);
-        console.log("fam for selected family", fam);
 
         let sample_id = fam[0];
 
-        console.log("sample id for new selected family", sample_id);
-
         self.buildPedFromSampleId(sample_id);
       },
+
 
 
       buildFamilySampleDict(){
@@ -184,6 +177,7 @@
         self.familySampleDict = {};
         self.hubSession.promiseGetProjectSamples(self.project_id).then(data => {
           const samples = data.data;
+
           for(let i = 0; i < samples.length; i++){
 
             const kindred_id = samples[i].pedigree["kindred_id"];
@@ -204,12 +198,29 @@
         let self = this;
         self.selectedPhenotype = null;
         self.selectedGenotype = null;
+      },
+
+      populateHighlightUtil(){
+
+        let self = this;
+
+        console.log("inside populateHighlightUtil");
+
+        self.splitTxt();
+        console.log("self.txtLines", self.txtLines);
+        self.populateTxtDict();
+        console.log("self.txtDict", self.txtDict);
+        self.populatePedDict();
+        console.log("self.pedDict", self.pedDict);
+        self.populateFamilies();
+        console.log("self.families", self.families)
 
       },
 
+
       initHubSession(){
         let self = this;
-        self.hubSession = new HubSession();
+        self.hubSession = new HubSession(self.source);
       },
 
       promiseHubSession: function (sampleId) {
@@ -283,9 +294,20 @@
 
       onNodeClick: function (e, nodeId) {
         let self = this;
-        let fam = self.families[self.selectedFamily];
-        self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
-        self.highlightFamily();
+
+        if(self.launchedFrom === "D") {
+
+          let fam = self.families[self.selectedFamily];
+          self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
+          self.highlightFamily();
+        }
+        else if(self.launchedFrom === "H"){
+
+          let fam = self.families[self.selectedFamily];
+          console.log("fam inside onNodeClick", fam);
+          self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
+          // console.log("self.highlighedFamilyIds on node click");
+        }
       },
 
       notHighlighted: function (id) {
@@ -374,8 +396,6 @@
         for (let i = 0; i < self.txtLines.length; i++) {
           let line = self.txtLines[i];
           let familyID = line.replace(/ .*/, '');
-          console.log("familyID in populatePedDict", familyID);
-
           if (self.pedDict[familyID]) {
             this.pedDict[familyID].push(line);
           } else {
@@ -409,9 +429,12 @@
       populateFamilies: function () {
         let self = this;
         for (let key in self.pedDict) {
+
           if (self.pedDict.hasOwnProperty(key)) {
+
             self.familyIDs.push(key);
             let pedLines = self.pedDict[key];
+
             let fam = new family(key, pedLines);
             self.families[fam.familyID] = fam;
           }

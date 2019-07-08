@@ -35,11 +35,18 @@ export default class pedLine{
       return e.trim().length > 0;
     });
 
-    self.familyID = parseInt(cols[0]);
+    // self.familyID = parseInt(cols[0]);
+    // self.individualID = parseInt(cols[1]);
+    // self.paternalID = parseInt(cols[2]);
+    // self.maternalID = parseInt(cols[3]);
+    // self.sexID = parseInt(cols[4]);
+
+    self.familyID = cols[0];
     self.individualID = parseInt(cols[1]);
     self.paternalID = parseInt(cols[2]);
     self.maternalID = parseInt(cols[3]);
     self.sexID = parseInt(cols[4]);
+
 
     if(self.maternalID === 0 && self.paternalID === 0){
       self.isRoot = true;

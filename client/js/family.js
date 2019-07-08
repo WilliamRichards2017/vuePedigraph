@@ -89,7 +89,7 @@ export default class family {
 
   getChildren(id) {
     let self = this;
-    let individualID = parseInt(id);
+    let individualID = id;
 
     let children = [];
 
