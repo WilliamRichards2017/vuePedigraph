@@ -11,6 +11,8 @@ export default class pedTxtBuilder {
     this.hubSession = null;
 
 
+
+
     this.initHubSession();
   }
 
@@ -54,9 +56,6 @@ export default class pedTxtBuilder {
             let pedLine = self.sampleToPedTxt(samples[i]);
             pedTxt = pedTxt + pedLine;
           }
-
-          console.log("pedTxt", pedTxt);
-
           resolve(pedTxt);
         }).catch((e) => {
           console.log(e);

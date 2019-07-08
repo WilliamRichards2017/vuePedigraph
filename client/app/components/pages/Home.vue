@@ -11,8 +11,8 @@
     </div>
 
     <PEDHandler
-      v-if="launchedFrom === 'H'"
-      :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source"
+      v-if="launchedFrom === 'H' && typeof pedTxt !== 'null'"
+      :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source"
   />
 
 
@@ -42,12 +42,14 @@ export default {
     token_type: null,
     expires_in: null,
     is_pedigree: null,
-    source: null
+    source: null,
   },
   data() {
     return {
       demoTxt : demoTxt,
       launchedFrom : null,
+      pedTxt: null
+
     }
   },
   methods: {
@@ -57,10 +59,12 @@ export default {
 
       let hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.source);
 
+      console.log("typeof pedTxt before promise", self.pedTxt);
+
       hubTxt.promiseGetPedTxt()
         .then((pedTxt) => {
-          self.demoTxt = pedTxt;
-          console.log("self.demoTxt inside Home", self.demoTxt);
+          self.pedTxt = pedTxt;
+          // console.log("self.demoTxt inside Home", self.demoTxt);
         })
 
     }
@@ -69,6 +73,10 @@ export default {
 
   mounted(){
     this.buildTxt();
+  },
+
+  beforeMount() {
+    localStorage.setItem('hub-iobio-tkn', this.token_type + ' ' + this.access_token);
   }
 }
 </script>

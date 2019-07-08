@@ -151,9 +151,19 @@
       buildFromHub(){
 
         let self = this;
-        self.initHubSession();
-        self.buildPedFromSampleId(self.sample_id);
-        self.buildFamilySampleDict();
+
+        self.pedTxt = self.txt;
+
+        console.log("self.pedTxt", self.pedTxt);
+
+        self.splitTxt();
+        self.populateTxtDict();
+        self.populatePedDict();
+        self.populateFamilies();
+        console.log("self.families", self.families);
+        self.rebuildPedDict();
+        self.highlightFamily();
+        self.selectedFamily = '605eda5e-9abc-464c-a666-3974f940d927';
       },
 
       buildFromUpload(){
@@ -509,16 +519,11 @@
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
 
-        if(self.launchedFrom === "H") {
-          self.setPedTxtFromFamily();
-        }
-        else if(self.launchedFrom === "D"){
           self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
           self.opts.dataset = io.readLinkage(self.pedTxt);
           self.opts = ptree.build(self.opts);
 
           $('#pedigree').on('nodeClick', self.onNodeClick)
-        }
       },
 
       isolateFamily: function () {
