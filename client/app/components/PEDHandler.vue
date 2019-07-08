@@ -44,17 +44,13 @@
 <script>
   import * as pedigreejs from '../../js/pedigreejs'
   import PhenotypeHandler from '../../js/PhenotypeHandler'
-  import HubSession from '../../js/HubSession'
 
   import family from '../../js/family'
   import toggle from './toggle.vue'
   import navigation from './navigation.vue'
   import TAS from '../../static/TAS2R38';
-  import PTC from '../../static/PTC';
-  import idMap from '../../static/idMap';
 
 
-  import {mockAffected, mockAlleles, getPhenotypeLikelyhood} from '../../js/mock'
   import 'vuetify'
 
   export default {
@@ -70,7 +66,6 @@
       is_pedigree: null,
       source: null,
       launchedFrom: null
-
     },
     components: {
       navigation,
@@ -87,15 +82,10 @@
 
         phenotypes: ['PTC Sensitivity'],
         genotypes: ['7:141972755_C/T'],
-        nullPhenIds: [],
 
         cachedPhenotypes: {},
         cachedGenotypes: {},
         cachedNulls: [],
-
-
-        // phenotypes: [ 'PTC Sensitivity', 'Familial pancreatic carcinoma'],
-        // genotypes: ['14:19248895_GCAAAC/ACAACG', '7:141973615_C/A'],
 
         familyIDs: [],
         families: {},
@@ -108,13 +98,6 @@
         isolateFamily: false,
         isolatedPedTxt: [],
 
-        hubSession: null,
-        hubRawPedigree: null,
-        parsedUrl: null,
-        project: null,
-        samples: null,
-        familySampleDict: null,
-
         opts: {
           "targetDiv": "pedigree",
           labels: ['alleles', 'NA']
@@ -124,84 +107,53 @@
     },
 
     beforeMount() {
-
-
       localStorage.setItem('hub-iobio-tkn', this.token_type + ' ' + this.access_token);
+    },
 
+    mounted() {
+      let self = this;
+      if (self.launchedFrom === "H") {
+        console.log("launched from hub");
+        self.buildFromHub();
+      }
+      if (self.launchedFrom === "D") {
+        console.log("launched from demo");
+        self.buildFromDemo();
+      }
+      if (self.launchedFrom === "U") {
+        self.buildFromUpload();
+      }
     },
 
     methods: {
 
-      buildFromDemo(){
+      buildFromDemo() {
         let self = this;
-
         self.pedTxt = self.txt;
-
-        self.splitTxt();
-        self.populateTxtDict();
-        self.populatePedDict();
-        self.populateFamilies();
+        self.populateModel();
         self.populatePTC();
-        self.rebuildPedDict();
-        self.highlightFamily();
         self.selectedFamily = '1463';
       },
 
-
-      buildFromHub(){
-
+      buildFromHub() {
         let self = this;
-
         self.pedTxt = self.txt;
+        self.populateModel();
+        self.selectedFamily = '605eda5e-9abc-464c-a666-3974f940d927';
+      },
 
-        console.log("self.pedTxt", self.pedTxt);
+      buildFromUpload() {
+        console.log("launched from upload");
+      },
 
+      populateModel() {
+        let self = this;
         self.splitTxt();
         self.populateTxtDict();
         self.populatePedDict();
         self.populateFamilies();
-        console.log("self.families", self.families);
         self.rebuildPedDict();
         self.highlightFamily();
-        self.selectedFamily = '605eda5e-9abc-464c-a666-3974f940d927';
-      },
-
-      buildFromUpload(){
-        console.log("launched from upload");
-      },
-
-      setPedTxtFromFamily(){
-        let self = this;
-
-        const fam = self.familySampleDict[self.selectedFamily];
-
-        let sample_id = fam[0];
-
-        self.buildPedFromSampleId(sample_id);
-      },
-
-
-
-      buildFamilySampleDict(){
-        let self = this;
-        self.familySampleDict = {};
-        self.hubSession.promiseGetProjectSamples(self.project_id).then(data => {
-          const samples = data.data;
-
-          for(let i = 0; i < samples.length; i++){
-
-            const kindred_id = samples[i].pedigree["kindred_id"];
-
-            if(!(kindred_id in self.familySampleDict)){
-              self.familySampleDict[kindred_id] = [];
-              self.familySampleDict[kindred_id].push(samples[i].id);
-            }
-            else{
-              self.familySampleDict[kindred_id].push(samples[i].id);
-            }
-          }
-          self.populateDropdownsFromFamDict();
-        })
       },
 
       resetValues: function () {
@@ -210,114 +162,11 @@
         self.selectedGenotype = null;
       },
 
-      populateHighlightUtil(){
-
-        let self = this;
-
-        console.log("inside populateHighlightUtil");
-
-        self.splitTxt();
-        console.log("self.txtLines", self.txtLines);
-        self.populateTxtDict();
-        console.log("self.txtDict", self.txtDict);
-        self.populatePedDict();
-        console.log("self.pedDict", self.pedDict);
-        self.populateFamilies();
-        console.log("self.families", self.families)
-
-      },
-
-
-      initHubSession(){
-        let self = this;
-        self.hubSession = new HubSession(self.source);
-      },
-
-      promiseHubSession: function (sampleId) {
-        let self = this;
-        return self.hubSession.promiseInit(sampleId, self.source, self.is_pedigree, self.project_id);
-      },
-
-      buildPedFromSampleId(sampleId){
-        let self = this;
-        self.promiseHubSession(sampleId).then(data => {
-          self.hubRawPedigree = data.rawPedigree;
-          self.buildPedFromHub();
-        });
-      },
-
-      populateDropdownsFromFamDict: function(){
-        let self = this;
-
-        console.log("self.familySampleDict in dropdown", self.familySampleDict);
-
-        for (let key in self.familySampleDict) {
-          // check if the property/key is defined in the object itself, not in parent
-          if (self.familySampleDict.hasOwnProperty(key)) {
-            // console.log(key, self.familySampleDict[key]);
-            self.familyIDs.push(key);
-          }
-        }
-      },
-
-      buildPedFromHub: function(){
-
-        $('#pedigree').remove();
-        $('#pedigrees').append($("<div id='pedigree'></div>"));
-
-        let self = this;
-
-        self.pedTxt = "";
-
-        for (const [key, value] of Object.entries(self.hubRawPedigree)) {
-          let pedLine = "";
-          let paternal_id = "0";
-          let maternal_id = "0";
-          let ped = value["pedigree"];
-          let name = value["name"];
-          let id = value["id"];
-          let sex = ped["sex"];
-          let affection_status = ped["affection_status"];
-          let kindred_id = ped["kindred_id"];
-
-          if(ped.hasOwnProperty("paternal_id")){
-            paternal_id = ped["paternal_id"];
-            console.log("paternal_id", typeof paternal_id);
-            if(typeof paternal_id === "object"){
-              paternal_id = "0";
-            }
-          }
-          if(ped.hasOwnProperty("maternal_id")){
-            maternal_id = ped["maternal_id"];
-            if(typeof maternal_id === "object"){
-              maternal_id = "0";
-            }
-          }
-          pedLine = pedLine + kindred_id + " " + id + " " + paternal_id + " " + maternal_id + " " + sex + " " + affection_status + "\n";
-          self.pedTxt = self.pedTxt + pedLine;
-        }
-        self.opts.dataset = io.readLinkage(self.pedTxt);
-        self.opts = ptree.build(self.opts);
-
-        $('#pedigree').on('nodeClick', self.onNodeClick);
-      },
-
       onNodeClick: function (e, nodeId) {
         let self = this;
-
-        if(self.launchedFrom === "D") {
-
-          let fam = self.families[self.selectedFamily];
-          self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
-          self.highlightFamily();
-        }
-        else if(self.launchedFrom === "H"){
-
-          let fam = self.families[self.selectedFamily];
-          console.log("fam inside onNodeClick", fam);
-          self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
-          // console.log("self.highlighedFamilyIds on node click");
-        }
+        let fam = self.families[self.selectedFamily];
+        self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
+        self.highlightFamily();
       },
 
       notHighlighted: function (id) {
@@ -332,7 +181,6 @@
         let self = this;
         for (let i = 0; i < opts.dataset.length; i++) {
           let id = parseInt(opts.dataset[i].name);
-
           if (self.cachedGenotypes.hasOwnProperty(id)) {
             let all = self.cachedGenotypes[id].toString();
             opts.dataset[i].alleles = all;
@@ -375,12 +223,10 @@
       isolatePedTxt: function (ids) {
         let self = this;
         let txtLines = [];
-
         for (let i = 0; i < ids.length; i++) {
           let txtLine = self.txtDict[parseInt(ids[i])];
           txtLines.push(txtLine);
         }
-
         let familyId = txtLines[0].split(/\s+/).slice(0, 1);
         let newFam = new family(familyId, txtLines);
         let txt = newFam.famToTxt();
@@ -426,7 +272,6 @@
         for (let key in self.pedDict) {
           let line = self.pedDict[key].line;
           let familyID = self.pedDict[key].familyID;
-
           if (self.pedDict[familyID]) {
             this.pedDict[familyID].push(line);
           } else {
@@ -439,12 +284,9 @@
       populateFamilies: function () {
         let self = this;
         for (let key in self.pedDict) {
-
           if (self.pedDict.hasOwnProperty(key)) {
-
             self.familyIDs.push(key);
             let pedLines = self.pedDict[key];
-
             let fam = new family(key, pedLines);
             self.families[fam.familyID] = fam;
           }
@@ -455,7 +297,6 @@
         let self = this;
         let fam = self.families[id];
         let data = '';
-
         for (let key in fam.pedLines) {
           let line = fam.pedLines[key].line + '\n';
           data = data.concat(line);
@@ -466,7 +307,6 @@
       addNewPhenotypesToOpts: function (opts) {
         let self = this;
         self.cachedPhenotypes = {};
-
         if (self.selectedPhenotype === "PTC Sensitivity") {
           for (let i = 0; i < opts.dataset.length; i++) {
             let id = parseInt(opts.dataset[i].name);
@@ -486,10 +326,7 @@
             }
             opts.dataset[i].affected = aff;
             self.cachedPhenotypes[id] = aff;
-            // // Label Debug
-            // let nid = self.opts.dataset[i].name.toString();
-            // let allele = self.TASGenotypes[nid];
-            // self.opts.dataset[i].alleles = sens + "," + allele;
+            // // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
           }
           self.opts = self.addCachedValuesToOpts(self.opts);
         }
@@ -503,7 +340,6 @@
             console.log("opts.dataset[i]", opts.dataset[i]);
             let id = parseInt(opts.dataset[i].name);
             let allele = self.TASGenotypes[id].split(";")[0];
-
             opts.dataset[i].alleles = allele;
             self.cachedGenotypes[id] = allele;
           }
@@ -518,31 +354,26 @@
         let self = this;
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
-
-          self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
-          self.opts.dataset = io.readLinkage(self.pedTxt);
-          self.opts = ptree.build(self.opts);
-
-          $('#pedigree').on('nodeClick', self.onNodeClick)
+        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+        self.opts.dataset = io.readLinkage(self.pedTxt);
+        self.opts = ptree.build(self.opts);
+        $('#pedigree').on('nodeClick', self.onNodeClick)
       },
 
       isolateFamily: function () {
         let self = this;
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
-
         if (self.isolateFamily) {
           self.isolatedPedTxt = self.isolatePedTxt(self.highlightedFamilyIDs);
           self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
-
         } else {
           self.opts.dataset = io.readLinkage(self.pedTxt);
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
           ptree.build(self.opts)
-
         }
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
@@ -551,12 +382,10 @@
         let self = this;
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
-
         self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
         self.opts.dataset = io.readLinkage(self.pedTxt);
         self.opts.dataset = self.addNewPhenotypesToOpts(self.opts);
         self.opts = ptree.build(self.opts);
-
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
 
@@ -564,42 +393,18 @@
         let self = this;
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
-
         self.cachedGenotypes = {};
         self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
         self.opts.dataset = io.readLinkage(self.pedTxt);
         self.opts.dataset = self.addNewGenotypesToOpts(self.opts);
         self.opts = ptree.build(self.opts);
         $('#pedigree').on('nodeClick', self.onNodeClick);
-
-      }
-    },
-
-    mounted() {
-      let self = this;
-
-      console.log("self.launchedFrom", self.launchedFrom);
-      if(self.launchedFrom === "H"){
-
-        console.log("launched from hub");
-        self.buildFromHub();
-      }
-
-      if(self.launchedFrom === "D") {
-        console.log("launched from demo");
-        self.buildFromDemo();
-      }
-
-      if(self.launchedFrom === "U"){
-        self.buildFromUpload();
       }
     }
-
   }
 </script>
 
 <style>
-
   #pedigrees svg > rect {
     background-color: rgb(240, 250, 254);
   }
@@ -607,6 +412,5 @@
   #pedigrees svg {
     height: -webkit-fill-available;
   }
-
 </style>
 

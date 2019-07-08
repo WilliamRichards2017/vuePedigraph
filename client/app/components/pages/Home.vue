@@ -3,18 +3,15 @@
 
 
     <div v-if="launchedFrom===null">
-
     <v-btn small v-on:click="launchedFrom ='U'">Upload data</v-btn>
     <v-btn small v-on:click="launchedFrom ='H'">Launch from mosaic</v-btn>
     <v-btn small v-on:click="launchedFrom ='D'">Try with demo data</v-btn>
-
     </div>
 
     <PEDHandler
       v-if="launchedFrom === 'H' && typeof pedTxt !== 'null'"
       :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source"
   />
-
 
     <PEDHandler
       v-if="launchedFrom === 'D'"
@@ -49,34 +46,26 @@ export default {
       demoTxt : demoTxt,
       launchedFrom : null,
       pedTxt: null
-
     }
   },
-  methods: {
 
-    buildTxt: function(){
-      let self = this;
-
-      let hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.source);
-
-      console.log("typeof pedTxt before promise", self.pedTxt);
-
-      hubTxt.promiseGetPedTxt()
-        .then((pedTxt) => {
-          self.pedTxt = pedTxt;
-          // console.log("self.demoTxt inside Home", self.demoTxt);
-        })
-
-    }
-
+  beforeMount() {
+    localStorage.setItem('hub-iobio-tkn', this.token_type + ' ' + this.access_token);
   },
 
   mounted(){
     this.buildTxt();
   },
 
-  beforeMount() {
-    localStorage.setItem('hub-iobio-tkn', this.token_type + ' ' + this.access_token);
+  methods: {
+    buildTxt: function(){
+      let self = this;
+      let hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.source);
+      hubTxt.promiseGetPedTxt()
+        .then((pedTxt) => {
+          self.pedTxt = pedTxt;
+        })
+    }
   }
 }
 </script>
