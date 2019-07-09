@@ -95,11 +95,13 @@ export default class family {
 
     for (var key in self.pedLines) {
       if (self.pedLines.hasOwnProperty(key)) {
-        if(self.pedLines[key].maternalID === individualID || self.pedLines[key].paternalID === individualID){
-          children.push(self.pedLines[key])
+        if(self.pedLines[key].maternalID.toString() == individualID.toString() || self.pedLines[key].paternalID.toString() === individualID.toString()){
+          children.push(self.pedLines[key]);
+          console.log("found child", self.pedLines[key]);
         }
       }
     }
+    console.log("children in getChildren", children)
     return children;
   }
 
@@ -109,6 +111,8 @@ export default class family {
     let spouses = [];
 
     let children = self.getChildren(id);
+
+    console.log("children in getAllSpouses", children);
 
     for(let i = 0; i < children.length; i++){
       if(! (children[i].maternalID.toString() === id.toString())) {
@@ -171,7 +175,6 @@ export default class family {
     }
     children = children.concat(childrenSpouses);
 
-    console.log("children", children);
 
     let grandChildren = [];
 
