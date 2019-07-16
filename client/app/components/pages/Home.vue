@@ -3,13 +3,18 @@
 
 
     <div v-if="launchedFrom===null">
-    <v-btn small v-on:click="launchedFrom ='U'">Upload data</v-btn>
-    <v-btn small v-on:click="launchedFrom ='H'">Launch from mosaic</v-btn>
-    <v-btn small v-on:click="launchedFrom ='D'">Try with demo data</v-btn>
+
+
+      <!--<input id="pedFile" name="file" @click="handleFiles" type="file" />-->
+
+
+      <!--<v-btn small v-on:click="launchedFrom ='U'">Upload data</v-btn>-->
+      <v-btn small v-on:click="launchedFrom ='H'">Launch from mosaic</v-btn>
+      <v-btn small v-on:click="launchedFrom ='D'">Try with demo data</v-btn>
     </div>
 
     <PEDHandler
-      v-if="launchedFrom === 'H' && typeof pedTxt !== 'null'"
+      v-if="launchedFrom === 'H' && typeof pedTxt === 'string'"
       :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source"
   />
 
@@ -50,21 +55,36 @@ export default {
   },
 
   beforeMount() {
-    localStorage.setItem('hub-iobio-tkn', this.token_type + ' ' + this.access_token);
   },
 
   mounted(){
-    this.buildTxt();
+  },
+
+  watch: {
+    launchedFrom : function() {
+      let self = this;
+      if(self.launchedFrom === "H"){
+        localStorage.setItem('hub-iobio-tkn', self.token_type + ' ' + self.access_token);
+        console.log("change in launchedFrom watcher");
+        self.buildTxt();
+      }
+    }
   },
 
   methods: {
-    buildTxt: function(){
+    buildTxt: function () {
       let self = this;
       let hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.source);
       hubTxt.promiseGetPedTxt()
         .then((pedTxt) => {
           self.pedTxt = pedTxt;
         })
+    },
+
+    handleFiles: function () {
+
+      var fileInput = document.getElementById('the-file');
+      console.log(fileInput.files);
     }
   }
 }
@@ -74,4 +94,13 @@ export default {
   #wrapper {
     height: 100%;
   }
+
+  .visually-hidden {
+    position: absolute !important;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+  }
+
 </style>

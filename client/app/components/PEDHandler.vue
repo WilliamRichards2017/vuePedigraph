@@ -1,9 +1,7 @@
 <template>
   <div align="center" id='container'>
 
-    <v-toolbar color="#123d53"
-               dark
-    >
+    <v-toolbar color="#123d53" dark>
       <v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>
 
       <v-spacer></v-spacer>
@@ -138,6 +136,7 @@
       buildFromHub() {
         let self = this;
         self.pedTxt = self.txt;
+        console.log("self.pedTxt inside buildFromHub", self.pedTxt);
         self.populateModel();
         self.selectedFamily = '605eda5e-9abc-464c-a666-3974f940d927';
       },
@@ -235,6 +234,8 @@
 
       splitTxt: function () {
         let self = this;
+
+        console.log("unsplit pedTxt", self.pedTxt);
         self.txtLines = self.pedTxt.split(/\r\n|\n/);
       },
 

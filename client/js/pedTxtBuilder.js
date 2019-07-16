@@ -43,6 +43,7 @@ export default class pedTxtBuilder {
             let pedLine = self.sampleToPedTxt(samples[i]);
             pedTxt = pedTxt + pedLine;
           }
+          console.log("self.pedTxt inside promiseGetPedTxt", pedTxt);
           resolve(pedTxt);
         }).catch((e) => {
           console.log(e);
