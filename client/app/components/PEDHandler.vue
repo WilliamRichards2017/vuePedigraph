@@ -23,7 +23,7 @@
 
       <v-spacer></v-spacer>
 
-      <v-select :items="genotypes"
+      <v-select :items="parsedVariants"
                 id="selectGenotype" label="Select Genotype" v-model="selectedGenotype"
       >
       </v-select>
@@ -63,7 +63,8 @@
       expires_in: null,
       is_pedigree: null,
       source: null,
-      launchedFrom: null
+      launchedFrom: null,
+      variants: null,
     },
     components: {
       navigation,
@@ -92,6 +93,8 @@
         selectedPhenotype: null,
         selectedGenotype: null,
 
+        parsedVariants: null,
+
         highlightedFamilyIDs: [],
         isolateFamily: false,
         isolatedPedTxt: [],
@@ -113,6 +116,9 @@
       if (self.launchedFrom === "H") {
         console.log("launched from hub");
         self.buildFromHub();
+        console.log("self.sample_id", self.sample_id);
+
+
       }
       if (self.launchedFrom === "D") {
         console.log("launched from demo");
@@ -121,7 +127,11 @@
       if (self.launchedFrom === "U") {
         self.buildFromUpload();
       }
-    },
+      console.log("self.variants inside pedHandler mounted", self.variants);
+    }
+
+
+    ,
 
     methods: {
 
@@ -136,9 +146,9 @@
       buildFromHub() {
         let self = this;
         self.pedTxt = self.txt;
-        console.log("self.pedTxt inside buildFromHub", self.pedTxt);
         self.populateModel();
-        self.selectedFamily = '605eda5e-9abc-464c-a666-3974f940d927';
+
+        // self.selectedFamily = '605eda5e-9abc-464c-a666-3974f940d927';
       },
 
       buildFromUpload() {
@@ -153,6 +163,25 @@
         self.populateFamilies();
         self.rebuildPedDict();
         self.highlightFamily();
+        self.parseVariants();
+
+        console.log("self.parsedVariants inside populateModel", self.parsedVariants);
+
+      },
+
+      parseVariants: function() {
+        let self = this;
+        self.parsedVariants = [];
+
+        console.log("self.variants inside parseVariants", self.variants);
+
+        for(let i = 0; i < self.variants.length; i++){
+          let parsedVariant = self.variants[i].chr + ":" + self.variants[i].pos + "_" + self.variants[i].ref + "/" + self.variants[i].alt;
+          self.parsedVariants.push(parsedVariant);
+          console.log("parsed variant is", parsedVariant);
+          console.log("parsed variants is ", self.parsedVariants);
+        }
+
       },
 
       resetValues: function () {
@@ -234,8 +263,6 @@
 
       splitTxt: function () {
         let self = this;
-
-        console.log("unsplit pedTxt", self.pedTxt);
         self.txtLines = self.pedTxt.split(/\r\n|\n/);
       },
 

@@ -5,8 +5,7 @@
     <div v-if="launchedFrom===null">
 
 
-      <!--<input id="pedFile" name="file" @click="handleFiles" type="file" />-->
-
+      <input id="pedFile" name="file" @click="handleFiles" type="file" />
 
       <!--<v-btn small v-on:click="launchedFrom ='U'">Upload data</v-btn>-->
       <v-btn small v-on:click="launchedFrom ='H'">Launch from mosaic</v-btn>
@@ -15,7 +14,7 @@
 
     <PEDHandler
       v-if="launchedFrom === 'H' && typeof pedTxt === 'string'"
-      :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source"
+      :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants"
   />
 
     <PEDHandler
@@ -50,14 +49,20 @@ export default {
     return {
       demoTxt : demoTxt,
       launchedFrom : null,
-      pedTxt: null
+      pedTxt: null,
+      hubTxt: null,
+      variants: null
     }
   },
 
   beforeMount() {
+
   },
 
   mounted(){
+    let self = this;
+    self.hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.source);
+
   },
 
   watch: {
@@ -67,6 +72,7 @@ export default {
         localStorage.setItem('hub-iobio-tkn', self.token_type + ' ' + self.access_token);
         console.log("change in launchedFrom watcher");
         self.buildTxt();
+        self.buildVariants();
       }
     }
   },
@@ -74,10 +80,26 @@ export default {
   methods: {
     buildTxt: function () {
       let self = this;
-      let hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.source);
-      hubTxt.promiseGetPedTxt()
+      self.hubTxt.promiseGetPedTxt()
         .then((pedTxt) => {
           self.pedTxt = pedTxt;
+        })
+    },
+
+    buildVariants: function() {
+      let self = this;
+
+      self.variants = [];
+
+      self.hubTxt.promiseGetVariantSets()
+        .then((data) => {
+          // const variantSets = data;s
+          // console.log("variant sets", variantSets);
+          self.variants = data.variants;
+          console.log("self.variants", self.variants);
+
+
+
         })
     },
 

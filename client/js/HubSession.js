@@ -29,6 +29,8 @@ export default class HubSession {
       self.promiseGetSampleInfo(projectId, sampleId, isPedigree)
         .then( data => {
 
+
+          console.log("data in promiseGetSampleInfo", data);
           let pedigree = data.pedigree;
           let rawPedigree = data.rawPedigree;
 
@@ -183,6 +185,22 @@ export default class HubSession {
     })
   }
 
+  promiseGetVariantSets(project_id) {
+    let self = this;
+
+    return new Promise(function(resolve, reject) {
+      // Get pedigree for sample
+      self.getVariantSets(project_id)
+        .done(data => {
+          console.log("variants inside promise", data);
+          resolve(data)
+        })
+        .fail(error => {
+          reject("Error getting variant sets for " + project_id + ": " + error);
+        })
+    })
+  }
+
   parsePedigree(raw_pedigree, sample_id) {
 
     let self = this;
@@ -261,6 +279,19 @@ export default class HubSession {
     let self = this;
     return $.ajax({
       url: self.api + '/projects/' + project_id + '/samples/' + sample_id,
+      type: 'GET',
+      contentType: 'application/json',
+      headers: {
+        'Authorization': localStorage.getItem('hub-iobio-tkn')
+      }
+    });
+  }
+
+
+  getVariantSets(project_id) {
+    let self = this;
+    return $.ajax({
+      url: self.api + '/projects/' + project_id + '/variants/sets/1',
       type: 'GET',
       contentType: 'application/json',
       headers: {
