@@ -13,8 +13,8 @@
     </div>
 
     <PEDHandler
-      v-if="launchedFrom === 'H' && typeof pedTxt === 'string'"
-      :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants"
+      v-if="launchedFrom === 'H' && typeof pedTxt === 'string' && typeof familyId === 'string'"
+      :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants" :family_id="familyId" :familySamples="familySamples" :phenotypes="phenotypes"
   />
 
     <PEDHandler
@@ -51,7 +51,11 @@ export default {
       launchedFrom : null,
       pedTxt: null,
       hubTxt: null,
-      variants: null
+      variants: null,
+      samples: null,
+      familyId: null,
+      familySamples: null,
+      phenotypes: null
     }
   },
 
@@ -70,9 +74,13 @@ export default {
       let self = this;
       if(self.launchedFrom === "H"){
         localStorage.setItem('hub-iobio-tkn', self.token_type + ' ' + self.access_token);
-        console.log("change in launchedFrom watcher");
+        self.getProjectKindredId();
+        self.getProjectSamples();
+        self.getMetricsForProject();
         self.buildTxt();
-        self.buildVariants();
+        self.buildVariantsFromSet();
+        // self.buildAllVariants();
+        // self.getFilesForProject();
       }
     }
   },
@@ -86,18 +94,92 @@ export default {
         })
     },
 
-    buildVariants: function() {
+    getProjectKindredId: function(){
+      let self = this;
+
+      self.samples = [];
+      self.hubTxt.promiseGetProjectSamples()
+        .then((data) => {
+          self.samples = data;
+          if(self.samples.data.length > 0){
+            self.familyId = self.samples.data[0].pedigree["kindred_id"];
+            console.log("self.familyId", self.familyId)
+          }
+        })
+    },
+
+    metricsToPhenotypes(){
+      let self = this;
+      console.log("self.metrics inside metricsToPhenotypes", self.metrics);
+      self.phenotypes = [];
+
+      for(let i = 0; i < self.metrics.length; i++){
+        let pt = self.metrics[i].name;
+        self.phenotypes.push(pt);
+      }
+      console.log("Phenotypes in metricsToPhenotypes", self.phenotypes);
+    },
+
+
+    buildVariantsFromSet: function() {
       let self = this;
 
       self.variants = [];
 
       self.hubTxt.promiseGetVariantSets()
         .then((data) => {
-          // const variantSets = data;s
-          // console.log("variant sets", variantSets);
           self.variants = data.variants;
           console.log("self.variants", self.variants);
+        })
+    },
 
+    buildAllVariants: function(){
+      let self = this
+      self.variants = [];
+
+      self.hubTxt.promiseGetVariantsForProject()
+        .then((data) => {
+          self.variants = data.variants;
+          console.log("self.variants", self.variants);
+        })
+    },
+
+    getProjectSamples: function(){
+      let self = this;
+      let samples = []
+      self.familySamples = [];
+      self.hubTxt.promiseGetProjectSamples()
+        .then((data) => {
+          samples = data.data;
+          for(let i = 0; i < samples.length; i++){
+            if(samples[i].pedigree["kindred_id"] === self.familyId){
+              console.log("found sample in family", self.familyId);
+              self.familySamples.push(samples[i].id);
+            }
+          }
+        })
+    },
+
+
+    getFilesForProject: function(){
+      let self = this;
+      let files = null;
+      self.hubTxt.promiseGetFilesForProject()
+        .then((data) => {
+          files = data;
+        })
+    },
+
+    getMetricsForProject: function(){
+      let self = this;
+
+      self.metrics = [];
+
+      self.hubTxt.promiseGetMetricsForProject()
+        .then((data) => {
+          self.metrics = data;
+
+          self.metricsToPhenotypes();
 
 
         })

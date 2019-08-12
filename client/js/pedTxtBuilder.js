@@ -65,5 +65,63 @@ export default class pedTxtBuilder {
       })
     })
   }
+
+  promiseGetProjectSamples(){
+    let self = this;
+    return new Promise((resolve, reject) => {
+      self.hubSession.promiseGetProjectSamples(self.projectId)
+        .then((data) => {
+          // const variantSets = data;
+          // console.log("variant sets", variantSets);
+          resolve(data);
+        }).catch( (e) => {
+        console.log("error", e);
+      })
+    })
+  }
+
+
+  promiseGetMetricsForProject(){
+    let self = this;
+    return new Promise((resolve, reject) => {
+      self.hubSession.promiseGetMetricsForProject(self.projectId)
+        .then((analyses) => {
+          // const variantSets = data;
+          // console.log("variant sets", variantSets);
+          resolve(analyses);
+        }).catch( (e) => {
+        console.log("error", e);
+
+      })
+    })
+  }
+
+  promiseGetFilesForProject(){
+    let self = this;
+    return new Promise((resolve, reject) => {
+      self.hubSession.promiseGetFilesForProject(self.projectId)
+        .then((data) => {
+
+          resolve(data);
+        }).catch( (e) => {
+        console.log("error", e);
+
+      })
+    })
+  }
+
+  promiseGetVariantsForProject(){
+    let self = this;
+    return new Promise((resolve, reject) => {
+      self.hubSession.promiseGetVariantsForProject(self.projectId)
+        .then((data) => {
+          resolve(data);
+        }).catch( (e) => {
+        console.log("error", e);
+
+      })
+    })
+  }
+
 }
 

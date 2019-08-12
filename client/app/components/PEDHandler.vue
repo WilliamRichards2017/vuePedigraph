@@ -65,6 +65,9 @@
       source: null,
       launchedFrom: null,
       variants: null,
+      family_id: null,
+      familySamples: null,
+      phenotypes: null
     },
     components: {
       navigation,
@@ -79,7 +82,7 @@
         PTCPhenotypes: {},
         TASGenotypes: TAS,
 
-        phenotypes: ['PTC Sensitivity'],
+        // phenotypes: ['PTC Sensitivity'],
         genotypes: ['7:141972755_C/T'],
 
         cachedPhenotypes: {},
@@ -140,15 +143,17 @@
         self.pedTxt = self.txt;
         self.populateModel();
         self.populatePTC();
-        self.selectedFamily = '1463';
+        self.selectedFamily = self.family_id;
       },
 
       buildFromHub() {
         let self = this;
         self.pedTxt = self.txt;
         self.populateModel();
+        self.selectedFamily = self.family_id;
 
-        // self.selectedFamily = '605eda5e-9abc-464c-a666-3974f940d927';
+        console.log("familySamples inside buildFromHub", self.familySamples);
+
       },
 
       buildFromUpload() {
