@@ -453,6 +453,19 @@ export default class HubSession {
     })
   }
 
+  promiseGetMetricsForSample(project_id, sample_id) {
+    let self = this;
+    return new Promise((resolve, reject) => {
+      self.getMetricsForSample(project_id, sample_id)
+        .done(file => {
+          resolve(file);
+        })
+        .fail(error => {
+          reject(error);
+        })
+    })
+  }
+
   getSignedUrlForFile (project_id, sample_id, file) {
     let self = this;
     return $.ajax({
@@ -492,6 +505,23 @@ export default class HubSession {
       }
     });
   }
+
+  getMetricsForSample(projectId, sampleId) {
+    let self = this;
+
+    console.log("self.api inside getProjectSamples", self.api);
+
+    return $.ajax({
+      url: self.api + '/projects/' + projectId + '/samples/' + sampleId + '/metrics/',
+      type: 'GET',
+      contentType: 'application/json',
+      headers: {
+        'Authorization': localStorage.getItem('hub-iobio-tkn')
+      }
+    });
+  }
+
+
 
 
 }

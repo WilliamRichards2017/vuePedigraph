@@ -50,6 +50,7 @@
 
 
   import 'vuetify'
+  import HubSession from "../../js/HubSession";
 
   export default {
     name: 'PEDHandler',
@@ -101,6 +102,7 @@
         highlightedFamilyIDs: [],
         isolateFamily: false,
         isolatedPedTxt: [],
+        hubSession: null,
 
         opts: {
           "targetDiv": "pedigree",
@@ -111,7 +113,10 @@
     },
 
     beforeMount() {
-      localStorage.setItem('hub-iobio-tkn', this.token_type + ' ' + this.access_token);
+      let self = this;
+      localStorage.setItem('hub-iobio-tkn', self.token_type + ' ' + self.access_token);
+      self.hubSession = new HubSession(self.source);
+
     },
 
     mounted() {
@@ -337,7 +342,7 @@
         return data;
       },
 
-      addNewPhenotypesToOpts: function (opts) {
+      addDemoPhenotypesToOpts: function (opts) {
         let self = this;
         self.cachedPhenotypes = {};
         if (self.selectedPhenotype === "PTC Sensitivity") {
@@ -364,6 +369,30 @@
           self.opts = self.addCachedValuesToOpts(self.opts);
         }
         return opts.dataset;
+      },
+
+      addNewPhenotypesToOpts: function(opts){
+        let self = this;
+
+        console.log("self.familySamples.lenght", self.familySamples.length);
+
+        for(let i = 0; i < self.familySamples.length; i++){
+          console.log("checking phenotype value for sample", self.familySamples[i]);
+
+
+          self.hubSession.promiseGetMetricsForSample(self.project_id, self.familySamples[i])
+            .then((data) => {
+              let pt = self.selectedPhenotype;
+
+              let samplePhenotype = data.metrics[pt];
+              console.log("phenotype for sample", self.familySamples[i], ": ", samplePhenotype);
+              opts.dataset[i].alleles = samplePhenotype;
+
+            })
+        }
+
+        return opts.dataset;
+
       },
 
       addNewGenotypesToOpts: function (opts) {
@@ -417,7 +446,15 @@
         $('#pedigrees').append($("<div id='pedigree'></div>"));
         self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
         self.opts.dataset = io.readLinkage(self.pedTxt);
-        self.opts.dataset = self.addNewPhenotypesToOpts(self.opts);
+
+        if(self.launchedFrom === 'D') {
+          self.opts.dataset = self.addDemoPhenotypesToOpts(self.opts);
+        }
+
+        else if(self.launchedFrom === 'H'){
+          self.opts.dataset = self.addNewPhenotypesToOpts(self.opts);
+        }
+
         self.opts = ptree.build(self.opts);
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },

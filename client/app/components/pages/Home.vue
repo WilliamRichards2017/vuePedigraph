@@ -114,7 +114,7 @@ export default {
       self.phenotypes = [];
 
       for(let i = 0; i < self.metrics.length; i++){
-        let pt = self.metrics[i].name;
+        let pt = self.metrics[i].uid;
         self.phenotypes.push(pt);
       }
       console.log("Phenotypes in metricsToPhenotypes", self.phenotypes);
