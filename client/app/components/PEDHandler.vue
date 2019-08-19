@@ -134,6 +134,7 @@
       }
       if (self.launchedFrom === "U") {
         self.buildFromUpload();
+
       }
       console.log("self.variants inside pedHandler mounted", self.variants);
     }
@@ -162,7 +163,16 @@
       },
 
       buildFromUpload() {
+        let self = this;
+
+
         console.log("launched from upload");
+        console.log("self.pedTxt is", self.txt);
+        self.pedTxt = self.txt;
+        self.populateModel();
+        self.selectedFamily = self.txt.split(" ")[0];
+        console.log("self.selected Family", self.selectedFamily)
+
       },
 
       populateModel() {
@@ -173,9 +183,12 @@
         self.populateFamilies();
         self.rebuildPedDict();
         self.highlightFamily();
-        self.parseVariants();
+        if(self.launchedFrom !== "U") {
+          self.parseVariants();
+          console.log("self.parsedVariants inside populateModel", self.parsedVariants);
 
-        console.log("self.parsedVariants inside populateModel", self.parsedVariants);
+        }
+
 
       },
 
@@ -274,6 +287,7 @@
       splitTxt: function () {
         let self = this;
         self.txtLines = self.pedTxt.split(/\r\n|\n/);
+        console.log("self.txtLines", self.txtLines);
       },
 
       populateTxtDict: function () {
@@ -283,6 +297,8 @@
           let individualID = line.split(/\s+/).slice(1, 2);
           self.txtDict[individualID] = line;
         }
+
+        console.log("self.txtDict", self.txtDict);
       },
 
       populatePedDict: function () {
@@ -297,6 +313,7 @@
             self.pedDict[familyID].push(line);
           }
         }
+        console.log("self.pedDict", self.pedDict);
       },
 
       populatePTC: function () {
@@ -329,6 +346,7 @@
             self.families[fam.familyID] = fam;
           }
         }
+        console.log("self.families", self.families);
       },
 
       getDataByFamilyID: function (id) {

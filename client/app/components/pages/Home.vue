@@ -5,9 +5,9 @@
     <div v-if="launchedFrom===null">
 
 
-      <input id="pedFile" name="file" @click="handleFiles" type="file" />
+      <FileReader @load="uploadedPedTxt = $event"></FileReader>
 
-      <!--<v-btn small v-on:click="launchedFrom ='U'">Upload data</v-btn>-->
+      <v-btn small v-on:click="launchedFrom ='U'">Upload data</v-btn>
       <v-btn small v-on:click="launchedFrom ='H'">Launch from mosaic</v-btn>
       <v-btn small v-on:click="launchedFrom ='D'">Try with demo data</v-btn>
     </div>
@@ -22,6 +22,12 @@
       :launchedFrom="launchedFrom" :txt="demoTxt"
      />
 
+    <PEDHandler
+      v-if="launchedFrom === 'U'"
+      :launchedFrom="launchedFrom" :txt="uploadedPedTxt"
+    />
+
+
   </div>
 </template>
 
@@ -31,11 +37,12 @@
   import demoTxt from '../../../static/ped.js';
   import pedTxtBuilder from '../../../js/pedTxtBuilder'
 
-import PEDHandler from "./../PEDHandler.vue";
-export default {
+  import PEDHandler from "./../PEDHandler.vue";
+  import FileReader from "./../FileReader.vue";
+
+  export default {
   name: 'home',
-  components: {PEDHandler},
-  // component: {},
+  components: {PEDHandler, FileReader},
   props: {
     sample_id: null,
     project_id: null,
@@ -55,7 +62,9 @@ export default {
       samples: null,
       familyId: null,
       familySamples: null,
-      phenotypes: null
+      phenotypes: null,
+      file: '',
+      uploadedPedTxt: null,
     }
   },
 
@@ -82,6 +91,10 @@ export default {
         // self.buildAllVariants();
         // self.getFilesForProject();
       }
+    },
+    uploadedPedTxt : function() {
+      let self = this;
+      console.log("self.uploadedPedTxt", self.uploadedPedTxt);
     }
   },
 
@@ -184,12 +197,6 @@ export default {
 
         })
     },
-
-    handleFiles: function () {
-
-      var fileInput = document.getElementById('the-file');
-      console.log(fileInput.files);
-    }
   }
 }
 </script>

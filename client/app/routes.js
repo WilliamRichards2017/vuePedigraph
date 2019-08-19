@@ -2,8 +2,14 @@ import jQuery from 'jquery'
 global.jQuery = jQuery;
 global.$ = jQuery;
 
+import axios from 'axios'
+import VueAxios from 'vue-axios'
+
+
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+Vue.use(VueAxios, axios)
+
 
 import App from './App.vue'
 import Home from './components/pages/Home.vue'
