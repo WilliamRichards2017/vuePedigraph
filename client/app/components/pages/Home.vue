@@ -89,12 +89,10 @@
         self.buildTxt();
         self.buildVariantsFromSet();
         // self.buildAllVariants();
-        // self.getFilesForProject();
       }
     },
     uploadedPedTxt : function() {
       let self = this;
-      console.log("self.uploadedPedTxt", self.uploadedPedTxt);
     }
   },
 
@@ -116,21 +114,18 @@
           self.samples = data;
           if(self.samples.data.length > 0){
             self.familyId = self.samples.data[0].pedigree["kindred_id"];
-            console.log("self.familyId", self.familyId)
           }
         })
     },
 
     metricsToPhenotypes(){
       let self = this;
-      console.log("self.metrics inside metricsToPhenotypes", self.metrics);
       self.phenotypes = [];
 
       for(let i = 0; i < self.metrics.length; i++){
         let pt = self.metrics[i].uid;
         self.phenotypes.push(pt);
       }
-      console.log("Phenotypes in metricsToPhenotypes", self.phenotypes);
     },
 
 
@@ -153,7 +148,6 @@
       self.hubTxt.promiseGetVariantsForProject()
         .then((data) => {
           self.variants = data.variants;
-          console.log("self.variants", self.variants);
         })
     },
 
@@ -166,7 +160,6 @@
           samples = data.data;
           for(let i = 0; i < samples.length; i++){
             if(samples[i].pedigree["kindred_id"] === self.familyId){
-              console.log("found sample in family", self.familyId);
               self.familySamples.push(samples[i].id);
             }
           }
@@ -185,16 +178,11 @@
 
     getMetricsForProject: function(){
       let self = this;
-
       self.metrics = [];
-
       self.hubTxt.promiseGetMetricsForProject()
         .then((data) => {
           self.metrics = data;
-
           self.metricsToPhenotypes();
-
-
         })
     },
   }

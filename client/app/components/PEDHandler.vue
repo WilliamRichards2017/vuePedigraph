@@ -97,6 +97,9 @@
         selectedPhenotype: null,
         selectedGenotype: null,
 
+        familyPhenotypes: null,
+        familyPhenotypesFlag: false,
+
         parsedVariants: null,
 
         highlightedFamilyIDs: [],
@@ -125,18 +128,16 @@
         console.log("launched from hub");
         self.buildFromHub();
         console.log("self.sample_id", self.sample_id);
-
-
       }
+
       if (self.launchedFrom === "D") {
         console.log("launched from demo");
         self.buildFromDemo();
       }
+
       if (self.launchedFrom === "U") {
         self.buildFromUpload();
-
       }
-      console.log("self.variants inside pedHandler mounted", self.variants);
     }
 
 
@@ -157,22 +158,13 @@
         self.pedTxt = self.txt;
         self.populateModel();
         self.selectedFamily = self.family_id;
-
-        console.log("familySamples inside buildFromHub", self.familySamples);
-
       },
 
       buildFromUpload() {
         let self = this;
-
-
-        console.log("launched from upload");
-        console.log("self.pedTxt is", self.txt);
         self.pedTxt = self.txt;
         self.populateModel();
         self.selectedFamily = self.txt.split(" ")[0];
-        console.log("self.selected Family", self.selectedFamily)
-
       },
 
       populateModel() {
@@ -287,7 +279,6 @@
       splitTxt: function () {
         let self = this;
         self.txtLines = self.pedTxt.split(/\r\n|\n/);
-        console.log("self.txtLines", self.txtLines);
       },
 
       populateTxtDict: function () {
@@ -298,7 +289,6 @@
           self.txtDict[individualID] = line;
         }
 
-        console.log("self.txtDict", self.txtDict);
       },
 
       populatePedDict: function () {
@@ -313,7 +303,6 @@
             self.pedDict[familyID].push(line);
           }
         }
-        console.log("self.pedDict", self.pedDict);
       },
 
       populatePTC: function () {
@@ -389,35 +378,37 @@
         return opts.dataset;
       },
 
-      addNewPhenotypesToOpts: function(opts){
-        let self = this;
+      promisePhenotypes: function(opts){
 
-        console.log("self.familySamples.lenght", self.familySamples.length);
+        return new Promise((resolve, reject) => {
+          console.log("opts inside of getPhenotypesForFamily", opts);
+          let self = this;
+          let pts = [];
+          let promises = [];
+          for (let i = 0; i < self.familySamples.length; i++) {
+            let metP = self.hubSession.promiseGetMetricsForSample(self.project_id, self.familySamples[i])
+              .then((data) => {
+                let pt = self.selectedPhenotype;
+                let samplePhenotype = data.metrics[pt];
+                pts.push(samplePhenotype);
+              })
+            promises.push(metP);
+          }
 
-        for(let i = 0; i < self.familySamples.length; i++){
-          console.log("checking phenotype value for sample", self.familySamples[i]);
-
-
-          self.hubSession.promiseGetMetricsForSample(self.project_id, self.familySamples[i])
-            .then((data) => {
-              let pt = self.selectedPhenotype;
-
-              let samplePhenotype = data.metrics[pt];
-              console.log("phenotype for sample", self.familySamples[i], ": ", samplePhenotype);
-              opts.dataset[i].alleles = samplePhenotype;
-
-            })
-        }
-
-        return opts.dataset;
-
+          Promise.all(promises)
+            .then(() => {
+              resolve(pts)
+            }).catch( (e) => {
+            console.log("error", e);
+            reject(e);
+          });
+        })
       },
 
       addNewGenotypesToOpts: function (opts) {
         let self = this;
         if (self.selectedGenotype === '7:141972755_C/T') {
           for (let i = 0; i < opts.dataset.length; i++) {
-            console.log("opts.dataset[i]", opts.dataset[i]);
             let id = parseInt(opts.dataset[i].name);
             let allele = self.TASGenotypes[id].split(";")[0];
             opts.dataset[i].alleles = allele;
@@ -439,6 +430,7 @@
         self.opts = ptree.build(self.opts);
         $('#pedigree').on('nodeClick', self.onNodeClick)
       },
+
 
       isolateFamily: function () {
         let self = this;
@@ -463,17 +455,32 @@
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
         self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+
+
         self.opts.dataset = io.readLinkage(self.pedTxt);
+        // console.log("self.opts.dataset after io read linkage", self.opts.dataset[0].display_name);
+        // console.log("self.opts after io read linkage", self.opts);
 
         if(self.launchedFrom === 'D') {
           self.opts.dataset = self.addDemoPhenotypesToOpts(self.opts);
-        }
+          self.opts = ptree.build(self.opts);
 
+        }
         else if(self.launchedFrom === 'H'){
-          self.opts.dataset = self.addNewPhenotypesToOpts(self.opts);
+
+          self.promisePhenotypes(self.opts)
+            .then((pts) => {
+              console.log("phenotypes inside resolved promise", pts)
+              console.log("self.opts.dataset inside promise", self.opts.dataset);
+              for(let i = 0; i < pts.length; i++){
+                self.opts.dataset[i].alleles = pts[i];
+              }
+              self.opts = ptree.build(self.opts);
+            })
+
+          // console.log("self.opts after promise return", self.opts);
         }
 
-        self.opts = ptree.build(self.opts);
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
 

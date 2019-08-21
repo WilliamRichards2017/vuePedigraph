@@ -39,7 +39,6 @@ export default class pedTxtBuilder {
         .then((data) => {
           // console.log("sample raw data", data);
           const samples = data.data;
-          console.log("samples", samples);
           for (let i = 0; i < samples.length; i++) {
             let pedLine = self.sampleToPedTxt(samples[i]);
             pedTxt = pedTxt + pedLine;

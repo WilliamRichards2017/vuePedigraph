@@ -9,7 +9,6 @@ export default class PhenotypeHandler {
     this.idMap = idMap;
     this.replacedIDs = {};
     this.replacePTCIDs();
-    console.log(this.replacedIDs);
   }
 
   replacePTCIDs() {
