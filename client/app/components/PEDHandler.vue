@@ -156,8 +156,16 @@
       buildFromHub() {
         let self = this;
         self.pedTxt = self.txt;
+        self.selectedPhenotype = "affected_status";
         self.populateModel();
         self.selectedFamily = self.family_id;
+
+        console.log("phenotypes inside buildFromHub", self.phenotypes);
+
+        let b = self.phenotypes.includes("affected_status");
+
+        console.log("was able to find affected_status", b);
+
       },
 
       buildFromUpload() {
@@ -176,9 +184,8 @@
         self.rebuildPedDict();
         self.highlightFamily();
         if(self.launchedFrom !== "U") {
-          self.parseVariants();
-          console.log("self.parsedVariants inside populateModel", self.parsedVariants);
-
+          // self.parseVariants();
+          // console.log("self.parsedVariants inside populateModel", self.parsedVariants);
         }
 
 
@@ -335,7 +342,7 @@
             self.families[fam.familyID] = fam;
           }
         }
-        console.log("self.families", self.families);
+        // console.log("self.families", self.families);
       },
 
       getDataByFamilyID: function (id) {
@@ -381,7 +388,6 @@
       promisePhenotypes: function(opts){
 
         return new Promise((resolve, reject) => {
-          console.log("opts inside of getPhenotypesForFamily", opts);
           let self = this;
           let pts = [];
           let promises = [];
@@ -468,17 +474,25 @@
         }
         else if(self.launchedFrom === 'H'){
 
+          console.log("change in selectedPhenotype watcher");
+
           self.promisePhenotypes(self.opts)
             .then((pts) => {
-              console.log("phenotypes inside resolved promise", pts)
-              console.log("self.opts.dataset inside promise", self.opts.dataset);
               for(let i = 0; i < pts.length; i++){
+                if(pts[i] === "Affected"){
+                  self.opts.dataset[i].affected = 2;
+                }
+                else if (pts[i] === "Unaffected"){
+                  self.opts.dataset[i].affected = 0;
+                }
+                else{
+                }
                 self.opts.dataset[i].alleles = pts[i];
+
               }
+              console.log("inside of promise resolution");
               self.opts = ptree.build(self.opts);
             })
-
-          // console.log("self.opts after promise return", self.opts);
         }
 
         $('#pedigree').on('nodeClick', self.onNodeClick);
