@@ -107,6 +107,8 @@
         isolatedPedTxt: [],
         hubSession: null,
 
+        sampleIds: null,
+
         opts: {
           "targetDiv": "pedigree",
           labels: ['alleles', 'NA']
@@ -160,13 +162,6 @@
         self.selectedPhenotype = "affected_status";
         self.populateModel();
         self.selectedFamily = self.family_id;
-
-        console.log("phenotypes inside buildFromHub", self.phenotypes);
-
-        let b = self.phenotypes.includes("affected_status");
-
-        console.log("was able to find affected_status", b);
-
       },
 
       buildFromUpload() {
@@ -190,6 +185,25 @@
         }
 
 
+      },
+
+
+      buildPhenotypes: function() {
+        let self = this;
+        $('#pedigree').remove();
+        $('#pedigrees').append($("<div id='pedigree'></div>"));
+        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+        self.opts.dataset = io.readLinkage(self.pedTxt);
+
+        if (self.launchedFrom === 'D') {
+          self.opts.dataset = self.addDemoPhenotypesToOpts(self.opts);
+          self.opts = ptree.build(self.opts);
+
+        } else if (self.launchedFrom === 'H') {
+          self.addHubPhenotypesToOpts();
+        }
+
+        $('#pedigree').on('nodeClick', self.onNodeClick);
       },
 
       parseVariants: function() {
@@ -246,6 +260,17 @@
           }
         }
         return opts;
+      },
+
+      populateSampleIds: function(){
+        let self = this;
+        self.sampleIds = [];
+        for(let i = 0; i < self.opts.dataset.length; i++){
+          let sampleId = parseInt(self.opts.dataset[i].name);
+          console.log("sampleId", sampleId);
+          self.sampleIds.push(sampleId);
+
+        }
       },
 
       highlightFamily: function () {
@@ -386,22 +411,69 @@
         return opts.dataset;
       },
 
+      addHubPhenotypesToOpts: function(){
+        let self = this;
+        self.promisePhenotypes()
+          .then((pts) => {
+
+            console.log("phenotypes dict inside promise resolve", pts);
+
+            console.log("self.opts.dataset inside promise resolve", self.opts.dataset);
+
+            for (let i = 0; i < self.opts.dataset.length; i++) {
+
+              let sampleId = parseInt(self.opts.dataset[i].name);
+
+
+              if (pts.hasOwnProperty(sampleId)) {
+
+                console.log(sampleId, pts[sampleId]);
+
+                let pt = pts[sampleId];
+
+                if (pt === "Affected" || pt === "affected") {
+                  self.opts.dataset[i].affected = 2;
+                  self.cachedPhenotypes[sampleId] = 2;
+                } else if (pt === "Unaffected" || pt === "unaffected") {
+                  self.opts.dataset[i].affected = 0;
+                  self.cachedPhenotypes[sampleId] = 0;
+                }
+                else {
+                  if(typeof pt === "undefined"){
+                    pt = "**";
+                  }
+                  self.opts.dataset[i].alleles = pt;
+                  self.cachedGenotypes[sampleId] = pt;
+                }
+              }
+            }
+            self.opts = self.addCachedValuesToOpts(self.opts);
+            self.opts = ptree.build(self.opts);
+          })
+      },
+
       promisePhenotypes: function(){
 
         return new Promise((resolve, reject) => {
           let self = this;
           let pts = {};
           let promises = [];
-          for (let i = 0; i < self.familySamples.length; i++) {
-            let metP = self.hubSession.promiseGetMetricsForSample(self.project_id, self.familySamples[i])
+
+          console.log("typeof selectedPhenotype", typeof self.selectedPhenotype);
+
+          if(typeof self.selectedPhenotype === "object"){
+            self.selectedPhenotype = "affected_status";
+          }
+
+          self.populateSampleIds();
+
+          for (let i = 0; i < self.sampleIds.length; i++) {
+            let metP = self.hubSession.promiseGetMetricsForSample(self.project_id, self.sampleIds[i])
               .then((data) => {
                 let pt = self.selectedPhenotype;
                 let samplePhenotype = data.metrics[pt];
-                //pts.push(samplePhenotype);
-
-                console.log("sampleId", self.familySamples[i]);
-                console.log("phenotype, samplePhenotype");
-                pts[self.familySamples[i]] = samplePhenotype;
+                let sampleId = self.sampleIds[i];
+                pts[sampleId] = samplePhenotype;
               })
             promises.push(metP);
           }
@@ -436,9 +508,11 @@
         let self = this;
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
+
         self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
         self.opts.dataset = io.readLinkage(self.pedTxt);
         self.opts = ptree.build(self.opts);
+        self.populateSampleIds();
         $('#pedigree').on('nodeClick', self.onNodeClick)
       },
 
@@ -463,66 +537,7 @@
 
       selectedPhenotype: function () {
         let self = this;
-        $('#pedigree').remove();
-        $('#pedigrees').append($("<div id='pedigree'></div>"));
-        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
-        self.opts.dataset = io.readLinkage(self.pedTxt);
-
-        if(self.launchedFrom === 'D') {
-          console.log("self.pedTxt inside launched from demo", self.pedTxt);
-          self.opts.dataset = self.addDemoPhenotypesToOpts(self.opts);
-          self.opts = ptree.build(self.opts);
-
-        }
-        else if(self.launchedFrom === 'H'){
-
-          self.promisePhenotypes()
-            .then((pts) => {
-
-              for(let i = 0 ; i < self.opts.dataset.length; i++){
-
-                let sampleId = parseInt(self.opts.dataset[i].name);
-
-                console.log("sampleID inside phenotype promise resolve")
-
-                if (pts.hasOwnProperty(sampleId)) {
-
-                  console.log(sampleId, pts[sampleId]);
-
-                  const pt = pts[sampleId];
-
-                  if(pt === "Affected" || pt === "affected"){
-                    self.opts.dataset[i].affected = 2;
-                    //TODO: cache phenotype as allele label
-                  }
-                }
-              }
-
-
-              // for(let i = 0; i < pts.length; i++){
-              //   if(pts[i] === "Affected"){
-              //     self.opts.dataset[i].affected = 2;
-              //     console.log("Found affected");
-              //   }
-              //   else if (pts[i] === "Unaffected"){
-              //     self.opts.dataset[i].affected = 0;
-              //     self.cachedPhenotypes[i] = 0;
-              //
-              //     console.log("found unaffected");
-              //   }
-              //   else{
-              //     if(typeof pts[i] === "undefined"){
-              //       pts[i] = "**";
-              //     }
-              //     self.opts.dataset[i].alleles = pts[i];
-              //   }
-              //
-              // }
-              self.opts = ptree.build(self.opts);
-            })
-        }
-
-        $('#pedigree').on('nodeClick', self.onNodeClick);
+        self.buildPhenotypes();
       },
 
       selectedGenotype: function () {
