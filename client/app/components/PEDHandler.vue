@@ -148,9 +148,10 @@
       buildFromDemo() {
         let self = this;
         self.pedTxt = self.txt;
+        console.log("self.pedTxt inside buildFromDemo", self.pedTxt);
         self.populateModel();
         self.populatePTC();
-        self.selectedFamily = self.family_id;
+        self.selectedFamily = "1344";
       },
 
       buildFromHub() {
@@ -385,18 +386,22 @@
         return opts.dataset;
       },
 
-      promisePhenotypes: function(opts){
+      promisePhenotypes: function(){
 
         return new Promise((resolve, reject) => {
           let self = this;
-          let pts = [];
+          let pts = {};
           let promises = [];
           for (let i = 0; i < self.familySamples.length; i++) {
             let metP = self.hubSession.promiseGetMetricsForSample(self.project_id, self.familySamples[i])
               .then((data) => {
                 let pt = self.selectedPhenotype;
                 let samplePhenotype = data.metrics[pt];
-                pts.push(samplePhenotype);
+                //pts.push(samplePhenotype);
+
+                console.log("sampleId", self.familySamples[i]);
+                console.log("phenotype, samplePhenotype");
+                pts[self.familySamples[i]] = samplePhenotype;
               })
             promises.push(metP);
           }
@@ -461,36 +466,58 @@
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
         self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
-
-
         self.opts.dataset = io.readLinkage(self.pedTxt);
-        // console.log("self.opts.dataset after io read linkage", self.opts.dataset[0].display_name);
-        // console.log("self.opts after io read linkage", self.opts);
 
         if(self.launchedFrom === 'D') {
+          console.log("self.pedTxt inside launched from demo", self.pedTxt);
           self.opts.dataset = self.addDemoPhenotypesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
 
         }
         else if(self.launchedFrom === 'H'){
 
-          console.log("change in selectedPhenotype watcher");
-
-          self.promisePhenotypes(self.opts)
+          self.promisePhenotypes()
             .then((pts) => {
-              for(let i = 0; i < pts.length; i++){
-                if(pts[i] === "Affected"){
-                  self.opts.dataset[i].affected = 2;
-                }
-                else if (pts[i] === "Unaffected"){
-                  self.opts.dataset[i].affected = 0;
-                }
-                else{
-                }
-                self.opts.dataset[i].alleles = pts[i];
 
+              for(let i = 0 ; i < self.opts.dataset.length; i++){
+
+                let sampleId = parseInt(self.opts.dataset[i].name);
+
+                console.log("sampleID inside phenotype promise resolve")
+
+                if (pts.hasOwnProperty(sampleId)) {
+
+                  console.log(sampleId, pts[sampleId]);
+
+                  const pt = pts[sampleId];
+
+                  if(pt === "Affected" || pt === "affected"){
+                    self.opts.dataset[i].affected = 2;
+                    //TODO: cache phenotype as allele label
+                  }
+                }
               }
-              console.log("inside of promise resolution");
+
+
+              // for(let i = 0; i < pts.length; i++){
+              //   if(pts[i] === "Affected"){
+              //     self.opts.dataset[i].affected = 2;
+              //     console.log("Found affected");
+              //   }
+              //   else if (pts[i] === "Unaffected"){
+              //     self.opts.dataset[i].affected = 0;
+              //     self.cachedPhenotypes[i] = 0;
+              //
+              //     console.log("found unaffected");
+              //   }
+              //   else{
+              //     if(typeof pts[i] === "undefined"){
+              //       pts[i] = "**";
+              //     }
+              //     self.opts.dataset[i].alleles = pts[i];
+              //   }
+              //
+              // }
               self.opts = ptree.build(self.opts);
             })
         }
