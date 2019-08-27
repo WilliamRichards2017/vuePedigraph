@@ -14,12 +14,12 @@
 
     <PEDHandler
       v-if="launchedFrom === 'H' && typeof pedTxt === 'string' && typeof familyId === 'string'"
-      :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants" :family_id="familyId" :familySamples="familySamples" :phenotypes="phenotypes"
+      :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants" :family_id="familyId" :phenotypes="phenotypes"
   />
 
     <PEDHandler
       v-if="launchedFrom === 'D'"
-      :launchedFrom="launchedFrom" :txt="demoTxt"
+      :launchedFrom="launchedFrom" :txt="demoTxt" :phenotypes="demoPhenotypes" :variants="demoVariants"
      />
 
     <PEDHandler
@@ -58,11 +58,15 @@
       launchedFrom : null,
       pedTxt: null,
       hubTxt: null,
-      variants: null,
       samples: null,
       familyId: null,
       familySamples: null,
       phenotypes: null,
+      variants: null,
+
+      demoPhenotypes: ["PTC Sensitivity"],
+      demoVariants: ["7:141972755_C/T"],
+
       file: '',
       uploadedPedTxt: null,
     }
@@ -90,6 +94,10 @@
         self.buildVariantsFromSet();
         // self.buildAllVariants();
       }
+      else if (self.launchedFrom === "D"){
+
+      }
+
     },
     uploadedPedTxt : function() {
       let self = this;

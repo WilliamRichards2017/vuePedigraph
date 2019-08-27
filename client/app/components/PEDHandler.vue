@@ -16,6 +16,7 @@
 
       <v-spacer></v-spacer>
 
+      <!--TODO: phenotypes shouldnt be passed in as prop most likely-->
       <v-select :items="phenotypes"
                 id="selectPhenotype" label="Select Phenotype" v-model="selectedPhenotype"
       >
@@ -67,7 +68,6 @@
       launchedFrom: null,
       variants: null,
       family_id: null,
-      familySamples: null,
       phenotypes: null
     },
     components: {
@@ -82,9 +82,6 @@
 
         PTCPhenotypes: {},
         TASGenotypes: TAS,
-
-        // phenotypes: ['PTC Sensitivity'],
-        genotypes: ['7:141972755_C/T'],
 
         cachedPhenotypes: {},
         cachedGenotypes: {},
@@ -150,9 +147,11 @@
       buildFromDemo() {
         let self = this;
         self.pedTxt = self.txt;
-        console.log("self.pedTxt inside buildFromDemo", self.pedTxt);
+        self.parsedVariants = self.variants;
         self.populateModel();
         self.populatePTC();
+        // self.selectedPhenotype = "PTC Sensitivity";
+        // self.selectedGenotype = "7:141972755_C/T";
         self.selectedFamily = "1344";
       },
 
@@ -196,29 +195,23 @@
         self.opts.dataset = io.readLinkage(self.pedTxt);
 
         if (self.launchedFrom === 'D') {
-          self.opts.dataset = self.addDemoPhenotypesToOpts(self.opts);
-          self.opts = ptree.build(self.opts);
+          self.buildDemoPhenotypes();
 
         } else if (self.launchedFrom === 'H') {
-          self.addHubPhenotypesToOpts();
+          self.buildHubPhenotypes();
         }
-
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
 
+
+      //Needed for when mosaic has variants for a project with ped data
       parseVariants: function() {
         let self = this;
         self.parsedVariants = [];
-
-        console.log("self.variants inside parseVariants", self.variants);
-
         for(let i = 0; i < self.variants.length; i++){
           let parsedVariant = self.variants[i].chr + ":" + self.variants[i].pos + "_" + self.variants[i].ref + "/" + self.variants[i].alt;
           self.parsedVariants.push(parsedVariant);
-          console.log("parsed variant is", parsedVariant);
-          console.log("parsed variants is ", self.parsedVariants);
         }
-
       },
 
       resetValues: function () {
@@ -267,9 +260,7 @@
         self.sampleIds = [];
         for(let i = 0; i < self.opts.dataset.length; i++){
           let sampleId = parseInt(self.opts.dataset[i].name);
-          console.log("sampleId", sampleId);
           self.sampleIds.push(sampleId);
-
         }
       },
 
@@ -342,6 +333,8 @@
         let self = this;
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
+        console.log("self.PTCPhenotypes inside populatePTC",self.PTCPhenotypes);
+
       },
 
       rebuildPedDict: function () {
@@ -382,16 +375,16 @@
         return data;
       },
 
-      addDemoPhenotypesToOpts: function (opts) {
+      buildDemoPhenotypes: function () {
         let self = this;
         self.cachedPhenotypes = {};
         if (self.selectedPhenotype === "PTC Sensitivity") {
-          for (let i = 0; i < opts.dataset.length; i++) {
-            let id = parseInt(opts.dataset[i].name);
+          for (let i = 0; i < self.opts.dataset.length; i++) {
+            let id = parseInt(self.opts.dataset[i].name);
             let sens = self.PTCPhenotypes[id];
 
             if (typeof sens === 'undefined' || sens === 'nan') {
-              opts.dataset[i].NA = ' **';
+              self.opts.dataset[i].NA = ' **';
               self.cachedNulls.push(id);
             } else if (typeof sens === 'string') {
               if (sens.includes('>') || sens.includes('<')) {
@@ -402,16 +395,20 @@
             if (sens < 7) {
               aff = 2;
             }
-            opts.dataset[i].affected = aff;
+            self.opts.dataset[i].affected = aff;
             self.cachedPhenotypes[id] = aff;
             // // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
           }
           self.opts = self.addCachedValuesToOpts(self.opts);
+          self.opts = ptree.build(self.opts);
+
         }
-        return opts.dataset;
+        // return opts.dataset;
       },
 
-      addHubPhenotypesToOpts: function(){
+
+      //Todo: inconsistant with addDemoPhenotypesToOpts
+      buildHubPhenotypes: function(){
         let self = this;
         self.promisePhenotypes()
           .then((pts) => {
@@ -427,7 +424,7 @@
 
               if (pts.hasOwnProperty(sampleId)) {
 
-                console.log(sampleId, pts[sampleId]);
+                // console.log(sampleId, pts[sampleId]);
 
                 let pt = pts[sampleId];
 
@@ -458,9 +455,7 @@
           let self = this;
           let pts = {};
           let promises = [];
-
           console.log("typeof selectedPhenotype", typeof self.selectedPhenotype);
-
           if(typeof self.selectedPhenotype === "object"){
             self.selectedPhenotype = "affected_status";
           }
@@ -477,7 +472,6 @@
               })
             promises.push(metP);
           }
-
           Promise.all(promises)
             .then(() => {
               resolve(pts)
