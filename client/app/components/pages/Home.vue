@@ -4,15 +4,30 @@
 
     <div v-if="launchedFrom===null">
 
+      <v-toolbar color="#123d53" dark>
+        <v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>
+      </v-toolbar>
 
-      <FileReader @load="uploadedPedTxt = $event"></FileReader>
 
-      <v-btn small v-on:click="launchedFrom ='U'">Upload data</v-btn>
-      <v-btn small v-on:click="launchedFrom ='H'">Launch from mosaic</v-btn>
-      <v-btn small v-on:click="launchedFrom ='D'">Try with demo data</v-btn>
+      <div class="buttons-group">
+
+
+        <div>
+      <v-btn large v-on:click="launchedFrom ='H'" class="welcome-button">Launch from mosaic</v-btn>
+        </div>
+
+        <div>
+      <v-btn large v-on:click="launchedFrom ='D'" class="welcome-button">Try with demo data</v-btn>
+        </div>
+      <div class="uploader">
+        <FileReader @load="uploadedPedTxt = $event; launchedFrom='U'" style="text-align: center"></FileReader>
+      </div>
+      </div>
+
     </div>
 
-    <PEDHandler
+
+      <PEDHandler
       v-if="launchedFrom === 'H' && typeof pedTxt === 'string' && typeof familyId === 'string'"
       :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants" :family_id="familyId" :phenotypes="phenotypes"
   />
@@ -209,5 +224,44 @@
     overflow: hidden;
     clip: rect(1px, 1px, 1px, 1px);
   }
+
+  .buttons-group{
+    text-align: center;
+  }
+
+  .welcome-button{
+    white-space: nowrap;
+    font-size: 24px !important;
+    margin-left: 7px;
+    margin-right: 7px;
+    width: 270px;
+    height: 80px;
+    text-align: center;
+    padding: 20px;
+
+    margin-top: 25px;
+    margin-bottom: 25px;
+
+    /*display: block;*/
+
+  }
+
+  .uploader{
+    white-space: nowrap;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    text-align: center;
+    width: 360px;
+    height: 80px;
+
+    padding: 20px;
+
+    font-size: 24px !important;
+    white-space: nowrap;
+    border: 1px solid black;
+    display: inline-block;
+  }
+
+
 
 </style>
