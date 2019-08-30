@@ -8,22 +8,30 @@
         <v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>
       </v-toolbar>
 
+      <div class="tag-line"> <h1>Interactive Pedigree</h1></div>
+      <div class="tag-line2"><h1>Visualization</h1></div>
 
-      <div class="buttons-group">
+      <h4 class="headline" style="text-align: center; padding-top: 25px; padding-bottom: 0; margin-bottom: 0">Visually inspect genotype and phenotype</h4>
+      <h4 class="headline" style="text-align: center; padding-top: 0; margin-top: 0 padding-bottom: 25px">relationships across a pedigree</h4>
 
+      <div class="flex-grid" style="justify:center; text-align: center">
 
-        <div>
-      <v-btn large v-on:click="launchedFrom ='H'" class="welcome-button">Launch from mosaic</v-btn>
+        <div class="column">
+          <FileReader class="uploader" @load="uploadedPedTxt = $event; launchedFrom='U'" ></FileReader>
+          <p>Upload a pedigree file from local storage.  Make sure the file is a valid <a href="https://gatkforums.broadinstitute.org/gatk/discussion/7696/pedigree-ped-files">.ped</a> file</p>
         </div>
 
-        <div>
-      <v-btn large v-on:click="launchedFrom ='D'" class="welcome-button">Try with demo data</v-btn>
+        <div class="column">
+      <v-btn  raised large color="primary" v-on:click="launchedFrom ='D'" class="welcome-button">Try with demo data</v-btn>
+          <p>Test out the tool with demo data.  This dataset showcases an example genotype/phenotype correlation across a set of large multi-generational families.  <a href="http://www.cephb.fr/en/familles_CEPH.php">Click here </a> to learn more about the CEPH dataset</p>
         </div>
-      <div class="uploader">
-        <FileReader @load="uploadedPedTxt = $event; launchedFrom='U'" style="text-align: center"></FileReader>
-      </div>
-      </div>
 
+        <div class="column">
+          <v-btn raised color="primary" large v-on:click="launchedFrom ='H'" class="welcome-button">Launch from mosaic</v-btn>
+          <p>Launch pedigree.iobio with mosaic hosted data. <a href="https://frameshift.io/">Click here</a> to learn more about mosaic, a collaborative platform for organizing, understanding, and visualizing genomic data.</p>
+        </div>
+
+      </div>
     </div>
 
 
@@ -42,6 +50,7 @@
       :launchedFrom="launchedFrom" :txt="uploadedPedTxt"
     />
 
+    </div>
 
   </div>
 </template>
@@ -227,6 +236,9 @@
 
   .buttons-group{
     text-align: center;
+    display: flex;
+    justify-content: center;
+
   }
 
   .welcome-button{
@@ -234,8 +246,8 @@
     font-size: 24px !important;
     margin-left: 7px;
     margin-right: 7px;
-    width: 270px;
-    height: 80px;
+    /*width: 340px;*/
+    height: 100px;
     text-align: center;
     padding: 20px;
 
@@ -251,7 +263,7 @@
     margin-top: 25px;
     margin-bottom: 25px;
     text-align: center;
-    width: 360px;
+    width: 335px;
     height: 80px;
 
     padding: 20px;
@@ -263,5 +275,41 @@
   }
 
 
+  .tag-line{
+    color: black;
+    font-size: 32px;
+    line-height: 36px;
+    --font-family-sans-serif: "Open Sans", sans-serif;
+    --font-family-monospace: "Roboto Mono", monospace;    font-weight: normal;
+    text-align: center;
+    padding-top: 50px;
+    padding-bottom: 25px;
+  }
+
+.tag-line2{
+  color: black;
+  font-size: 32px;
+  line-height: 36px;
+  --font-family-sans-serif: "Open Sans", sans-serif;
+  --font-family-monospace: "Roboto Mono", monospace;  font-weight: normal;
+  text-align: center;
+  padding-bottom: 25px;
+}
+
+  .flex-grid {
+    display: flex;
+  }
+  .row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .column {
+    flex-basis: 100%;
+    margin: 10px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+  }
 
 </style>

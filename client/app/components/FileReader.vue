@@ -1,9 +1,8 @@
 <template>
   <label class="text-reader">
-    <input type="file" @change="loadTextFromFile">
+    <input type="file" @change="loadTextFromFile" accept=".txt, .ped">
   </label>
 </template>
-
 <script>
   export default {
     name: 'text-reader',
