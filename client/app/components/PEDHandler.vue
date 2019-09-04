@@ -41,17 +41,22 @@
 </template>
 
 <script>
-  import * as pedigreejs from '../../js/pedigreejs'
-  import PhenotypeHandler from '../../js/PhenotypeHandler'
-
-  import family from '../../js/family'
-  import toggle from './toggle.vue'
-  import navigation from './navigation.vue'
-  import TAS from '../../static/TAS2R38';
-
 
   import 'vuetify'
+
+  import TAS from '../../static/TAS2R38';
+
+  //DO NOT REMOVE!!!
+  import * as pedigreejs from '../../js/pedigreejs'
+  //pedigreejs is used and must not be removed
+
+  import PhenotypeHandler from '../../js/PhenotypeHandler'
   import HubSession from "../../js/HubSession";
+  import family from '../../js/family'
+  import Regression from "../../js/Regression.js"
+
+  import toggle from './toggle.vue'
+  import navigation from './navigation.vue'
 
   export default {
     name: 'PEDHandler',
@@ -150,9 +155,19 @@
         self.parsedVariants = self.variants;
         self.populateModel();
         self.populatePTC();
-        // self.selectedPhenotype = "PTC Sensitivity";
-        // self.selectedGenotype = "7:141972755_C/T";
-        self.selectedFamily = "1344";
+        self.selectedPhenotype = "PTC Sensitivity";
+        self.selectedGenotype = "7:141972755_C/T";
+        self.selectedFamily = "1463";
+
+        // for(let key in self.PTCPhenotypes){
+        //   console.log("PT:", self.PTCPhenotypes[key]);
+
+        let PHandler = new PhenotypeHandler();
+
+        self.PTCPhenotypes = PHandler.replacedIDs;
+
+        let regression = new Regression(self.TASGenotypes, self.PTCPhenotypes);
+
       },
 
       buildFromHub() {
@@ -333,7 +348,6 @@
         let self = this;
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
-        console.log("self.PTCPhenotypes inside populatePTC",self.PTCPhenotypes);
 
       },
 
@@ -401,7 +415,6 @@
           }
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
-
         }
         // return opts.dataset;
       },
@@ -488,6 +501,7 @@
           for (let i = 0; i < opts.dataset.length; i++) {
             let id = parseInt(opts.dataset[i].name);
             let allele = self.TASGenotypes[id].split(";")[0];
+
             opts.dataset[i].alleles = allele;
             self.cachedGenotypes[id] = allele;
           }

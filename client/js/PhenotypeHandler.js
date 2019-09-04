@@ -11,12 +11,11 @@ export default class PhenotypeHandler {
     this.replacePTCIDs();
   }
 
+
   replacePTCIDs() {
     let self = this;
 
-
     for(let key in self.PTC){
-      // console.log(key, self.PTC[key]);
       let newKey = self.idMap[key].split('-')[1];
       self.replacedIDs[newKey] = self.PTC[key];
     }

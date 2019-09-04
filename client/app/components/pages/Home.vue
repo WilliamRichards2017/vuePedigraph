@@ -8,11 +8,11 @@
         <v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>
       </v-toolbar>
 
-      <div class="tag-line"> <h1>Interactive Pedigree</h1></div>
+      <div class="tag-line"> <h1>An Interactive Pedigree</h1></div>
       <div class="tag-line2"><h1>Visualization</h1></div>
 
       <h4 class="headline" style="text-align: center; padding-top: 25px; padding-bottom: 0; margin-bottom: 0">Visually inspect genotype and phenotype</h4>
-      <h4 class="headline" style="text-align: center; padding-top: 0; margin-top: 0 padding-bottom: 25px">relationships across a pedigree</h4>
+      <h4 class="headline" style="text-align: center; padding-top: 0; margin-top: 0; padding-bottom: 25px; margin-bottom: 25px">relationships across a pedigree</h4>
 
       <div class="flex-grid" style="justify:center; text-align: center">
 
