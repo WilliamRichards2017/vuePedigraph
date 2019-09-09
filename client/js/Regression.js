@@ -7,6 +7,8 @@ export default class Regression {
 
     this.correlationMap = {};
 
+    this.correlation = -1;
+
 
     this.buildDemoCorrelationMap();
 
@@ -53,10 +55,11 @@ export default class Regression {
 
     let data = [x,y];
 
-    let correlation = this.pearsonCorrelation(data, 0 , 1);
-    console.log("correlation", correlation);
+    self.correlation = self.pearsonCorrelation(data, 0 , 1);
 
-    console.log("self.correlationMap", self.correlationMap);
+    console.log("self.correlation", self.correlation);
+
+
   }
 
   pearsonCorrelation(prefs, p1, p2) {
@@ -98,6 +101,55 @@ export default class Regression {
     if (den == 0) return 0;
 
     return num / den;
+  }
+
+  getFamilyCorrelation(sampleIds) {
+
+    console.log("sampleIds in getFamilyCorrelation", sampleIds);
+
+    let self = this;
+
+    let x = [];
+    let y = [];
+
+    for(let i  = 0; i < sampleIds.length; i++){
+
+      let af = -1;
+
+      let key = sampleIds[i];
+
+      let gt = self.rawGenotypes[key];
+      let pt = self.rawPhenotypes[key];
+
+      console.log("gt", gt);
+      console.log("pt", pt);
+
+      if(gt === "1/1"){
+        af = 1;
+      }
+      else if(gt === "1/0" || gt === "0/1"){
+        af = 0.5;
+      }
+      else if(gt === "0/0"){
+        af = 0;
+      }
+      else{
+        console.log("error: could not interpret GT", gt);
+        af = "not a number";
+      }
+
+      if(typeof af === "number" && typeof parseInt(pt) === "number") {
+        self.correlationMap[key] = [parseFloat(af), parseInt(pt)];
+        x.push(parseFloat(af));
+        y.push(parseFloat(pt));
+      }
+
+    }
+
+    let data = [x,y];
+
+    return self.pearsonCorrelation(data, 0, 1);
+
   }
 
 
