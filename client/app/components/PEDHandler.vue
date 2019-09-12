@@ -11,6 +11,8 @@
                 id='selectFamily'
                 label="Select Family ID"
                 v-model="selectedFamily"
+
+                style="border: none; background-color: transparent;"
       >
       </v-select>
 
@@ -31,16 +33,43 @@
 
       <v-spacer></v-spacer>
 
-      <v-switch :label="'Isolate Selected Nodes'"
+      <v-switch label="'Isolate Selected Nodes'"
                 v-model="isolateFamily"></v-switch>
 
 
-      <div style="padding: 10px; margin: 10px">GT/PT project correlation: <br>{{projectPC}}</div>
+      <v-btn
+        @click.stop="drawer = !drawer" icon left
+      >
+        Regression
+        <i class="fas fa-caret-down"></i>
+      </v-btn>
 
-       <div style="padding: 10px; margin: 10px">GT/PT family correlation: <br> {{familyPC}}</div>
+
+      <v-navigation-drawer
+        v-model="drawer"
+        right
+      >
+
+        <v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression"> Select Regression Type</v-select>
+
+        <div style="padding: 10px; margin: 10px">GT/PT project correlation: <br>{{projectPC}}</div>
+        <div style="padding: 10px; margin: 10px">GT/PT family correlation: <br> {{familyPC}}</div>
+
+      </v-navigation-drawer>
+
+
+
+
+      <v-select-list></v-select-list>
 
 
     </v-toolbar>
+
+    <v-navigation-drawer
+      v-model="drawer"
+      right
+    >
+    </v-navigation-drawer>
 
     <div id="pedigrees">
     </div>
@@ -51,6 +80,17 @@
 <script>
   import 'vuetify'
   import TAS from '../../static/TAS2R38';
+  // import '@mdi/font/css/materialdesignicons.css' // Ensure you are using css-loader
+  // import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+
+
+
+
+
+
+
+
+
   //DO NOT REMOVE!!!
   import * as pedigreejs from '../../js/pedigreejs'
   //pedigreejs is used and must not be removed
@@ -79,7 +119,10 @@
     },
     components: {
       navigation,
-      toggle
+      toggle,
+    },
+    icons: {
+      iconfont: 'fa'
     },
     data() {
       return {
@@ -107,6 +150,9 @@
         projectPC: null,
         familyPC: null,
         regression: null,
+        drawer: false,
+        selectedRegression: "Linear",
+        regressionTypes: ["Linear", "Logistic", "Polynomial"],
         opts: {
           "targetDiv": "pedigree",
           labels: ['alleles', 'NA']
