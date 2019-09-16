@@ -36,31 +36,60 @@
       <v-switch label="'Isolate Selected Nodes'"
                 v-model="isolateFamily"></v-switch>
 
+      <v-spacer></v-spacer>
+
+
 
       <v-btn
+        style="margin-right: 75px; margin-right: 25px"
         @click.stop="drawer = !drawer" icon left
+
       >
         Regression
         <i class="fas fa-caret-down"></i>
       </v-btn>
 
+      <v-spacer></v-spacer>
+
+
 
       <v-navigation-drawer
         v-model="drawer"
         right
+
+        fixed
+        absolute
+        temporary
+
+        height="300px"
       >
 
         <v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression"> Select Regression Type</v-select>
 
-        <div style="padding: 10px; margin: 10px">GT/PT project correlation: <br>{{projectPC}}</div>
-        <div style="padding: 10px; margin: 10px">GT/PT family correlation: <br> {{familyPC}}</div>
+
+        <v-spacer></v-spacer>
+
+        <div class="title"> Phenotype / Allele Frequency Regression</div>
+        <br>
+
+
+        <div class="subtitle2">Project wide correslation: <br>{{projectPC}}</div>
+        <v-spacer></v-spacer>
+        <br>
+        <div class="subtitle2">Family specific correlation: <br> {{familyPC}}</div>
+
+        <br>
+
+        <v-switch label="toggle regression scatterplots"
+                  v-model="toggle"
+                  ></v-switch>
 
       </v-navigation-drawer>
 
 
 
 
-      <v-select-list></v-select-list>
+      <!--<v-select></v-select>-->
 
 
     </v-toolbar>
@@ -71,8 +100,11 @@
     >
     </v-navigation-drawer>
 
-    <div id="pedigrees">
+
+    <div id="pedigrees" v-show="showPed" >
     </div>
+
+    <div v-show="!showPed"> swag</div>
 
   </div>
 </template>
@@ -151,7 +183,9 @@
         familyPC: null,
         regression: null,
         drawer: false,
-        selectedRegression: "Linear",
+        toggle: null,
+        selectedRegression: null,
+        showPed: true,
         regressionTypes: ["Linear", "Logistic", "Polynomial"],
         opts: {
           "targetDiv": "pedigree",
@@ -194,17 +228,6 @@
         self.selectedFamily = "1463";
         // for(let key in self.PTCPhenotypes){
         //   console.log("PT:", self.PTCPhenotypes[key]);
-
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes);
-
-
-        self.projectPC = self.regression.correlation.toFixed(4);
-
-        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
-        self.opts.dataset = io.readLinkage(self.pedTxt);
-
-        self.populateSampleIds();
-        self.familyPC = self.regression.getFamilyCorrelation(self.sampleIds).toFixed(4);
 
 
 
@@ -436,7 +459,9 @@
         }
         // return opts.dataset;
       },
-      //Todo: inconsistant with addDemoPhenotypesToOpts
+
+
+
       buildHubPhenotypes: function(){
         let self = this;
         self.promisePhenotypes()
@@ -520,12 +545,19 @@
         self.opts.dataset = io.readLinkage(self.pedTxt);
         self.opts = ptree.build(self.opts);
         self.populateSampleIds();
-        self.familyPC = self.regression.getFamilyCorrelation(self.sampleIds).toFixed(4);
 
 
         // console.log("self.sampleIds in watcher", self.sampleIds);
         $('#pedigree').on('nodeClick', self.onNodeClick)
       },
+
+      toggle: function(){
+        let self = this;
+
+        console.log("inside toggleScatterplots", self.showPed);
+        self.showPed = !self.showPed;
+      },
+
       isolateFamily: function () {
         let self = this;
         $('#pedigree').remove();
@@ -557,6 +589,25 @@
         self.opts.dataset = self.addNewGenotypesToOpts(self.opts);
         self.opts = ptree.build(self.opts);
         $('#pedigree').on('nodeClick', self.onNodeClick);
+      },
+      selectedRegression: function() {
+        let self = this;
+
+        if (self.selectedRegression === "Linear") {
+          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes);
+
+
+
+          self.projectPC = self.regression.correlation.toFixed(4);
+
+          self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+          self.opts.dataset = io.readLinkage(self.pedTxt);
+
+          self.populateSampleIds();
+          self.familyPC = self.regression.getFamilyCorrelation(self.sampleIds).toFixed(4);
+
+
+        }
       }
     }
   }
