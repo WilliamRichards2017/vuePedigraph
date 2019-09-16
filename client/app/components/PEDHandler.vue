@@ -80,7 +80,8 @@
 
         <br>
 
-        <v-switch label="toggle regression scatterplots"
+        <v-switch
+          label="toggle regression scatterplots"
                   v-model="toggle"
                   ></v-switch>
 
@@ -101,10 +102,10 @@
     </v-navigation-drawer>
 
 
-    <div id="pedigrees" v-show="showPed" >
+    <div id="pedigrees" v-show="showPed">
     </div>
 
-    <div v-show="!showPed"> swag</div>
+    <vueScatter v-if="!showPed" :rawData="scatterplotData"> swag</vueScatter>
 
   </div>
 </template>
@@ -132,6 +133,8 @@
   import Regression from "../../js/Regression.js"
   import toggle from './toggle.vue'
   import navigation from './navigation.vue'
+  import vueScatter from "./scatterplot.vue"
+
   export default {
     name: 'PEDHandler',
     props: {
@@ -152,6 +155,7 @@
     components: {
       navigation,
       toggle,
+      vueScatter
     },
     icons: {
       iconfont: 'fa'
@@ -186,6 +190,7 @@
         toggle: null,
         selectedRegression: null,
         showPed: true,
+        scatterplotData: null,
         regressionTypes: ["Linear", "Logistic", "Polynomial"],
         opts: {
           "targetDiv": "pedigree",
@@ -336,7 +341,8 @@
       },
       highlightFamily: function () {
         let self = this;
-        let parentNodes = d3.selectAll(".node").nodes().map(function (d) {
+        let parentNodes =
+          d3.selectAll(".node").nodes().map(function (d) {
           return d.parentNode;
         });
         parentNodes.forEach(function (n) {
@@ -605,6 +611,8 @@
 
           self.populateSampleIds();
           self.familyPC = self.regression.getFamilyCorrelation(self.sampleIds).toFixed(4);
+          console.log("self.familyPC", self.familyPC);
+          self.scatterplotData = self.regression.getScatterplotData();
 
 
         }
