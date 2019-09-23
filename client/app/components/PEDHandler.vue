@@ -73,10 +73,10 @@
         <br>
 
 
-        <div class="subtitle2">Project wide correslation: <br>{{projectPC}}</div>
+        <div class="subtitle2">Project wide correlation coefficient: <br>{{projectCorrelation}}</div>
         <v-spacer></v-spacer>
         <br>
-        <div class="subtitle2">Family specific correlation: <br> {{familyPC}}</div>
+        <div class="subtitle2">Family specific correlation coefficient: <br> {{familyCorrelation}}</div>
 
         <br>
 
@@ -105,7 +105,7 @@
     <div id="pedigrees" v-show="showPed">
     </div>
 
-    <vueScatter v-if="!showPed" :rawData="scatterplotData"> swag</vueScatter>
+    <vueScatter v-if="!showPed" :rawData="scatterplotData" :linePoints="linePoints"> swag</vueScatter>
 
   </div>
 </template>
@@ -183,15 +183,16 @@
         isolatedPedTxt: [],
         hubSession: null,
         sampleIds: null,
-        projectPC: null,
-        familyPC: null,
+        projectCorrelation: null,
+        familyCorrelation: null,
         regression: null,
+        ccType: null,
         drawer: false,
         toggle: null,
         selectedRegression: null,
         showPed: true,
         scatterplotData: null,
-        regressionTypes: ["Linear", "Logistic", "Polynomial"],
+        regressionTypes: ["Linear", "Polynomial"],
         opts: {
           "targetDiv": "pedigree",
           labels: ['alleles', 'NA']
@@ -316,7 +317,6 @@
           }
           if (self.cachedPhenotypes.hasOwnProperty(id)) {
             let aff = self.cachedPhenotypes[id];
-            console.log("aff", aff);
             opts.dataset[i].affected = aff;
           }
           if (self.cachedNulls.includes(id)) {
@@ -472,8 +472,7 @@
         let self = this;
         self.promisePhenotypes()
           .then((pts) => {
-            console.log("phenotypes dict inside promise resolve", pts);
-            console.log("self.opts.dataset inside promise resolve", self.opts.dataset);
+
             for (let i = 0; i < self.opts.dataset.length; i++) {
               let sampleId = parseInt(self.opts.dataset[i].name);
               if (pts.hasOwnProperty(sampleId)) {
@@ -560,7 +559,6 @@
       toggle: function(){
         let self = this;
 
-        console.log("inside toggleScatterplots", self.showPed);
         self.showPed = !self.showPed;
       },
 
@@ -600,22 +598,32 @@
         let self = this;
 
         if (self.selectedRegression === "Linear") {
-          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes);
+          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear");
+          self.ccType = "Pearson correlations coefficient";
+        }
+
+        else if (self.selectedRegression === "Polynomial"){
+          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Polynomial");
+          self.ccType = "Pearsons correlation coefficient";
+        }
 
 
 
-          self.projectPC = self.regression.correlation.toFixed(4);
+          self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
 
           self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
           self.opts.dataset = io.readLinkage(self.pedTxt);
 
           self.populateSampleIds();
-          self.familyPC = self.regression.getFamilyCorrelation(self.sampleIds).toFixed(4);
-          console.log("self.familyPC", self.familyPC);
+          self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds).toFixed(4);
+          console.log("self.familyPC", self.familyCorrelation);
           self.scatterplotData = self.regression.getScatterplotData();
+          self.linePoints = self.regression.getLinePoints();
+
+          console.log("self.linePoints inside PedHandler", self.linePoints);
 
 
-        }
+
       }
     }
   }

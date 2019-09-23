@@ -1,28 +1,39 @@
 import pearsonCorrelation from "./pearson-correlation.js"
+import PolynomialRegression from "js-polynomial-regression";
+import Correlation from "js-polynomial-regression/src/Correlation";
+
 
 export default class Regression {
-  constructor(rawGenotypes, rawPhenotypes) {
+  constructor(rawGenotypes, rawPhenotypes, regressionType) {
     this.rawGenotypes = rawGenotypes;
     this.rawPhenotypes = rawPhenotypes;
 
-    this.correlationMap = {};
-
-    this.correlation = -1;
+    this.regressionType = regressionType;
 
 
-    this.buildDemoCorrelationMap();
+    this.projectCorrelation = -1;
+
+    this.scatterplotData = null;
+    this.linePoints = null;
+
+    this.x = null;
+    this.y = null;
+
+
+    this.buildXandY();
+    this.calculateProjectCorrelation();
 
   }
 
 
-  buildDemoCorrelationMap() {
+  buildXandY() {
     let self = this;
 
-    console.log("genotypes", self.rawGenotypes);
-    console.log("phenotypes", self.rawPhenotypes);
+    // console.log("genotypes", self.rawGenotypes);
+    // console.log("phenotypes", self.rawPhenotypes);
 
-    let x = [];
-    let y = [];
+    self.x = [];
+    self.y = [];
 
     for (let key in self.rawGenotypes) {
 
@@ -46,20 +57,46 @@ export default class Regression {
         af = "not a number";
       }
 
-      if(typeof af === "number" && typeof parseInt(pt) === "number") {
-        self.correlationMap[key] = [parseFloat(af), parseInt(pt)];
-        x.push(parseFloat(af));
-        y.push(parseFloat(pt));
+      if(typeof af === "number" && typeof parseInt(pt) === "number"  && !isNaN(pt)) {
+        self.x.push(parseFloat(af));
+        self.y.push(parseInt(pt));
       }
     }
 
-    let data = [x,y];
+    self.linePoints = self.findLineByLeastSquares(self.x, self.y);
+  }
 
-    self.correlation = self.pearsonCorrelation(data, 0 , 1);
-
-    console.log("self.correlation", self.correlation);
+  calculateProjectCorrelation(){
 
 
+    let self = this;
+
+    if(self.regressionType === "Linear") {
+      let data = [self.x,self.y];
+
+
+        self.projectCorrelation = self.pearsonCorrelation(data, 0, 1);
+    }
+
+    else if(self.regressionType === 'Polynomial') {
+      let data = [];
+
+
+      console.log("Polynomial Regression");
+
+      for (let i = 0; i < self.x.length; i++) {
+        data.push({x: self.x[i], y: self.y[i]});
+      }
+
+      console.log("data in Polynomial", data);
+      const model = PolynomialRegression.read(data, 3);
+
+
+      const correlation = new Correlation(self.x,self.y);
+
+      self.projectCorrelation = correlation.correlationCoefficient();
+
+    }
   }
 
   pearsonCorrelation(prefs, p1, p2) {
@@ -112,7 +149,7 @@ export default class Regression {
     let x = [];
     let y = [];
 
-    for(let i  = 0; i < sampleIds.length; i++){
+   for(let i  = 0; i < sampleIds.length; i++){
 
       let af = -1;
 
@@ -120,9 +157,6 @@ export default class Regression {
 
       let gt = self.rawGenotypes[key];
       let pt = self.rawPhenotypes[key];
-
-      console.log("gt", gt);
-      console.log("pt", pt);
 
       if(gt === "1/1"){
         af = 1;
@@ -138,20 +172,111 @@ export default class Regression {
         af = "not a number";
       }
 
-      if(typeof af === "number" && typeof parseInt(pt) === "number") {
-        self.correlationMap[key] = [parseFloat(af), parseInt(pt)];
+      if(typeof af === "number" && typeof parseInt(pt) === "number" && !isNaN(pt)) {
         x.push(parseFloat(af));
-        y.push(parseFloat(pt));
+        y.push(parseInt(pt));
       }
 
     }
 
-    let data = [x,y];
+    self.scatterplotData = [x,y];
 
-    return self.pearsonCorrelation(data, 0, 1);
+
+    let familyCorrelation = -1;
+    if(self.regressionType === "Linear"){
+      console.log("linear Regression selected");
+      familyCorrelation = self.pearsonCorrelation(self.scatterplotData, 0, 1);
+    }
+    else if(self.regressionType === "Polynomial"){
+
+      console.log("Polynomial Regression selected");
+
+      console.log("x,y", x, y);
+
+
+      const correlation= new Correlation(x,y);
+
+      familyCorrelation = correlation.correlationCoefficient();
+
+      if(isNaN(familyCorrelation)){
+        familyCorrelation = 0;
+      }
+
+    }
+    return familyCorrelation;
 
   }
 
+  findLineByLeastSquares(values_x, values_y) {
+    var x_sum = 0;
+    var y_sum = 0;
+    var xy_sum = 0;
+    var xx_sum = 0;
+    var count = 0;
 
+    /*
+     * The above is just for quick access, makes the program faster
+     */
+    var x = 0;
+    var y = 0;
+    var values_length = values_x.length;
+
+    if (values_length != values_y.length) {
+      throw new Error('The parameters values_x and values_y need to have same size!');
+    }
+
+    /*
+     * Above and below cover edge cases
+     */
+    if (values_length === 0) {
+      return [ [], [] ];
+    }
+
+    /*
+     * Calculate the sum for each of the parts necessary.
+     */
+    for (let i = 0; i< values_length; i++) {
+      x = values_x[i];
+      y = values_y[i];
+      x_sum+= x;
+      y_sum+= y;
+      xx_sum += x*x;
+      xy_sum += x*y;
+      count++;
+    }
+
+    /*
+     * Calculate m and b for the line equation:
+     * y = x * m + b
+     */
+    var m = (count*xy_sum - x_sum*y_sum) / (count*xx_sum - x_sum*x_sum);
+    var b = (y_sum/count) - (m*x_sum)/count;
+
+    /*
+     * We then return the x and y data points according to our fit
+     */
+    var result_values_x = [];
+    var result_values_y = [];
+
+    for (let i = 0; i < values_length; i++) {
+      x = values_x[i];
+      y = x * m + b;
+      result_values_x.push(x);
+      result_values_y.push(y);
+    }
+
+    return [result_values_x, result_values_y];
+  }
+
+  getScatterplotData(){
+    let self = this;
+    return self.scatterplotData;
+  }
+
+  getLinePoints(){
+    let self = this;
+    return self.linePoints;
+
+  }
 
 }

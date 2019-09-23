@@ -4,9 +4,7 @@
     <svg class="scatter-plot" id="scatterplotSvg" width="350" height="350">
       <!--<rect width="300" height="300"/>-->
       <g transform="translate(50, 50) " id="scatterplot">
-        <g class="line-chart">
-          <line id="regression-line" x1="2" y1="4" x2="16" y2="11"/>
-        </g>
+          <path id="regression-line"/>
         <g id="x-axis" transform="translate(0, 200)"></g>
         <g id="y-axis" transform="translate(0, 0)"></g>
       </g>
@@ -27,7 +25,8 @@ export default {
 
   props: {
 
-    rawData: null
+    rawData: null,
+    linePoints: null
 
   },
   methods: {
@@ -95,15 +94,42 @@ export default {
         .text(d => d.a.toString() + ", " + d.b.toString());
 
 
+    },
+
+    buildRegressionLine(){
+      console.log("this.linePoints inside regression", this.linePoints);
+
+      var xScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d=> d.x)])
+        .range([ 0, 200]);
+
+
+      var yScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d=> d.y)])
+        .range([200, 0]);
+
+      let coords = [];
+
+      for(let i = 0; i < this.linePoints[0].length; i++){
+        coords.push({x: this.linePoints[0][i], y: this.linePoints[1][i]})
+      }
+
+      let aLineGenerator = d3
+        .line()
+        .x(d => xScale(d.x))
+        .y(d => yScale(d.y));
+
       d3.select("#regression-line")
-        .attr("x1", xScale(2))
-        .attr("y1", yScale(4))
-        .attr("x2", xScale(16))
-        .attr("y2", yScale(11));
+        .data(this.linePoints)
+        .attr("d", aLineGenerator(coords))
+        .attr("transform");
+
+
     }
   },
   mounted() {
     this.buildTree();
+    this.buildRegressionLine();
   }
 }
 </script>
@@ -120,5 +146,12 @@ export default {
     fill: none;
     stroke: #000000;
     stroke-width: 1;
+  }
+
+  #regression-line{
+    fill: black;
+    stroke: #000000;
+    stroke-width: 1;
+
   }
 </style>
