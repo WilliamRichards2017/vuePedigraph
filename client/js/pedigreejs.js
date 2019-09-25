@@ -978,9 +978,9 @@ function mouseout() {
   ptree.build = function(options) {
     var opts = $.extend({ // defaults
       targetDiv: 'pedigree_edit',
-      dataset: [ {"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
-        {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
-        {"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}],
+      dataset: [ {"name": "m21", "display_name": "father", "sex": "M", "top_level": true, "NA": ""},
+        {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true, "NA": ""},
+        {"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "NA": ""}],
       width: 600,
       height: 400,
       symbol_size: 35,
@@ -1022,8 +1022,6 @@ function mouseout() {
       .append("svg:svg")
       .attr("width", "100%")
       .attr("height", 500);
-
-
 
     svg.append("rect")
       .attr("width", "100%")
@@ -1117,6 +1115,7 @@ function mouseout() {
     node.append("path")
       .filter(function (d) {return !d.data.hidden;})
       .attr("shape-rendering", "geometricPrecision")
+      .attr("class", "border")
       .attr("transform", function(d) {return d.data.sex == "U"? "rotate(45)" : "";})
       .attr("d", d3.symbol().size(function(d) { return (opts.symbol_size * opts.symbol_size) + 2;})
         .type(function(d) {
@@ -1129,7 +1128,12 @@ function mouseout() {
       .style("stroke-width", function (d) {
         return d.data.age && d.data.yob && !d.data.exclude ? ".3em" : ".1em";
       })
-      .style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
+      .style("stroke-dasharray", function (d) {
+          if(d.data.NA){
+            return "5,5"
+          }
+          return "0,0"
+      })
       .style("fill", "none");
 
     // set a clippath
@@ -1160,6 +1164,7 @@ function mouseout() {
           return {'cancer': val, 'ncancers': ncancers, 'id': d.data.name,
             'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden,
             'affected': d.data.affected,
+            'NA' : d.data.NA,
             'exclude': d.data.exclude};})];
       })
       .enter()
@@ -1171,6 +1176,15 @@ function mouseout() {
       .attr("clip-path", function(d) {return "url(#"+d.data.id+")";}) // clip the rectangle
       .attr("class", "pienode")
       .attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
+      .style("opacity", function(d){
+        console.log("d", d);
+        if(d.data.NA){
+          return 0.5;
+        }
+        else{
+          return 1;
+        }
+      })
       .style("fill", function(d, i) {
         if(d.data.exclude)
           return 'lightgrey';

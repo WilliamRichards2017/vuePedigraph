@@ -99,20 +99,21 @@ export default {
     buildRegressionLine(){
       console.log("this.linePoints inside regression", this.linePoints);
 
-      var xScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d=> d.x)])
-        .range([ 0, 200]);
-
-
-      var yScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d=> d.y)])
-        .range([200, 0]);
 
       let coords = [];
 
       for(let i = 0; i < this.linePoints[0].length; i++){
         coords.push({x: this.linePoints[0][i], y: this.linePoints[1][i]})
       }
+
+
+      var xScale = d3.scaleLinear()
+        .domain([0, d3.max(coords, d=> d.x)])
+        .range([ 0, 200]);
+
+      var yScale = d3.scaleLinear()
+        .domain([0, d3.max(coords, d=> d.y)])
+        .range([200, 0]);
 
       let aLineGenerator = d3
         .line()

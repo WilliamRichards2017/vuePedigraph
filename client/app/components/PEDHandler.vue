@@ -134,6 +134,7 @@
   import toggle from './toggle.vue'
   import navigation from './navigation.vue'
   import vueScatter from "./scatterplot.vue"
+  // import * as d3 from "d3";
 
   export default {
     name: 'PEDHandler',
@@ -339,6 +340,8 @@
           self.sampleIds.push(sampleId);
         }
       },
+
+
       highlightFamily: function () {
         let self = this;
         let parentNodes =
@@ -439,13 +442,17 @@
       },
       buildDemoPhenotypes: function () {
         let self = this;
+
+
+
         self.cachedPhenotypes = {};
         if (self.selectedPhenotype === "PTC Sensitivity") {
           for (let i = 0; i < self.opts.dataset.length; i++) {
             let id = parseInt(self.opts.dataset[i].name);
             let sens = self.PTCPhenotypes[id];
             if (typeof sens === 'undefined' || sens === 'nan') {
-              self.opts.dataset[i].NA = ' **';
+              self.opts.dataset[i].NA = true;
+
               self.cachedNulls.push(id);
             } else if (typeof sens === 'string') {
               if (sens.includes('>') || sens.includes('<')) {
@@ -462,6 +469,7 @@
           }
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
+
         }
         // return opts.dataset;
       },
@@ -638,4 +646,11 @@
     /*height: -webkit-fill-available;  !* Mozilla-based browsers will ignore this. *!*/
     /*height: fill-available;*/
   }
+
+  .phenotypeNA{
+  stroke-dasharray: 5,5;
+  }
+
+
+
 </style>
