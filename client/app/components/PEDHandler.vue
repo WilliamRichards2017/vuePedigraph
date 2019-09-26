@@ -357,11 +357,12 @@
             border.style('opacity', 0.1);
             txt.style("opacity", 0.1);
           } else {
-            if(self.cachedPhenotypes.hasOwnProperty(n.id)){
-              nodeToHightlight.style('opacity', 0.6);
 
-              border.style('opacity', 0.6);
-              txt.style('opacity', 0.6);
+            if(self.cachedNulls.includes(parseInt(n.id))){
+              nodeToHightlight.style('opacity', 0.5);
+
+              border.style('opacity', 0.5);
+              txt.style('opacity', 1);
             }
             else{
               nodeToHightlight.style('opacity', 1)
@@ -372,7 +373,8 @@
 
           }
         });
-      },
+
+        },
       isolatePedTxt: function (ids) {
         let self = this;
         let txtLines = [];
@@ -576,6 +578,7 @@
           let node = self.getNodeById(key);
 
           let gt = self.cachedGenotypes[key];
+
 
           console.log("gt", gt);
 

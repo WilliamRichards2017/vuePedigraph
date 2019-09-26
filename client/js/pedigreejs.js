@@ -1034,7 +1034,14 @@ function mouseout() {
       .style("fill", opts.background) // or none
       .style("stroke-width", 1);
 
-
+    svg.append("rect")
+      .attr("width", "200px")
+      .attr("height", "250px")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("fill", "#F2F2F2")
+      .style("stroke", "black")
+      .style("stroke-width", "1px");
 
 
     svg.append("circle").attr("cx",15).attr("cy",45).attr("r", 10).
