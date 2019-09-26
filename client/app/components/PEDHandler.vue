@@ -314,14 +314,14 @@
           let id = parseInt(opts.dataset[i].name);
           if (self.cachedGenotypes.hasOwnProperty(id)) {
             let all = self.cachedGenotypes[id].toString();
-            opts.dataset[i].alleles = all;
+            // opts.dataset[i].alleles = all;
           }
           if (self.cachedPhenotypes.hasOwnProperty(id)) {
             let aff = self.cachedPhenotypes[id];
             opts.dataset[i].affected = aff;
           }
           if (self.cachedNulls.includes(id)) {
-            opts.dataset[i].NA = " **";
+            opts.dataset[i].NA = true;
           }
         }
         return opts;
@@ -353,13 +353,23 @@
           let border = d3.select(n.previousSibling);
           let txt = d3.select(n.nextSibling.nextSibling.nextSibling.nextSibling);
           if (self.notHighlighted(n.id.toString())) {
-            nodeToHightlight.style('opacity', 0.2);
-            border.style('opacity', 0.2);
-            txt.style("opacity", 0.2);
+            nodeToHightlight.style('opacity', 0.1);
+            border.style('opacity', 0.1);
+            txt.style("opacity", 0.1);
           } else {
-            nodeToHightlight.style('opacity', 1);
-            border.style('opacity', 1);
-            txt.style('opacity', 1);
+            if(self.cachedPhenotypes.hasOwnProperty(n.id)){
+              nodeToHightlight.style('opacity', 0.6);
+
+              border.style('opacity', 0.6);
+              txt.style('opacity', 0.6);
+            }
+            else{
+              nodeToHightlight.style('opacity', 1)
+
+              border.style('opacity', 1);
+              txt.style('opacity', 1);
+            }
+
           }
         });
       },
@@ -493,13 +503,6 @@
                   self.opts.dataset[i].affected = 0;
                   self.cachedPhenotypes[sampleId] = 0;
                 }
-                else {
-                  if(typeof pt === "undefined"){
-                    pt = "**";
-                  }
-                  self.opts.dataset[i].alleles = pt;
-                  self.cachedGenotypes[sampleId] = pt;
-                }
               }
             }
             self.opts = self.addCachedValuesToOpts(self.opts);
@@ -541,12 +544,92 @@
           for (let i = 0; i < opts.dataset.length; i++) {
             let id = parseInt(opts.dataset[i].name);
             let allele = self.TASGenotypes[id].split(";")[0];
-            opts.dataset[i].alleles = allele;
+            // opts.dataset[i].alleles = allele;
             self.cachedGenotypes[id] = allele;
           }
           self.opts = self.addCachedValuesToOpts(opts);
         }
         return opts.dataset;
+      },
+
+      getNodeById: function(id){
+        let node = d3.select('[id="'+ id +'"]');
+
+        let p1 = node.select(function() {
+          return this.parentNode;
+        });
+
+
+
+        console.log("node", node);
+        console.log("p1", p1);
+
+        return p1;
+      },
+
+      drawGenotypeBars: function(){
+        let self = this;
+
+        console.log("cachedGenotypes inside draw bars", self.cachedGenotypes);
+
+        for(let key in self.cachedGenotypes){
+          let node = self.getNodeById(key);
+
+          let gt = self.cachedGenotypes[key];
+
+          console.log("gt", gt);
+
+          let blue = "dodgerblue";
+          let red = "#ff3333";
+
+          if(gt === "0/1") {
+
+            node.append("rect")
+              .attr("width", "5px")
+              .attr('height', "13px")
+              .attr("x", "-7")
+              .attr("y", "25")
+              .attr("fill", blue);
+
+            node.append("rect")
+              .attr("width", "5px")
+              .attr('height', "13px")
+              .attr("x", "2")
+              .attr("y", "25")
+              .attr("fill", red);
+          }
+
+            else if (gt === "0/0"){
+            node.append("rect")
+              .attr("width", "5px")
+              .attr('height', "13px")
+              .attr("x", "-7")
+              .attr("y", "25")
+              .attr("fill", blue);
+
+            node.append("rect")
+              .attr("width", "5px")
+              .attr('height', "13px")
+              .attr("x", "2")
+              .attr("y", "25")
+              .attr("fill", blue);
+            }
+          else if (gt === "1/1"){
+            node.append("rect")
+              .attr("width", "5px")
+              .attr('height', "13px")
+              .attr("x", "-7")
+              .attr("y", "25")
+              .attr("fill", red);
+
+            node.append("rect")
+              .attr("width", "5px")
+              .attr('height', "13px")
+              .attr("x", "2")
+              .attr("y", "25")
+              .attr("fill", red);
+          }
+        }
       }
     },
     watch: {
@@ -600,6 +683,9 @@
         self.opts.dataset = io.readLinkage(self.pedTxt);
         self.opts.dataset = self.addNewGenotypesToOpts(self.opts);
         self.opts = ptree.build(self.opts);
+
+        self.drawGenotypeBars();
+
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
       selectedRegression: function() {

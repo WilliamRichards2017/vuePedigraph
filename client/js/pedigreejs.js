@@ -1023,6 +1023,8 @@ function mouseout() {
       .attr("width", "100%")
       .attr("height", 500);
 
+
+
     svg.append("rect")
       .attr("width", "100%")
       .attr("height", "100%")
@@ -1032,16 +1034,93 @@ function mouseout() {
       .style("fill", opts.background) // or none
       .style("stroke-width", 1);
 
-    svg.append("circle").attr("cx",15).attr("cy",20).attr("r", 10).style("fill", "white");
-    svg.append("rect").attr("x",5).attr("y",40).attr("width", 20).attr("height", 20).style("fill", "lightgrey");
 
 
-    svg.append("text").attr("x", 35).attr("y", 20).text("Unaffected Female").style("font-size", "15px").attr("alignment-baseline","middle");
-    svg.append("text").attr("x", 35).attr("y", 50).text("Affected Male").style("font-size", "15px").attr("alignment-baseline","middle");
-    svg.append("text").attr("x", 5).attr("y", 83).text("**").style("font-size", "20px").attr("alignment-baseline","middle");
-    svg.append("text").attr("x", 35).attr("y", 80).text("Phenotype N/A").style("font-size", "15px").attr("alignment-baseline","middle");
+
+    svg.append("circle").attr("cx",15).attr("cy",45).attr("r", 10).
+      style("fill", "white")
+      .style("stroke", "black")
+      .style("stroke-width", "1px")
+    svg.append("rect").attr("x",5).attr("y",65).attr("width", 20).attr("height", 20)
+      .style("fill", "lightgrey")
+      .style("stroke", "black")
+      .style("stroke-width", "1px")
+    svg.append("circle").attr("cx",15).attr("cy",105).attr("r", 10)
+      .style("fill", "white").style("opacity", 0.5)
+      .style("stroke", "black")
+      .style("stroke-width", "1px")
+      .style("stroke-dasharray", "2,4");
 
 
+
+
+
+
+    let blue = "dodgerblue";
+    let red = "#ff3333";
+
+
+
+
+    svg.append("text").attr("x", 35).attr("y", 20).text("Phenotype").style("font-size", "17px").attr("alignment-baseline","middle").style("text-decoration", "underline");
+
+    svg.append("text").attr("x", 35).attr("y", 45).text("Unaffected Female").style("font-size", "15px").attr("alignment-baseline","middle");
+    svg.append("text").attr("x", 35).attr("y", 75).text("Affected Male").style("font-size", "15px").attr("alignment-baseline","middle");
+    svg.append("text").attr("x", 35).attr("y", 105).text("Phenotype N/A").style("font-size", "15px").attr("alignment-baseline","middle");
+    svg.append("rect")
+      .attr("width", "5px")
+      .attr('height', "13px")
+      .attr("x", 10)
+      .attr("y", 158)
+      .attr("fill", blue);
+
+
+
+    svg.append("rect")
+      .attr("width", "5px")
+      .attr('height', "13px")
+      .attr("x", 20)
+      .attr("y", 158)
+      .attr("fill", blue);
+
+
+    svg.append("text").attr("x", 35).attr("y", 140).text("Genotype").style("font-size", "17px").attr("alignment-baseline","middle").style("text-decoration", "underline");
+
+    svg.append("text").attr("x", 35).attr("y", 165).text("Homozygous Ref.").style("font-size", "15px").attr("alignment-baseline","middle");
+
+
+    svg.append("rect")
+      .attr("width", "5px")
+      .attr('height', "13px")
+      .attr("x", 10)
+      .attr("y", 183)
+      .attr("fill", blue);
+
+    svg.append("rect")
+      .attr("width", "5px")
+      .attr('height', "13px")
+      .attr("x", 20)
+      .attr("y", 183)
+      .attr("fill", red);
+
+    svg.append("text").attr("x", 35).attr("y", 190).text("Heterozygous").style("font-size", "15px").attr("alignment-baseline","middle");
+
+
+    svg.append("rect")
+      .attr("width", "5px")
+      .attr('height', "13px")
+      .attr("x", 10)
+      .attr("y", 208)
+      .attr("fill", red);
+
+    svg.append("rect")
+      .attr("width", "5px")
+      .attr('height', "13px")
+      .attr("x", 20)
+      .attr("y", 208)
+      .attr("fill", red);
+
+    svg.append("text").attr("x", 35).attr("y", 215).text("Homozygous Alt.").style("font-size", "15px").attr("alignment-baseline","middle");
 
 
     // var xytransform = pedcache.getposition(opts);  // cached position
@@ -1271,6 +1350,9 @@ function mouseout() {
               return d.data[label] +'y';
             } else if(label === 'stillbirth') {
               return "SB";
+            }
+            else if(label === "NA"){
+              return "";
             }
             return d.data[label];
           }
@@ -1769,6 +1851,7 @@ function mouseout() {
     return hgt;
   }
   // Add label
+
   function addLabel(opts, node, size, fx, fy, ftext, class_label) {
     node.filter(function (d) {
       return d.data.hidden && !opts.DEBUG ? false : true;
@@ -1779,8 +1862,7 @@ function mouseout() {
       //.attr("dy", size)
       .attr("font-family", opts.font_family)
       .attr("font-size", opts.font_size)
-      .attr("font-weight", opts.font_weight)
-      // SJG ADDED
+      .attr("font-weight", opts.font_weight)// SJG ADDED
       .attr('pointer-events', 'none')
       .text(ftext);
   }
