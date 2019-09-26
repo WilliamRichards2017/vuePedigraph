@@ -179,7 +179,7 @@
         familyPhenotypes: null,
         familyPhenotypesFlag: false,
         parsedVariants: null,
-        highlightedFamilyIDs: [],
+        highlightedSampleIDs: [],
         isolateFamily: false,
         isolatedPedTxt: [],
         hubSession: null,
@@ -298,12 +298,12 @@
       onNodeClick: function (e, nodeId) {
         let self = this;
         let fam = self.families[self.selectedFamily];
-        self.highlightedFamilyIDs = fam.getFamily(nodeId.toString());
+        self.highlightedSampleIDs = fam.getFamily(nodeId.toString());
         self.highlightFamily();
       },
       notHighlighted: function (id) {
         let self = this;
-        if (self.highlightedFamilyIDs.includes(id)) {
+        if (self.highlightedSampleIDs.includes(id)) {
           return false;
         }
         return true;
@@ -358,13 +358,12 @@
             txt.style("opacity", 0.1);
           } else {
 
-            if(self.cachedNulls.includes(parseInt(n.id))){
+            if (self.cachedNulls.includes(parseInt(n.id))) {
               nodeToHightlight.style('opacity', 0.5);
 
               border.style('opacity', 0.5);
               txt.style('opacity', 1);
-            }
-            else{
+            } else {
               nodeToHightlight.style('opacity', 1)
 
               border.style('opacity', 1);
@@ -374,7 +373,41 @@
           }
         });
 
+            self.highlightGTs();
         },
+
+      highlightGTs: function(){
+
+        let self = this;
+
+        console.log("self.highlightedSampleIDs", self.highlightedSampleIDs);
+        console.log("self.sampleIds", self.sampleIds);
+
+
+        for(let i = 0; i < self.cachedNulls.length; i++){
+
+          let node = self.getNodeById(self.cachedNulls[i]);
+
+
+          if(!self.highlightedSampleIDs.includes(self.cachedNulls[i].toString())) {
+
+            let rects = node.selectAll("rect")
+              .attr("opacity", 0.1);
+
+            console.log("node to highlight", node);
+            console.log("rects", rects);
+          }
+          else{
+            let rects = node.selectAll("rect")
+              .attr("opacity", 0.5);
+            console.log("rects", rects);
+
+
+          }
+          }
+        },
+
+
       isolatePedTxt: function (ids) {
         let self = this;
         let txtLines = [];
@@ -562,10 +595,6 @@
         });
 
 
-
-        console.log("node", node);
-        console.log("p1", p1);
-
         return p1;
       },
 
@@ -577,7 +606,19 @@
         for(let key in self.cachedGenotypes){
           let node = self.getNodeById(key);
 
+          console.log("key", key);
+
           let gt = self.cachedGenotypes[key];
+
+          console.log("self.cachedNulls", self.cachedNulls);
+
+          let opacity = 1.0;
+
+          if(self.cachedNulls.includes(parseInt(key))){
+
+            opacity = 0.5
+
+          }
 
 
           console.log("gt", gt);
@@ -592,6 +633,7 @@
               .attr('height', "13px")
               .attr("x", "-7")
               .attr("y", "25")
+              .attr("opacity", opacity)
               .attr("fill", blue);
 
             node.append("rect")
@@ -599,6 +641,7 @@
               .attr('height', "13px")
               .attr("x", "2")
               .attr("y", "25")
+              .attr("opacity", opacity)
               .attr("fill", red);
           }
 
@@ -608,6 +651,7 @@
               .attr('height', "13px")
               .attr("x", "-7")
               .attr("y", "25")
+              .attr("opacity", opacity)
               .attr("fill", blue);
 
             node.append("rect")
@@ -615,6 +659,7 @@
               .attr('height', "13px")
               .attr("x", "2")
               .attr("y", "25")
+              .attr("opacity", opacity)
               .attr("fill", blue);
             }
           else if (gt === "1/1"){
@@ -623,6 +668,7 @@
               .attr('height', "13px")
               .attr("x", "-7")
               .attr("y", "25")
+              .attr("opacity", opacity)
               .attr("fill", red);
 
             node.append("rect")
@@ -630,6 +676,7 @@
               .attr('height', "13px")
               .attr("x", "2")
               .attr("y", "25")
+              .attr("opacity", opacity)
               .attr("fill", red);
           }
         }
@@ -661,7 +708,7 @@
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
         if (self.isolateFamily) {
-          self.isolatedPedTxt = self.isolatePedTxt(self.highlightedFamilyIDs);
+          self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
           self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
