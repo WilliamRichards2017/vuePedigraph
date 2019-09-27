@@ -131,6 +131,13 @@ export default {
   mounted() {
     this.buildTree();
     this.buildRegressionLine();
+  },
+
+  watch : {
+    linePoints: function () {
+      this.buildTree();
+      this.buildRegressionLine();
+    }
   }
 }
 </script>

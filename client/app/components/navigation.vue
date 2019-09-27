@@ -21,7 +21,10 @@
             <option disabled value="">Select a genotype</option>
             <option v-for="genotype in genotypes">{{genotype}}</option>
           </v-select>
-        <v-container fluid>
+
+
+
+          <v-container fluid>
           <v-switch v-model="isolateFamily" :label="'Isolate Selected Nodes'" color="#253DB9"></v-switch>
         </v-container>
         </div>

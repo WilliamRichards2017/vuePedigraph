@@ -2,7 +2,6 @@
   <div align="center" id='container'>
 
     <v-toolbar color="#123d53" dark>
-      <v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>
 
       <v-spacer></v-spacer>
 
@@ -28,84 +27,122 @@
 
       <v-select :items="parsedVariants"
                 id="selectGenotype" label="Select Genotype" v-model="selectedGenotype"
-      >
-      </v-select>
+      ></v-select>
 
       <v-spacer></v-spacer>
 
-      <v-switch label="'Isolate Selected Nodes'"
+
+      <v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression"></v-select>
+
+      <div class="subtitle2">Project correlation coefficient: <br>{{projectCorrelation}}</div>
+      <v-spacer></v-spacer>
+      <br>
+      <div class="subtitle2">Family correlation coefficient: <br> {{familyCorrelation}}</div>
+
+      <v-spacer></v-spacer>
+
+
+
+      <v-spacer></v-spacer>
+
+      <v-menu
+        :close-on-content-click="false"
+        :nudge-width="200"
+        offset-x
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn
+            color="indigo"
+            dark
+            v-on="on"
+            class="btn"
+          >
+            configure
+            <br>
+            affected status
+          </v-btn>
+        </template>
+
+        <v-card>
+
+          <v-container fluid>
+
+            Display affected status as:
+            <v-radio-group v-model="displayAffectedAs" :mandatory="false">
+              <v-radio label="Binary" value="binary"></v-radio>
+              <v-radio label="Gradient" value="gradient"></v-radio>
+            </v-radio-group>
+
+
+            Affected cuttoff
+
+
+              <div class="affectedStatus"  v-show="displayAffectedAs === 'binary'">
+              <v-select :items="operands"
+                      id="selectOperands" label="operand" v-model="selectedOperand" class="operand" value=">">
+            </v-select>
+
+              <v-text-field
+                v-model="affectedCuttoff"
+                label="Affected Cutt-off"
+                outlined
+                clearable
+              ></v-text-field>
+
+              </div>
+
+              <div class="affectedStatus" v-show="displayAffectedAs === 'gradient'">
+
+                <v-text-field
+                  v-model="minThreshold"
+                  label="minimum PT threshold"
+                  outlined
+                  clearable
+                ></v-text-field>
+
+                <v-text-field
+                  v-model="maxThreshold"
+                  label="maximum PT threshold"
+                  outlined
+                  clearable
+                ></v-text-field>
+
+              </div>
+
+          </v-container>
+
+
+
+
+
+        </v-card>
+      </v-menu>
+
+      <v-spacer></v-spacer>
+
+      <v-switch label="'Isolate family'"
                 v-model="isolateFamily"></v-switch>
-
-      <v-spacer></v-spacer>
-
-
-
-      <v-btn
-        style="margin-right: 75px; margin-right: 25px"
-        @click.stop="drawer = !drawer" icon left
-
-      >
-        Regression
-        <i class="fas fa-caret-down"></i>
-      </v-btn>
-
-      <v-spacer></v-spacer>
-
-
-
-      <v-navigation-drawer
-        v-model="drawer"
-        right
-
-        fixed
-        absolute
-        temporary
-
-        height="300px"
-      >
-
-        <v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression"> Select Regression Type</v-select>
-
-
-        <v-spacer></v-spacer>
-
-        <div class="title"> Phenotype / Allele Frequency Regression</div>
-        <br>
-
-
-        <div class="subtitle2">Project wide correlation coefficient: <br>{{projectCorrelation}}</div>
-        <v-spacer></v-spacer>
-        <br>
-        <div class="subtitle2">Family specific correlation coefficient: <br> {{familyCorrelation}}</div>
-
-        <br>
-
-        <v-switch
-          label="toggle regression scatterplots"
-                  v-model="toggle"
-                  ></v-switch>
-
-      </v-navigation-drawer>
-
-
-
-
-      <!--<v-select></v-select>-->
 
 
     </v-toolbar>
 
-    <v-navigation-drawer
-      v-model="drawer"
-      right
-    >
-    </v-navigation-drawer>
+    <!--<v-navigation-drawer-->
+      <!--v-model="drawer"-->
+      <!--right-->
+    <!--&gt;-->
+    <!--</v-navigation-drawer>-->
 
 
-    <div id="pedigrees" v-show="showPed">
+
+    <div class="affectedStatus">
+
+    <div id="pedigrees" v-show="showPed" style="width: 75%; height: 100%">
+    </div>
+    <vueScatter style="width: 25%; height: 100%" :rawData="scatterplotData" :linePoints="linePoints"> swag</vueScatter>
+
     </div>
 
-    <vueScatter v-if="!showPed" :rawData="scatterplotData" :linePoints="linePoints"> swag</vueScatter>
+
 
   </div>
 </template>
@@ -176,6 +213,7 @@
         selectedFamily: null,
         selectedPhenotype: null,
         selectedGenotype: null,
+        selectedOperand: null,
         familyPhenotypes: null,
         familyPhenotypesFlag: false,
         parsedVariants: null,
@@ -186,12 +224,18 @@
         sampleIds: null,
         projectCorrelation: null,
         familyCorrelation: null,
+        minThreshold: 0,
+        maxThreshold: 12,
+        linePoints: null,
         regression: null,
         ccType: null,
         drawer: false,
         toggle: null,
+        displayAffectedAs: "binary",
+        operands: [">", "<", ">=", "<="],
         selectedRegression: null,
         showPed: true,
+        affectedCuttoff: "7",
         scatterplotData: null,
         regressionTypes: ["Linear", "Polynomial"],
         opts: {
@@ -229,6 +273,7 @@
         self.populateModel();
         self.populatePTC();
         self.selectedPhenotype = "PTC Sensitivity";
+        self.selectedRegression = "Linear"
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
         self.selectedGenotype = "7:141972755_C/T";
@@ -392,7 +437,7 @@
           if(!self.highlightedSampleIDs.includes(self.cachedNulls[i].toString())) {
 
             let rects = node.selectAll("rect")
-              .attr("opacity", 0.1);
+              .attr("opacity", 0.05);
 
             console.log("node to highlight", node);
             console.log("rects", rects);
@@ -786,6 +831,21 @@
   .phenotypeNA{
   stroke-dasharray: 5,5;
   }
+
+  .btn{
+    height: 50px;
+  }
+
+  .operand {
+    width: 100px;
+  }
+
+  .affectedStatus{
+    display: flex; /* or inline-flex */
+
+  }
+
+  /*<v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>*/
 
 
 
