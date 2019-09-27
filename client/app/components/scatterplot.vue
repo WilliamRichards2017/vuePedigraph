@@ -1,15 +1,14 @@
 <template>
   <div id='vueScatter'>
-
-    <svg class="scatter-plot" id="scatterplotSvg" width="350" height="350">
+    <svg class="scatter-plot" id="scatterplotSvg" width="600px" height="600px">
       <!--<rect width="300" height="300"/>-->
       <g transform="translate(50, 50) " id="scatterplot">
           <path id="regression-line"/>
-        <g id="x-axis" transform="translate(0, 200)"></g>
+        <g id="x-axis" transform="translate(0, 500)"></g>
         <g id="y-axis" transform="translate(0, 0)"></g>
       </g>
     </svg>
-
+</v-card>
   </div>
 </template>
 
@@ -51,8 +50,8 @@ export default {
 
       console.log("Data", data);
 
-      let width = 200;
-      let height = 200;
+      let width = 500;
+      let height = 500;
 
 
       // Set up the scales
@@ -97,6 +96,11 @@ export default {
     },
 
     buildRegressionLine(){
+
+
+      let width = 500;
+      let height = 500;
+
       console.log("this.linePoints inside regression", this.linePoints);
 
 
@@ -109,11 +113,11 @@ export default {
 
       var xScale = d3.scaleLinear()
         .domain([0, d3.max(coords, d=> d.x)])
-        .range([ 0, 200]);
+        .range([ 0, width]);
 
       var yScale = d3.scaleLinear()
         .domain([0, d3.max(coords, d=> d.y)])
-        .range([200, 0]);
+        .range([height, 0]);
 
       let aLineGenerator = d3
         .line()

@@ -1,5 +1,5 @@
 <template>
-  <div id="wrapper">
+  <div id="wrapper" style="height: 100%">
 
 
     <div v-if="launchedFrom===null">
@@ -49,6 +49,15 @@
       v-if="launchedFrom === 'U'"
       :launchedFrom="launchedFrom" :txt="uploadedPedTxt"
     />
+
+      <v-footer
+        absolute
+        dark
+        class="grey darken-3 justify-center"
+      >
+
+          {{ new Date().getFullYear() }} —  <strong>Pedigree.iobio</strong>
+      </v-footer>
 
     </div>
 
@@ -308,7 +317,14 @@
     flex-basis: 100%;
     margin: 10px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  }
 
+  /*.text-center{*/
+    /*text-align: center;*/
+  /*}*/
+
+  .v-footer{
+    text-align: center;
   }
 
 </style>
