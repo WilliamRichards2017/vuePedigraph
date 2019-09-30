@@ -1,7 +1,8 @@
 <template>
-  <div id="wrapper" style="height: 100%">
+  <div id="wrapper" style="height: 96vh">
 
 
+    <div id="mainContent">
     <div v-if="launchedFrom===null">
 
       <v-toolbar color="#123d53" dark>
@@ -50,6 +51,7 @@
       :launchedFrom="launchedFrom" :txt="uploadedPedTxt"
     />
 
+  </div>
       <v-footer
         absolute
         dark

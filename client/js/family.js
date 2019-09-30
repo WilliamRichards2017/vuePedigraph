@@ -97,11 +97,9 @@ export default class family {
       if (self.pedLines.hasOwnProperty(key)) {
         if(self.pedLines[key].maternalID.toString() == individualID.toString() || self.pedLines[key].paternalID.toString() === individualID.toString()){
           children.push(self.pedLines[key]);
-          console.log("found child", self.pedLines[key]);
         }
       }
     }
-    console.log("children in getChildren", children)
     return children;
   }
 
@@ -112,7 +110,6 @@ export default class family {
 
     let children = self.getChildren(id);
 
-    console.log("children in getAllSpouses", children);
 
     for(let i = 0; i < children.length; i++){
       if(! (children[i].maternalID.toString() === id.toString())) {
@@ -168,7 +165,6 @@ export default class family {
         for(let i = 0; i < childSpouseIDs.length; i++) {
           if(self.pedLines.hasOwnProperty(childSpouseIDs[i])) {
             let childSpouse = self.pedLines[childSpouseIDs[i]];
-            console.log("childSpouse", childSpouse);
             childrenSpouses = childrenSpouses.concat(childSpouse);
           }
         }
@@ -181,7 +177,6 @@ export default class family {
     for (let i = 0; i < currentChildren.length; i++) {
       let pl = currentChildren[i];
       let gc = self.getChildren(pl.individualID);
-      console.log("grandchildren", gc);
       grandChildren = grandChildren.concat(gc);
     }
     children = children.concat(grandChildren);

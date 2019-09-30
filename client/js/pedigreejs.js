@@ -1021,13 +1021,13 @@ function mouseout() {
     var svg = d3.select("#"+opts.targetDiv)
       .append("svg:svg")
       .attr("width", "100%")
-      .attr("height", 500);
+      .attr("height", "96vh");
 
 
 
     svg.append("rect")
       .attr("width", "100%")
-      .attr("height", "100%")
+      .attr("height", "96vh")
       .attr("rx", 6)
       .attr("ry", 6)
       .style("stroke", "darkgrey")
@@ -1136,7 +1136,7 @@ function mouseout() {
 
     var xtransform = xytransform[0];
     var ytransform = xytransform[1];
-    var zoom = 1;
+    var zoom = 0.9;
     if(xytransform.length == 3){
       zoom = xytransform[2];
     }

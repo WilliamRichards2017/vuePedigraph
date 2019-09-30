@@ -1,7 +1,8 @@
 <template>
+
   <div align="center" id='container'>
 
-    <v-toolbar color="#123d53" dark>
+    <v-toolbar style="padding-top: 10px" color="#123d53" dark>
 
       <v-spacer></v-spacer>
 
@@ -29,15 +30,6 @@
                 id="selectGenotype" label="Select Genotype" v-model="selectedGenotype"
       ></v-select>
 
-      <v-spacer></v-spacer>
-
-
-      <v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression"></v-select>
-
-      <div class="subtitle2">Project correlation coefficient: <br>{{projectCorrelation}}</div>
-      <v-spacer></v-spacer>
-      <br>
-      <div class="subtitle2">Family correlation coefficient: <br> {{familyCorrelation}}</div>
 
       <v-spacer></v-spacer>
 
@@ -68,7 +60,7 @@
           <v-container fluid>
 
             Display affected status as:
-            <v-radio-group v-model="displayAffectedAs" :mandatory="false">
+            <v-radio-group v-model="displayAffectedAs"  :mandatory="false">
               <v-radio label="Binary" value="binary"></v-radio>
               <v-radio label="Gradient" value="gradient"></v-radio>
             </v-radio-group>
@@ -134,13 +126,52 @@
 
 
 
-    <div class="affectedStatus">
 
-    <div id="pedigrees" v-show="showPed" style="width: 75%; height: 100%">
+    <div class="pedWrapper" style="height: 96vh;">
+
+    <div class="flex" style="height: 96vh;">
+
+      <div id="pedigrees" v-show="showPed" style="width: 85%; height: 96vh"></div>
+
+      <div class="flexCol" width="450px">
+
+        <v-card height="100%" width="450px" justify-content="space-evenly">
+          <vueScatter :rawData="scatterplotData" :linePoints="linePoints"> swag</vueScatter>
+
+
+          <v-card width="400px" height="220px">
+          <!--<v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression" style="width: 75%; height: 100px"></v-select>-->
+
+            <div class ="radioContainer" style="display: inline-flex;">
+
+              <div class="title" style="margin-top: 10px; margin-right: 0px; margin-left: 30px">Select Regression Type
+                <v-radio-group v-model="selectedRegression" class="radioGroup" row :mandatory="false">
+                  <v-radio label="Linear" value="Linear"></v-radio>
+                  <v-radio label="Polynomial" value="Polynomial"></v-radio>
+                </v-radio-group>
+              </div>
+            </div>
+
+
+            <div style="display: inline-flex;">
+
+
+            <div class="font-weight-bold" style="height: 100px; color: gray; margin-top: 10px; margin-right: 10px">Family correlation coefficient: <br> <div class="title" style="color: black">{{familyCorrelation}}</div></div>
+
+            <div class="subtitle-2 font-weight-bold" style="height: 100px; color: gray; margin-top: 10px; margin-left: 30px">Project correlation coefficient: <br> <div class="title" style="color: black">{{projectCorrelation}} </div> </div>
+              </div>
+          </v-card>
+
+        </v-card>
+
+      </div>
     </div>
-    <vueScatter style="width: 25%; height: 100%" :rawData="scatterplotData" :linePoints="linePoints"> swag</vueScatter>
+
+
 
     </div>
+
+
 
 
 
@@ -740,6 +771,24 @@
 
         // console.log("self.sampleIds in watcher", self.sampleIds);
         $('#pedigree').on('nodeClick', self.onNodeClick)
+
+        if (self.selectedRegression === "Linear") {
+          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear");
+          self.ccType = "Pearson correlations coefficient";
+        }
+
+        else if (self.selectedRegression === "Polynomial"){
+          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Polynomial");
+          self.ccType = "Pearsons correlation coefficient";
+        }
+
+
+
+        self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
+        self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds).toFixed(4);
+        console.log("self.familyPC", self.familyCorrelation);
+        self.scatterplotData = self.regression.getScatterplotData();
+        self.linePoints = self.regression.getLinePoints();
       },
 
       toggle: function(){
@@ -823,7 +872,7 @@
     background-color: rgb(240, 250, 254);
   }
   #pedigrees svg {
-    height: 2000px;          /* WebKit-based browsers will ignore this. */
+    height:96vh;
     /*height: -webkit-fill-available;  !* Mozilla-based browsers will ignore this. *!*/
     /*height: fill-available;*/
   }
@@ -840,12 +889,57 @@
     width: 100px;
   }
 
-  .affectedStatus{
+  .flex{
     display: flex; /* or inline-flex */
 
   }
 
+  .flexCol{
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start;
+
+
+  }
+
+
+
+  .v-input v-text-field v-select v-input--is-label-active v-input--is-dirty theme--light{
+    max-height:100px;
+
+  }
+
+  .radioGroup{
+    display: flex;
+    flex-direction: column;
+    /*align-content: flex-start;*/
+    text-align: center;
+    max-height:100px;
+
+    display: inline-block;
+    vertical-align: top;
+  }
+
+
+  .radioContainer{
+
+    text-align: left;
+    vertical-align: top;
+
+  }
+  .selectRegressionType{
+
+  }
+
+  .text-center{
+    text-align: center;
+  }
+
+
+
   /*<v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>*/
+
+
 
 
 

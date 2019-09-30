@@ -1,13 +1,16 @@
 <template>
   <div id='vueScatter'>
-    <svg class="scatter-plot" id="scatterplotSvg" width="600px" height="600px">
+<v-card width="400px" height="400px" style="margin-top: 25px">
+  <div class="svg-container">
+    <svg class="scatter-plot" id="scatterplotSvg" width="400px" height="400px">
       <!--<rect width="300" height="300"/>-->
       <g transform="translate(50, 50) " id="scatterplot">
           <path id="regression-line"/>
-        <g id="x-axis" transform="translate(0, 500)"></g>
+        <g id="x-axis" transform="translate(0, 300)"></g>
         <g id="y-axis" transform="translate(0, 0)"></g>
       </g>
     </svg>
+  </div>
 </v-card>
   </div>
 </template>
@@ -29,7 +32,7 @@ export default {
 
   },
   methods: {
-    buildTree: function () {
+    buildPlot: function () {
 
       let self = this;
 
@@ -50,20 +53,20 @@ export default {
 
       console.log("Data", data);
 
-      let width = 500;
-      let height = 500;
+      let width = 300;
+      let height = 300;
 
 
       // Set up the scales
       var xScale = d3.scaleLinear()
         .domain([0, d3.max(data, d=> d.a)])
-        .range([ 0, width]);
+        .range([0, width]);
 
       var yScale = d3.scaleLinear()
         .domain([0, d3.max(data, d=> d.b)])
         .range([height, 0]);
 
-      let svg = d3.select("scatterplotSvg");
+      let svg = d3.select("#scatterplotSvg");
 
       // TO-DONE: Select and update the scatterplot
 
@@ -76,18 +79,44 @@ export default {
       let xAxis = d3.select("#x-axis");
 
 
+      xAxis.append("text")
+        .attr("class", "axis-label")
+        .attr("id", "xlabel");
+
+      d3.select("#xlabel")
+        .attr("transform", "translate(150, 37)")
+        .text("Alternate Allele Frequency (GT)");
+
+
       xAxis
         .call(d3.axisBottom(xScale));
 
+
+      yAxis.append("text")
+        .attr("class", "axis-label")
+        .attr("id", "ylabel");
+
+
+      d3.select("#ylabel")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -27)
+        .attr("x", -100)
+        .text("PTC Sensitivity (PT)");
+
       yAxis
         .call(d3.axisLeft(yScale));
+
+
+
+      xAxis
+        .call(d3.axisBottom(xScale));
 
       d3.select("#scatterplot")
         .selectAll("circle")
         .data(data).join("circle")
         .attr("cx", d => xScale(d.a))
         .attr("cy", d => yScale(d.b))
-        .attr("r", 4)
+        .attr("r", 10)
         .on("click", d => console.log("(x,y): ", d.a, d.b))
         .select("title")
         .text(d => d.a.toString() + ", " + d.b.toString());
@@ -95,11 +124,12 @@ export default {
 
     },
 
+
     buildRegressionLine(){
 
 
-      let width = 500;
-      let height = 500;
+      let width = 300;
+      let height = 300;
 
       console.log("this.linePoints inside regression", this.linePoints);
 
@@ -133,13 +163,14 @@ export default {
     }
   },
   mounted() {
-    this.buildTree();
+    this.buildPlot();
+    this.addAxesToPlot();
     this.buildRegressionLine();
   },
 
   watch : {
     linePoints: function () {
-      this.buildTree();
+      this.buildPlot();
       this.buildRegressionLine();
     }
   }
@@ -150,7 +181,8 @@ export default {
 <style>
   /* style of scatter plot */
   .scatter-plot circle {
-    fill: #c7001e;
+    fill: dimgrey;
+    opacity: 0.5;
   }
 
   /* style of scatter plot frame */
@@ -164,6 +196,29 @@ export default {
     fill: black;
     stroke: #000000;
     stroke-width: 1;
+
+  }
+
+
+  .svg-container {
+    display: inline-block;
+    position: relative;
+    padding-bottom: 100%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+  }
+  .svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 0;
+  }
+
+  .axis-label{
+
+    fill: black;
+    font-size: 14px;
+    font-weight: bold;
 
   }
 </style>
