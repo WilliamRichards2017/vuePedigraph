@@ -139,7 +139,7 @@
           <vueScatter :rawData="scatterplotData" :linePoints="linePoints"> swag</vueScatter>
 
 
-          <v-card width="400px" height="220px">
+          <v-card width="400px" height="40%">
           <!--<v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression" style="width: 75%; height: 100px"></v-select>-->
 
             <div class ="radioContainer" style="display: inline-flex;">
@@ -153,13 +153,48 @@
             </div>
 
 
-            <div style="display: inline-flex;">
+            <div id="regressionTable" class="col">
 
 
-            <div class="font-weight-bold" style="height: 100px; color: gray; margin-top: 10px; margin-right: 10px">Family correlation coefficient: <br> <div class="title" style="color: black">{{familyCorrelation}}</div></div>
+              <table>
+                <thead>
+                <th></th> <th style="text-align: left"> Project: </th> <th style="text-align: left"> Family: </th>
+                </thead>
+                <tbody></tbody>
+                <tr>
+                <th> Pearsons 'r' </th> <td style="background: limegreen"> {{projectCorrelation}}</td> <td style="background: limegreen">{{familyCorrelation}}</td>
+                </tr>
+                <tr>
+                  <th> r^2 </th> <td> {{(projectCorrelation**2).toFixed(4)}}</td> <td>{{(familyCorrelation**2).toFixed(4)}}</td>
+                </tr>
+                <tr>
+                  <th> P-Val </th> <td style="background: limegreen"> {{projectPVal.toExponential(3)}}</td> <td style="background: limegreen">{{familyPVal.toExponential(3)}}</td>
+                </tr>
+              </table>
 
-            <div class="subtitle-2 font-weight-bold" style="height: 100px; color: gray; margin-top: 10px; margin-left: 30px">Project correlation coefficient: <br> <div class="title" style="color: black">{{projectCorrelation}} </div> </div>
               </div>
+
+
+
+              <!--TODO: Make into stylish table-->
+              <!--<div class="col">-->
+              <!--<div class="title"><b>Project</b></div> <br> <div style="color: grey">Pearsons 'r': </div> <div class="title" style="color: black">{{projectCorrelation}}</div>-->
+
+                <!--<br>-->
+                <!--<div div style="color: grey"> r^2: </div>  <div class="title">{{projectCorrelation**2}} </div>-->
+
+                <!--<br>-->
+
+                <!--<div div style="color: grey"> P-val: </div>  <div class="title">{{projectPVal}} </div>-->
+
+              <!--</div>-->
+
+              <!--<div class="col">-->
+              <!--<div class="title"><b>Family</b> </div> <div style="color: gray;">Pearsons 'r': </div> <div class="title" style="color: black">{{familyCorrelation}}</div>-->
+              <!--</div>-->
+
+
+
           </v-card>
 
         </v-card>
@@ -253,8 +288,10 @@
         isolatedPedTxt: [],
         hubSession: null,
         sampleIds: null,
-        projectCorrelation: null,
-        familyCorrelation: null,
+        projectCorrelation: -1,
+        projectPVal: -1,
+        familyCorrelation: -1,
+        familyPVal: -1,
         minThreshold: 0,
         maxThreshold: 12,
         linePoints: null,
@@ -268,6 +305,12 @@
         showPed: true,
         affectedCuttoff: "7",
         scatterplotData: null,
+
+        tableHeader: null,
+        tableData: null,
+        tableReady: false,
+
+
         regressionTypes: ["Linear", "Polynomial"],
         opts: {
           "targetDiv": "pedigree",
@@ -281,7 +324,44 @@
       self.hubSession = new HubSession(self.source);
     },
     mounted() {
+
       let self = this;
+
+
+      self.tableHeader = [
+        {
+          text: ' ',
+          align: 'left',
+          sortable: false,
+          value: 'name',
+        },
+        {
+          text: 'Project',
+          align: 'left',
+          sortable: false,
+          value: 'project',
+        },
+        {
+          text: 'Family',
+          align: 'left',
+          sortable: false,
+          value: 'family',
+        }];
+      //
+      // self.tableData = [
+      //   {name: 'Pearsons r', project: self.projectCorrelation, family: self.familyCorrelation},
+      //   {name: 'r**2', project: self.projectCorrelation**2, family: self.familyCorrelation**2},
+      //   {name: 'P-val', project: self.projectPVal, family: self.familyPVal}
+      // ];
+
+
+      self.tableData = [
+        {name: 'Pearsons r', project: 0.5, family: 1},
+        {name: 'r**2', project:1, family: 1},
+        {name: 'P-val', project: 1, family: 1}
+      ];
+
+
       if (self.launchedFrom === "H") {
         console.log("launched from hub");
         self.buildFromHub();
@@ -417,7 +497,6 @@
         }
       },
 
-
       highlightFamily: function () {
         let self = this;
         let parentNodes =
@@ -483,6 +562,14 @@
           }
         },
 
+      styleRegressionTable(){
+
+        let valArr = [];
+
+        // let allTableCells = d3.selectAll("td").text(console.log(this.value));
+
+        console.log("valArr", valArr);
+      },
 
       isolatePedTxt: function (ids) {
         let self = this;
@@ -682,11 +769,9 @@
         for(let key in self.cachedGenotypes){
           let node = self.getNodeById(key);
 
-          console.log("key", key);
 
           let gt = self.cachedGenotypes[key];
 
-          console.log("self.cachedNulls", self.cachedNulls);
 
           let opacity = 1.0;
 
@@ -695,9 +780,6 @@
             opacity = 0.5
 
           }
-
-
-          console.log("gt", gt);
 
           let blue = "dodgerblue";
           let red = "#ff3333";
@@ -785,10 +867,26 @@
 
 
         self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
-        self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds).toFixed(4);
-        console.log("self.familyPC", self.familyCorrelation);
+        // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
+        // self.familyPVal= self.regression.getFamilyCorrelation(self.sampleIds)[1].toExponential(3);
+
+        let famCor = self.regression.getFamilyCorrelation(self.sampleIds);
+
+        self.familyCorrelation = famCor[0];
+        self.familyPVal = famCor[1];
+
+
+        self.projectPVal = self.regression.projectPVal;
+
+        console.log("self.familyPVal inside PedHandler", self.familyPVal);
+
+        // console.log("self.familyPC", self.familyCorrelation);
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
+
+        self.styleRegressionTable();
+
+
       },
 
       toggle: function(){
@@ -853,12 +951,15 @@
           self.opts.dataset = io.readLinkage(self.pedTxt);
 
           self.populateSampleIds();
-          self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds).toFixed(4);
+          self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
           console.log("self.familyPC", self.familyCorrelation);
           self.scatterplotData = self.regression.getScatterplotData();
           self.linePoints = self.regression.getLinePoints();
 
-          console.log("self.linePoints inside PedHandler", self.linePoints);
+        self.styleRegressionTable();
+
+
+        console.log("self.linePoints inside PedHandler", self.linePoints);
 
 
 
@@ -892,6 +993,13 @@
   .flex{
     display: flex; /* or inline-flex */
 
+  }
+
+
+
+  .col{
+    display: flex;
+    flex-direction: column;
   }
 
   .flexCol{
@@ -934,6 +1042,17 @@
   .text-center{
     text-align: center;
   }
+
+  td{
+    text-align: left;
+  }
+  th{
+    text-align: center;
+    color: grey;
+  }
+
+  tr:nth-child(odd) {background-color: #f2f2f2;}
+
 
 
 

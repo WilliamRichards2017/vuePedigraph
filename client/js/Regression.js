@@ -1,6 +1,8 @@
 import pearsonCorrelation from "./pearson-correlation.js"
 import PolynomialRegression from "js-polynomial-regression";
 import Correlation from "js-polynomial-regression/src/Correlation";
+import {fisherTest} from "fisher-transform";
+
 
 
 export default class Regression {
@@ -12,6 +14,8 @@ export default class Regression {
 
 
     this.projectCorrelation = -1;
+    this.projectPVal = -1;
+
 
     this.scatterplotData = null;
     this.linePoints = null;
@@ -20,8 +24,11 @@ export default class Regression {
     this.y = null;
 
 
+
+
     this.buildXandY();
     this.calculateProjectCorrelation();
+    this.calculateProjectPVal();
 
   }
 
@@ -177,15 +184,25 @@ export default class Regression {
         y.push(parseInt(pt));
       }
 
+
+
     }
 
     self.scatterplotData = [x,y];
 
 
     let familyCorrelation = -1;
+    let familyPVal = -1;
     if(self.regressionType === "Linear"){
       console.log("linear Regression selected");
       familyCorrelation = self.pearsonCorrelation(self.scatterplotData, 0, 1);
+
+
+      let rho = familyCorrelation;
+
+      let ft = fisherTest(rho,x.length);
+      familyPVal = ft.pvalue;
+
     }
     else if(self.regressionType === "Polynomial"){
 
@@ -203,7 +220,12 @@ export default class Regression {
       }
 
     }
-    return familyCorrelation;
+    return [familyCorrelation, familyPVal];
+  }
+
+  getFamilyPValue(){
+
+
 
   }
 
@@ -275,7 +297,28 @@ export default class Regression {
 
   getLinePoints(){
     let self = this;
-    return self.linePoints;
+
+    if(self.regressionType === "Linear"){
+      return self.linePoints;
+    }
+    else{
+      return self.linePoints;
+    }
+
+  }
+
+  calculateProjectPVal(){
+
+    let rho = this.projectCorrelation;
+
+    let ft = fisherTest(rho, this.x.length);
+
+    this.projectPVal = ft.pvalue;
+
+    console.log("fisher test", ft);
+
+    console.log("project pval", this.projectPVal);
+
 
   }
 

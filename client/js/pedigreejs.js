@@ -1263,7 +1263,7 @@ function mouseout() {
       .attr("class", "pienode")
       .attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
       .style("opacity", function(d){
-        console.log("d", d);
+        // console.log("d", d);
         if(d.data.NA){
           return 0.5;
         }
