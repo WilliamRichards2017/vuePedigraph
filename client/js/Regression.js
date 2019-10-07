@@ -23,6 +23,9 @@ export default class Regression {
     this.x = null;
     this.y = null;
 
+    this.famX = null;
+    this.famY = null;
+
 
 
 
@@ -69,8 +72,6 @@ export default class Regression {
         self.y.push(parseInt(pt));
       }
     }
-
-    self.linePoints = self.findLineByLeastSquares(self.x, self.y);
   }
 
   calculateProjectCorrelation(){
@@ -189,6 +190,8 @@ export default class Regression {
     }
 
     self.scatterplotData = [x,y];
+    self.linePoints = self.findLineByLeastSquares(x, y);
+
 
 
     let familyCorrelation = -1;

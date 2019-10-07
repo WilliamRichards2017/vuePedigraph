@@ -941,17 +941,11 @@
           self.ccType = "Pearsons correlation coefficient";
         }
 
-
-
-
-
-
         self.selectedPhenotype = "PTC Sensitivity";
         self.selectedGenotype = "7:141972755_C/T";
 
         self.buildPhenotypes();
         self.buildGenotypes();
-
 
         self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
         // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
@@ -970,6 +964,7 @@
 
         // console.log("self.familyPC", self.familyCorrelation);
         self.scatterplotData = self.regression.getScatterplotData();
+
         self.linePoints = self.regression.getLinePoints();
 
 
