@@ -20,14 +20,14 @@
 
       <!--TODO: phenotypes shouldnt be passed in as prop most likely-->
       <v-select :items="phenotypes"
-                id="selectPhenotype" label="Select Phenotype" v-model="selectedPhenotype"
+                id="selectPhenotype" label="Select Phenotype" v-model="selectedPhenotype" clearable
       >
       </v-select>
 
       <v-spacer></v-spacer>
 
       <v-select :items="parsedVariants"
-                id="selectGenotype" label="Select Genotype" v-model="selectedGenotype"
+                id="selectGenotype" label="Select Genotype" v-model="selectedGenotype" clearable
       ></v-select>
 
 
@@ -182,7 +182,7 @@
 
 
 
-            <div class="tableTitle">Legend</div>
+            <div class="tableTitle">Stats Legend</div>
 
             <v-card id="regressionLegend" class="col" style="margin-left: 10px; margin-right: 10px;">
 
@@ -418,12 +418,12 @@
         self.parsedVariants = self.variants;
         self.populateModel();
         self.populatePTC();
-        self.selectedPhenotype = "PTC Sensitivity";
+        // self.selectedPhenotype = "PTC Sensitivity";
         self.selectedRegression = "Linear"
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
 
-        self.selectedGenotype = "7:141972755_C/T";
+        // self.selectedGenotype = "7:141972755_C/T";
         self.selectedFamily = "1463";
         // for(let key in self.PTCPhenotypes){
         //   console.log("PT:", self.PTCPhenotypes[key]);
@@ -749,7 +749,11 @@
           }
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
+        }
 
+        else{
+            self.opts = self.addCachedValuesToOpts(self.opts);
+            self.opts = ptree.build(self.opts);
         }
         // return opts.dataset;
       },
