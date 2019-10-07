@@ -26,6 +26,10 @@ export default class Regression {
     this.famX = null;
     this.famY = null;
 
+    this.polyModel = null;
+    this.regressionData = null;
+    this.terms = null;
+
 
 
 
@@ -87,22 +91,44 @@ export default class Regression {
     }
 
     else if(self.regressionType === 'Polynomial') {
-      let data = [];
-
-
-      console.log("Polynomial Regression");
-
-      for (let i = 0; i < self.x.length; i++) {
-        data.push({x: self.x[i], y: self.y[i]});
-      }
-
-      console.log("data in Polynomial", data);
-      const model = PolynomialRegression.read(data, 3);
-
 
       const correlation = new Correlation(self.x,self.y);
 
       self.projectCorrelation = correlation.correlationCoefficient();
+
+
+
+      let rx= [];
+      let ry = [];
+
+
+      let dataR = [];
+
+      for(let i = 0; i < self.x.length; i++){
+        dataR.push({x: self.x[i], y : self.y[i] });
+      }
+
+      self.polyModel = PolynomialRegression.read(dataR, 3);
+      self.terms = self.polyModel.getTerms();
+
+      console.log("data after push", dataR);
+
+
+      self.regressionData = dataR.map((data) => ({
+        x: data.x,
+        y: self.polyModel.predictY(self.terms, data.x)
+      }));
+
+
+      for(let i = 0; i < self.regressionData.length; i++){
+        rx.push(self.regressionData[i].x);
+        ry.push(self.regressionData[i].y);
+      }
+
+      self.regressionData = [rx,ry];
+
+      console.log("self.regressionData", self.regressionData);
+
 
     }
   }
@@ -191,6 +217,10 @@ export default class Regression {
 
     self.scatterplotData = [x,y];
     self.linePoints = self.findLineByLeastSquares(x, y);
+
+
+
+    // self.regressionData = [rx,ry];
 
 
 
@@ -304,8 +334,8 @@ export default class Regression {
     if(self.regressionType === "Linear"){
       return self.linePoints;
     }
-    else{
-      return self.linePoints;
+    else if(self.regressionType === "Polynomial"){
+      return self.regressionData;
     }
 
   }
