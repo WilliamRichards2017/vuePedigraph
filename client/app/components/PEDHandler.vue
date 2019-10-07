@@ -162,13 +162,13 @@
                 </thead>
                 <tbody></tbody>
                 <tr>
-                <th> Pearsons 'r' </th> <td style="background: limegreen"> {{projectCorrelation}}</td> <td style="background: limegreen">{{familyCorrelation}}</td>
+                <th> Pearsons 'r' </th> <td id="projectR"> {{projectCorrelation}}</td> <td id="familyR">{{familyCorrelation}}</td>
                 </tr>
                 <tr>
                   <th> r^2 </th> <td> {{(projectCorrelation**2).toFixed(4)}}</td> <td>{{(familyCorrelation**2).toFixed(4)}}</td>
                 </tr>
                 <tr>
-                  <th> P-Val </th> <td style="background: limegreen"> {{projectPVal.toExponential(3)}}</td> <td style="background: limegreen">{{familyPVal.toExponential(3)}}</td>
+                  <th> P-Val </th> <td id="projectP" style="background: limegreen"> {{projectPVal.toExponential(3)}}</td> <td id="familyP" style="background: limegreen">{{familyPVal.toExponential(3)}}</td>
                 </tr>
               </table>
 
@@ -310,6 +310,11 @@
         tableData: null,
         tableReady: false,
 
+        familyCorrelationColor: null,
+        projectCorrelationColor: null,
+        familyPColor: null,
+        projectPColor: null,
+
 
         regressionTypes: ["Linear", "Polynomial"],
         opts: {
@@ -387,6 +392,7 @@
         self.selectedRegression = "Linear"
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
+
         self.selectedGenotype = "7:141972755_C/T";
         self.selectedFamily = "1463";
         // for(let key in self.PTCPhenotypes){
@@ -435,6 +441,24 @@
         } else if (self.launchedFrom === 'H') {
           self.buildHubPhenotypes();
         }
+        $('#pedigree').on('nodeClick', self.onNodeClick);
+      },
+
+      buildGenotypes: function(){
+
+        console.log("inside build genotypes");
+
+        let self = this
+        $('#pedigree').remove();
+        $('#pedigrees').append($("<div id='pedigree'></div>"));
+        self.cachedGenotypes = {};
+        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+        self.opts.dataset = io.readLinkage(self.pedTxt);
+        self.opts.dataset = self.addNewGenotypesToOpts(self.opts);
+        self.opts = ptree.build(self.opts);
+
+        self.drawGenotypeBars();
+
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
       //Needed for when mosaic has variants for a project with ped data
@@ -562,13 +586,26 @@
           }
         },
 
-      styleRegressionTable(){
+      styleRegressionTable() {
 
-        let valArr = [];
+        let self = this;
 
-        // let allTableCells = d3.selectAll("td").text(console.log(this.value));
+        self.familyCorrelationColor = self.getCorColor(self.familyCorrelation);
+        self.projectCorrelationColor = self.getCorColor(self.projectCorrelation);
 
-        console.log("valArr", valArr);
+        self.familyPColor = self.getPColor(self.familyPVal);
+        self.projectPColor = self.getPColor(self.projectPVal);
+
+        console.log("familyCOrColor", self.familyCorrelationColor);
+        console.log("projectCOrColor", self.projectCorrelationColor);
+
+
+        d3.select("#projectR")
+          .style("background", self.projectCorrelationColor);
+
+        d3.select("#familyR")
+          .style("background", self.familyCorrelationColor);
+
       },
 
       isolatePedTxt: function (ids) {
@@ -750,6 +787,46 @@
         return opts.dataset;
       },
 
+      getCorColor: function(val){
+
+
+
+        val = parseFloat(val);
+
+        console.log("val inside getCorColor", val);
+
+        if(val > 0.7){
+          return "limegreen"
+        } else if(val > 0.5){
+          return "yellow"
+        }
+        else if (val > .3){
+          return "orange"
+        }
+        else{
+          return "red";
+        }
+      },
+
+      getPColor: function(val){
+
+        val = parseFloat(val);
+
+        if(val < 0.05){
+          return "limegreen"
+        }
+        else if(val < 0.1){
+          return "yellow"
+        }
+        else if(val < 0.25){
+          return "orange"
+        }
+        else{
+          return "red";
+        }
+
+      },
+
       getNodeById: function(id){
         let node = d3.select('[id="'+ id +'"]');
 
@@ -866,6 +943,16 @@
 
 
 
+
+
+
+        self.selectedPhenotype = "PTC Sensitivity";
+        self.selectedGenotype = "7:141972755_C/T";
+
+        self.buildPhenotypes();
+        self.buildGenotypes();
+
+
         self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
         // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
         // self.familyPVal= self.regression.getFamilyCorrelation(self.sampleIds)[1].toExponential(3);
@@ -876,6 +963,7 @@
         self.familyPVal = famCor[1];
 
 
+
         self.projectPVal = self.regression.projectPVal;
 
         console.log("self.familyPVal inside PedHandler", self.familyPVal);
@@ -883,6 +971,7 @@
         // console.log("self.familyPC", self.familyCorrelation);
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
+
 
         self.styleRegressionTable();
 
@@ -918,17 +1007,8 @@
       },
       selectedGenotype: function () {
         let self = this;
-        $('#pedigree').remove();
-        $('#pedigrees').append($("<div id='pedigree'></div>"));
-        self.cachedGenotypes = {};
-        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
-        self.opts.dataset = io.readLinkage(self.pedTxt);
-        self.opts.dataset = self.addNewGenotypesToOpts(self.opts);
-        self.opts = ptree.build(self.opts);
+        self.buildGenotypes();
 
-        self.drawGenotypeBars();
-
-        $('#pedigree').on('nodeClick', self.onNodeClick);
       },
       selectedRegression: function() {
         let self = this;
