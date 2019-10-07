@@ -1,8 +1,13 @@
 <template>
   <div id='vueScatter'>
-<v-card width="400px" height="400px" style="margin-top: 25px">
+<v-card width="400px" height="420px">
+
+  <div class="chartTitle"> GT/PT regression for selected Family</div>
+
   <div class="svg-container">
+
     <svg class="scatter-plot" id="scatterplotSvg" width="400px" height="400px">
+
       <!--<rect width="300" height="300"/>-->
       <g transform="translate(50, 50) " id="scatterplot">
           <path id="regression-line"/>
@@ -219,6 +224,20 @@ export default {
     fill: black;
     font-size: 14px;
     font-weight: bold;
-
   }
+
+  #regression-line {
+    fill: none;
+  }
+
+  .chartTitle{
+    /*text-decoration: underline;*/
+    text-align: center;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: bold;
+    margin-top:5px;
+    margin-left: 20px;
+  }
+
 </style>

@@ -133,50 +133,82 @@
 
       <div id="pedigrees" v-show="showPed" style="width: 85%; height: 96vh"></div>
 
-      <div class="flexCol" width="450px">
+      <div class="flexCol" width="450px" style="overflow-y: auto; overflow-x: hidden">
 
-        <v-card height="100%" width="450px" justify-content="space-evenly">
-          <vueScatter :rawData="scatterplotData" :linePoints="linePoints"> swag</vueScatter>
+        <v-card height="100%" width="450px" justify-content="space-evenly"></v-card>
 
 
-          <v-card width="400px" height="40%">
+          <vueScatter :rawData="scatterplotData" :linePoints="linePoints"></vueScatter>
+
+
+          <br>
+
+          <div width="400px" height="40%">
           <!--<v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression" style="width: 75%; height: 100px"></v-select>-->
 
-            <div class ="radioContainer" style="display: inline-flex;">
+            <div class="tableTitle">Select Regression Type</div>
 
-              <div class="title" style="margin-top: 10px; margin-right: 0px; margin-left: 30px">Select Regression Type
-                <v-radio-group v-model="selectedRegression" class="radioGroup" row :mandatory="false">
+            <v-card class ="radioContainer" style="margin:10px">
+               <v-radio-group v-model="selectedRegression" class="radioGroup" row :mandatory="false">
                   <v-radio label="Linear" value="Linear"></v-radio>
                   <v-radio label="Polynomial" value="Polynomial"></v-radio>
                 </v-radio-group>
-              </div>
-            </div>
+              </v-card>
 
 
-            <div id="regressionTable" class="col">
+            <div class="tableTitle">Regression Statistics</div>
 
+            <v-card id="regressionTable" class="col" style="margin: 10px;">
 
               <table>
                 <thead>
                 <th></th> <th style="text-align: left"> Project: </th> <th style="text-align: left"> Family: </th>
                 </thead>
                 <tbody></tbody>
-                <tr>
-                <th> Pearsons 'r' </th> <td id="projectR"> {{projectCorrelation}}</td> <td id="familyR">{{familyCorrelation}}</td>
+                <tr class="val">
+                <th class="val"> Pearsons 'r' </th> <td id="projectR" class="val"> {{projectCorrelation}}</td> <td id="familyR" class="val">{{familyCorrelation}}</td>
                 </tr>
-                <tr>
-                  <th> r^2 </th> <td> {{(projectCorrelation**2).toFixed(4)}}</td> <td>{{(familyCorrelation**2).toFixed(4)}}</td>
+                <tr class="val">
+                  <th class="val"> r^2 </th> <td class="val"> {{(projectCorrelation**2).toFixed(4)}}</td> <td class="val">{{(familyCorrelation**2).toFixed(4)}}</td>
                 </tr>
-                <tr>
-                  <th> P-Val </th> <td id="projectP" style="background: limegreen"> {{projectPVal.toExponential(3)}}</td> <td id="familyP" style="background: limegreen">{{familyPVal.toExponential(3)}}</td>
+                <tr class="val">
+                  <th class="val"> P-Val </th> <td id="projectP" class="val"> {{projectPVal.toExponential(3)}}</td> <td id="familyP" class="val">{{familyPVal.toExponential(3)}}</td>
                 </tr>
               </table>
 
-              </div>
+            </v-card>
+
+            <v-spacer></v-spacer>
 
 
 
-              <!--TODO: Make into stylish table-->
+            <div class="tableTitle">Legend</div>
+
+            <v-card id="regressionLegend" class="col" style="margin-left: 10px; margin-right: 10px;">
+
+
+              <table>
+                <thead>
+                <th></th> <th style="background: limegreen; height: 20px;"></th> <th style="background: yellow"> </th> <th style="background: orange"></th> <th style="background: red"> </th>
+                </thead>
+                <tbody>
+                <tr>
+                  <th> Pearsons 'r' </th> <td> r > 0.7 </td> <td> r > 0.5 </td> <td> r > 0.3 </td> <td> r <= 0.3 </td>
+                </tr>
+                <tr>
+                  <th> P-val </th> <td> p < 0.05 </td> <td> p < 0.1 </td> <td> p < 0.25 </td> <td> p >= 0.25 </td>
+                </tr>
+                </tbody>
+
+              </table>
+
+            </v-card>
+
+
+
+            <div style="height: 100px"></div>
+
+            <!--TODO: Make into stylish table-->
               <!--<div class="col">-->
               <!--<div class="title"><b>Project</b></div> <br> <div style="color: grey">Pearsons 'r': </div> <div class="title" style="color: black">{{projectCorrelation}}</div>-->
 
@@ -193,13 +225,11 @@
               <!--<div class="title"><b>Family</b> </div> <div style="color: gray;">Pearsons 'r': </div> <div class="title" style="color: black">{{familyCorrelation}}</div>-->
               <!--</div>-->
 
-
-
-          </v-card>
-
-        </v-card>
+          </div>
 
       </div>
+
+
     </div>
 
 
@@ -606,6 +636,11 @@
         d3.select("#familyR")
           .style("background", self.familyCorrelationColor);
 
+        d3.select("#projectP")
+          .style("background", self.projectPColor);
+
+        d3.select("#familyP")
+          .style("background", self.familyPColor);
       },
 
       isolatePedTxt: function (ids) {
@@ -1118,16 +1153,24 @@
     text-align: center;
   }
 
-  td{
+  td .val{
     text-align: left;
   }
-  th{
+  th .val{
     text-align: center;
     color: grey;
   }
 
-  tr:nth-child(odd) {background-color: #f2f2f2;}
+  tr:nth-child(odd).val {background-color: #f2f2f2;}
 
+  .tableTitle{
+    /*text-decoration: underline;*/
+    text-align: left;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: bold;
+    margin:5px;
+  }
 
 
 
