@@ -723,8 +723,6 @@
       buildDemoPhenotypes: function () {
         let self = this;
 
-
-
         self.cachedPhenotypes = {};
         if (self.selectedPhenotype === "PTC Sensitivity") {
           for (let i = 0; i < self.opts.dataset.length; i++) {
