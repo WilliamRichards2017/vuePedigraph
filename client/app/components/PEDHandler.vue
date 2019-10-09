@@ -309,7 +309,7 @@
         selectedFamily: null,
         selectedPhenotype: null,
         selectedGenotype: null,
-        selectedOperand: null,
+        selectedOperand: '<',
         familyPhenotypes: null,
         familyPhenotypesFlag: false,
         parsedVariants: null,
@@ -425,6 +425,8 @@
 
         // self.selectedGenotype = "7:141972755_C/T";
         self.selectedFamily = "1463";
+        self.selectedPhenotype = "PTC Sensitivity";
+        self.selectedGenotype = "7:141972755_C/T";
         // for(let key in self.PTCPhenotypes){
         //   console.log("PT:", self.PTCPhenotypes[key]);
 
@@ -698,6 +700,12 @@
           }
         }
       },
+
+      styleNodesAsGradient(){
+
+      },
+
+
       populateFamilies: function () {
         let self = this;
         for (let key in self.pedDict) {
@@ -725,33 +733,60 @@
 
         self.cachedPhenotypes = {};
         if (self.selectedPhenotype === "PTC Sensitivity") {
-          for (let i = 0; i < self.opts.dataset.length; i++) {
-            let id = parseInt(self.opts.dataset[i].name);
-            let sens = self.PTCPhenotypes[id];
-            if (typeof sens === 'undefined' || sens === 'nan') {
-              self.opts.dataset[i].NA = true;
 
-              self.cachedNulls.push(id);
-            } else if (typeof sens === 'string') {
-              if (sens.includes('>') || sens.includes('<')) {
-                sens = sens.slice(-1);
+
+            for (let i = 0; i < self.opts.dataset.length; i++) {
+              let id = parseInt(self.opts.dataset[i].name);
+              let sens = self.PTCPhenotypes[id];
+              if (typeof sens === 'undefined' || sens === 'nan') {
+                self.opts.dataset[i].NA = true;
+
+                self.cachedNulls.push(id);
+              } else if (typeof sens === 'string') {
+                if (sens.includes('>') || sens.includes('<')) {
+                  sens = sens.slice(-1);
+                }
               }
-            }
-            let aff = 0;
-            if (sens < 7) {
-              aff = 2;
-            }
-            self.opts.dataset[i].affected = aff;
-            self.cachedPhenotypes[id] = aff;
-            // // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
-          }
-          self.opts = self.addCachedValuesToOpts(self.opts);
-          self.opts = ptree.build(self.opts);
-        }
 
-        else{
+              self.opts.dataset[i].sens = sens;
+
+
+              let aff = 0;
+
+              if (self.displayAffectedAs === "binary") {
+
+
+                if (self.selectedOperand === "<") {
+                  if (sens < self.affectedCuttoff) {
+                    aff = 2;
+                  }
+                } else if (self.selectedOperand === ">") {
+                  if (sens > self.affectedCuttoff) {
+                    aff = 2;
+                  }
+                } else if (self.selectedOperand === ">=") {
+                  if (sens >= self.affectedCuttoff) {
+                    aff = 2;
+                  }
+                } else if (self.selectedOperand === "<=") {
+                  if (sens <= self.affectedCuttoff) {
+                    aff = 2;
+                  }
+                }
+              }
+
+
+              self.opts.dataset[i].affected = aff;
+              self.cachedPhenotypes[id] = aff;
+              // // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
+            }
             self.opts = self.addCachedValuesToOpts(self.opts);
             self.opts = ptree.build(self.opts);
+          }
+
+
+        else{
+           self.styleNodesAsGradient();
         }
         // return opts.dataset;
       },
@@ -955,15 +990,29 @@
       }
     },
     watch: {
+
+      affectedCuttoff: function(){
+
+        let self = this;
+
+        self.buildPhenotypes();
+
+      },
+
+      selectedOperand: function(){
+
+        let self = this;
+        self.buildPhenotypes();
+
+      },
+
       selectedFamily: function () {
         let self = this;
-        $('#pedigree').remove();
-        $('#pedigrees').append($("<div id='pedigree'></div>"));
-        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
-        self.opts.dataset = io.readLinkage(self.pedTxt);
-        self.opts = ptree.build(self.opts);
+
         self.populateSampleIds();
 
+        self.selectedPhenotype = "PTC Sensitivity";
+        self.selectedGenotype = "7:141972755_C/T";
 
         // console.log("self.sampleIds in watcher", self.sampleIds);
         $('#pedigree').on('nodeClick', self.onNodeClick)
@@ -978,11 +1027,13 @@
           self.ccType = "Pearsons correlation coefficient";
         }
 
-        self.selectedPhenotype = "PTC Sensitivity";
-        self.selectedGenotype = "7:141972755_C/T";
+
 
         self.buildPhenotypes();
         self.buildGenotypes();
+
+
+        self.populateSampleIds();
 
         self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
         // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
@@ -992,8 +1043,6 @@
 
         self.familyCorrelation = famCor[0];
         self.familyPVal = famCor[1];
-
-
 
         self.projectPVal = self.regression.projectPVal;
 
@@ -1025,11 +1074,14 @@
           self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
+          self.drawGenotypeBars();
         } else {
           self.opts.dataset = io.readLinkage(self.pedTxt);
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
           ptree.build(self.opts)
+          self.drawGenotypeBars();
+
         }
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
