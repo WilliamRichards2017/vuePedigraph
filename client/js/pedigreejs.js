@@ -1252,6 +1252,7 @@ function mouseout() {
           return {'cancer': val, 'ncancers': ncancers, 'id': d.data.name,
             'sex': d.data.sex, 'proband': d.data.proband, 'hidden': d.data.hidden,
             'affected': d.data.affected,
+            'col': d.data.col,
             'NA' : d.data.NA,
             'exclude': d.data.exclude};})];
       })
@@ -1273,15 +1274,9 @@ function mouseout() {
           return 1;
         }
       })
-      .style("fill", function(d, i) {
-        if(d.data.exclude)
-          return 'lightgrey';
-        if(d.data.ncancers === 0) {
-          if(d.data.affected)
-            return 'lightgrey';
-          return opts.node_background;
-        }
-        return opts.diseases[i].colour;
+      .style("fill", function(d) {
+        console.log("d inside fill", d);
+        return d.data.col;
       });
 
     // adopted in/out brackets

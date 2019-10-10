@@ -302,6 +302,7 @@
         PTCPhenotypes: {},
         TASGenotypes: TAS,
         cachedPhenotypes: {},
+        cachedColors: {},
         cachedGenotypes: {},
         cachedNulls: [],
         familyIDs: [],
@@ -530,8 +531,10 @@
           }
           if (self.cachedPhenotypes.hasOwnProperty(id)) {
             let aff = self.cachedPhenotypes[id];
+            let col = self.cachedColors[id];
             opts.dataset[i].affected = aff;
-          }
+            opts.dataset[i].col = col;
+           }
           if (self.cachedNulls.includes(id)) {
             opts.dataset[i].NA = true;
           }
@@ -752,33 +755,55 @@
 
 
               let aff = 0;
+              let color = "white";
+
+              if(typeof sens === "undefined" || typeof sens === "NaN"){
+                color = null;
+              }
 
               if (self.displayAffectedAs === "binary") {
 
+                console.log("self.displayAffectedAs", self.displayAffectedAs);
 
                 if (self.selectedOperand === "<") {
                   if (sens < self.affectedCuttoff) {
                     aff = 2;
+                    color = "gray";
                   }
                 } else if (self.selectedOperand === ">") {
                   if (sens > self.affectedCuttoff) {
                     aff = 2;
+                    color = "gray";
                   }
                 } else if (self.selectedOperand === ">=") {
                   if (sens >= self.affectedCuttoff) {
                     aff = 2;
+                    color = "gray";
                   }
                 } else if (self.selectedOperand === "<=") {
                   if (sens <= self.affectedCuttoff) {
                     aff = 2;
+                    color = "gray";
                   }
                 }
+
+              }
+
+              else if (self.displayAffectedAs === "gradient"){
+
+                color =  d3.interpolateGreys(sens/12);
+
+                console.log("color in displayAsGradient", color);
               }
 
 
               self.opts.dataset[i].affected = aff;
+              console.log("color", color);
+              self.opts.dataset[i].col = color;
+
               self.cachedPhenotypes[id] = aff;
-              // // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
+              self.cachedColors[id] = color;
+              // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
             }
             self.opts = self.addCachedValuesToOpts(self.opts);
             self.opts = ptree.build(self.opts);
