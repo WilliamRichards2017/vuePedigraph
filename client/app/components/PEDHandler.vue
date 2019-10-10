@@ -86,6 +86,7 @@
               <div class="affectedStatus" v-show="displayAffectedAs === 'gradient'">
 
                 <v-text-field
+                  id="selectMinThreshold"
                   v-model="minThreshold"
                   label="minimum PT threshold"
                   outlined
@@ -631,8 +632,8 @@
         self.familyPColor = self.getPColor(self.familyPVal);
         self.projectPColor = self.getPColor(self.projectPVal);
 
-        console.log("familyCOrColor", self.familyCorrelationColor);
-        console.log("projectCOrColor", self.projectCorrelationColor);
+        // console.log("familyCOrColor", self.familyCorrelationColor);
+        // console.log("projectCOrColor", self.projectCorrelationColor);
 
 
         d3.select("#projectR")
@@ -719,7 +720,6 @@
             self.families[fam.familyID] = fam;
           }
         }
-        // console.log("self.families", self.families);
       },
       getDataByFamilyID: function (id) {
         let self = this;
@@ -739,8 +739,11 @@
 
 
             for (let i = 0; i < self.opts.dataset.length; i++) {
-              let id = parseInt(self.opts.dataset[i].name);
+              let id = self.opts.dataset[i].name;
               let sens = self.PTCPhenotypes[id];
+
+              console.log("id", id, sens);
+
               if (typeof sens === 'undefined' || sens === 'nan') {
                 self.opts.dataset[i].NA = true;
 
@@ -751,19 +754,27 @@
                 }
               }
 
+              sens = parseInt(sens);
+
               self.opts.dataset[i].sens = sens;
 
 
               let aff = 0;
               let color = "white";
 
-              if(typeof sens === "undefined" || typeof sens === "NaN"){
+              if(typeof sens === "undefined" || isNaN(sens)){
                 color = "white";
               }
 
-              if (self.displayAffectedAs === "binary") {
+              else if (self.displayAffectedAs === "binary") {
 
-                console.log("self.displayAffectedAs", self.displayAffectedAs);
+                console.log("typeof sens", typeof sens);
+
+                self.affectedCuttoff == parseInt(self.affectedCuttoff);
+
+
+
+                // console.log("self.displayAffectedAs", self.displayAffectedAs);
 
                 if (self.selectedOperand === "<") {
                   if (sens < self.affectedCuttoff) {
@@ -791,9 +802,25 @@
 
               else if (self.displayAffectedAs === "gradient"){
 
+                console.log("sens inside gradient", sens);
+
+                let scaledSens = -1;
+
+                if(sens < self.minThreshold){
+                  scaledSens = 0;
+                }
+                else if(sens > self.maxThreshold){
+                  scaledSens = 1;
+                }
+                else{
+                  scaledSens = (sens-self.minThreshold)/(self.maxThreshold - self.minThreshold)
+                }
+
+                scaledSens = (1 - scaledSens)/1.5;
+
                 color =  d3.interpolateGreys(sens/12);
 
-                console.log("color in displayAsGradient", color);
+                console.log("color in displayAsGradient", color, scaledSens);
               }
 
 
@@ -807,6 +834,7 @@
             }
             self.opts = self.addCachedValuesToOpts(self.opts);
             self.opts = ptree.build(self.opts);
+            self.drawGenotypeBars();
           }
 
 
@@ -1024,11 +1052,28 @@
 
       },
 
+      displayAffectedAs: function(){
+        let self = this;
+
+        self.buildPhenotypes();
+      },
+
       selectedOperand: function(){
 
         let self = this;
         self.buildPhenotypes();
 
+      },
+
+      minThreshold: function(){
+        console.log("change in minThreshold");
+        let self = this;
+        self.buildPhenotypes();
+      },
+
+      maxThreshold: function(){
+        let self = this;
+        self.buildPhenotypes();
       },
 
       selectedFamily: function () {

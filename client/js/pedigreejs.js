@@ -1220,8 +1220,8 @@ function mouseout() {
           }
           return "0,0"
       })
-      .style("fill", "none")
-      .style("log", d => {console.log("d.data.sens", d.data.sens); return d.data.sens});
+      .style("fill", "none");
+      // .style("log", d => {console.log("d.data.sens", d.data.sens); return d.data.sens});
 
 
     // set a clippath
@@ -1275,7 +1275,6 @@ function mouseout() {
         }
       })
       .style("fill", function(d) {
-        console.log("d inside fill", d);
         return d.data.col;
       });
 
