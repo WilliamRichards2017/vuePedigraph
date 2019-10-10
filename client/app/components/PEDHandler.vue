@@ -758,7 +758,7 @@
               let color = "white";
 
               if(typeof sens === "undefined" || typeof sens === "NaN"){
-                color = null;
+                color = "white";
               }
 
               if (self.displayAffectedAs === "binary") {
