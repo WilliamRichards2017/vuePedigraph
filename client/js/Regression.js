@@ -43,6 +43,9 @@ export default class Regression {
   buildXandY() {
     let self = this;
 
+    console.log("this.rawGenotypes", self.rawGenotypes);
+    console.log("this.rawPhenotypes", self.rawPhenotypes);
+
     // console.log("genotypes", self.rawGenotypes);
     // console.log("phenotypes", self.rawPhenotypes);
 
@@ -56,6 +59,9 @@ export default class Regression {
 
       let gt = self.rawGenotypes[key];
       let pt = self.rawPhenotypes[key];
+
+      // console.log("gt", gt);
+      // console.log("pt", pt);
 
       if(gt === "1/1"){
         af = 1;
@@ -71,9 +77,18 @@ export default class Regression {
         af = "not a number";
       }
 
-      if(typeof af === "number" && typeof parseInt(pt) === "number"  && !isNaN(pt)) {
-        self.x.push(parseFloat(af));
-        self.y.push(parseInt(pt));
+
+      if(typeof pt === "string") {
+        if (pt.includes('>') || pt.includes('<')) {
+          pt = pt.slice(-1);
+        }
+        if (typeof af === "number" && typeof parseInt(pt) === "number" && !isNaN(pt)) {
+          self.x.push(parseFloat(af));
+          self.y.push(parseInt(pt));
+        }
+      }
+      else{
+        console.log("could not interpret PT", pt);
       }
     }
   }

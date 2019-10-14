@@ -139,7 +139,7 @@
         <v-card height="100%" width="450px" justify-content="space-evenly"></v-card>
 
 
-          <vueScatter :rawData="scatterplotData" :linePoints="linePoints"></vueScatter>
+          <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts"></vueScatter>
 
 
           <br>
@@ -249,13 +249,6 @@
   import TAS from '../../static/TAS2R38';
   // import '@mdi/font/css/materialdesignicons.css' // Ensure you are using css-loader
   // import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-
-
-
-
-
-
-
 
 
   //DO NOT REMOVE!!!
@@ -742,8 +735,6 @@
               let id = self.opts.dataset[i].name;
               let sens = self.PTCPhenotypes[id];
 
-              console.log("id", id, sens);
-
               if (typeof sens === 'undefined' || sens === 'nan') {
                 self.opts.dataset[i].NA = true;
 
@@ -763,12 +754,12 @@
               let color = "white";
 
               if(typeof sens === "undefined" || isNaN(sens)){
-                color = "white";
+                color = "none";
               }
 
               else if (self.displayAffectedAs === "binary") {
 
-                console.log("typeof sens", typeof sens);
+                // console.log("typeof sens", typeof sens);
 
                 self.affectedCuttoff == parseInt(self.affectedCuttoff);
 
@@ -820,12 +811,12 @@
 
                 color =  d3.interpolateGreys(sens/12);
 
-                console.log("color in displayAsGradient", color, scaledSens);
+                // console.log("color in displayAsGradient", color, scaledSens);
               }
 
 
               self.opts.dataset[i].affected = aff;
-              console.log("color", color);
+              // console.log("color", color);
               self.opts.dataset[i].col = color;
 
               self.cachedPhenotypes[id] = aff;
@@ -874,7 +865,7 @@
           let self = this;
           let pts = {};
           let promises = [];
-          console.log("typeof selectedPhenotype", typeof self.selectedPhenotype);
+          // console.log("typeof selectedPhenotype", typeof self.selectedPhenotype);
           if(typeof self.selectedPhenotype === "object"){
             self.selectedPhenotype = "affected_status";
           }
@@ -918,7 +909,7 @@
 
         val = parseFloat(val);
 
-        console.log("val inside getCorColor", val);
+        // console.log("val inside getCorColor", val);
 
         if(val > 0.7){
           return "limegreen"
@@ -966,7 +957,7 @@
       drawGenotypeBars: function(){
         let self = this;
 
-        console.log("cachedGenotypes inside draw bars", self.cachedGenotypes);
+        // console.log("cachedGenotypes inside draw bars", self.cachedGenotypes);
 
         for(let key in self.cachedGenotypes){
           let node = self.getNodeById(key);
@@ -1116,7 +1107,7 @@
 
         self.projectPVal = self.regression.projectPVal;
 
-        console.log("self.familyPVal inside PedHandler", self.familyPVal);
+        // console.log("self.familyPVal inside PedHandler", self.familyPVal);
 
         // console.log("self.familyPC", self.familyCorrelation);
         self.scatterplotData = self.regression.getScatterplotData();
@@ -1186,14 +1177,10 @@
 
           self.populateSampleIds();
           self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
-          console.log("self.familyPC", self.familyCorrelation);
           self.scatterplotData = self.regression.getScatterplotData();
           self.linePoints = self.regression.getLinePoints();
 
         self.styleRegressionTable();
-
-
-        console.log("self.linePoints inside PedHandler", self.linePoints);
 
 
 

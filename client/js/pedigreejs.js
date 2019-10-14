@@ -1053,7 +1053,7 @@ function mouseout() {
       .style("stroke", "black")
       .style("stroke-width", "1px")
     svg.append("circle").attr("cx",15).attr("cy",105).attr("r", 10)
-      .style("fill", "white").style("opacity", 0.5)
+      .style("fill", "none")
       .style("stroke", "black")
       .style("stroke-width", "1px")
       .style("stroke-dasharray", "2,4");
@@ -1214,13 +1214,17 @@ function mouseout() {
       .style("stroke-width", function (d) {
         return d.data.age && d.data.yob && !d.data.exclude ? ".3em" : ".1em";
       })
+      .style("fill", "none")
       .style("stroke-dasharray", function (d) {
-          if(d.data.NA){
-            return "5,5"
-          }
-          return "0,0"
-      })
-      .style("fill", "none");
+        if(d.data.NA || d.data.col === "none"){
+          console.log("dash array for d", d);
+          return "5,5"
+        }
+        else{
+          console.log("else d", d);
+          // return "3,3"
+        }
+      });
       // .style("log", d => {console.log("d.data.sens", d.data.sens); return d.data.sens});
 
 
@@ -1265,18 +1269,18 @@ function mouseout() {
       .attr("clip-path", function(d) {return "url(#"+d.data.id+")";}) // clip the rectangle
       .attr("class", "pienode")
       .attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
-      .style("opacity", function(d){
-        // console.log("d", d);
-        if(d.data.NA){
-          return 0.5;
-        }
-        else{
-          return 1;
-        }
-      })
       .style("fill", function(d) {
         return d.data.col;
       });
+      // .style("stroke-dasharray", function (d) {
+      //   if(d.data.NA){
+      //     console.log("dash array for d", d);
+      //     return "5,5"
+      //   }
+      //   else{
+      //     return "0,0"
+      //   }
+      // });
 
     // adopted in/out brackets
     node.append("path")
@@ -1300,8 +1304,17 @@ function mouseout() {
       .style("stroke-width", function (d) {
         return ".1em";
       })
-      .style("stroke-dasharray", function (d) {return !d.data.exclude ? null : ("3, 3");})
+      // .style("stroke-dasharray", function (d) {console.log("d", d); return !d.data.exclude ? null : ("3, 3");})
       .style("fill", "none");
+      // .style("stroke-dasharray", function (d) {
+      //   if(d.data.NA){
+      //     console.log("dash array for d", d);
+      //     return "5,5"
+      //   }
+      //   else{
+      //     return "0,0"
+      //   }
+      // });
 
 
     // alive status = 0; dead status = 1

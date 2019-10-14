@@ -33,13 +33,16 @@ export default {
   props: {
 
     rawData: null,
-    linePoints: null
+    linePoints: null,
+    opts: null
 
   },
   methods: {
     buildPlot: function () {
 
       let self = this;
+
+      console.log("self.opts.dataset inside scatterplot", self.opts.dataset);
 
       let data = [];
 
@@ -169,7 +172,6 @@ export default {
   },
   mounted() {
     this.buildPlot();
-    this.addAxesToPlot();
     this.buildRegressionLine();
   },
 
