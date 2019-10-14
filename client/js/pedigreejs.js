@@ -1214,7 +1214,7 @@ function mouseout() {
       .style("stroke-width", function (d) {
         return d.data.age && d.data.yob && !d.data.exclude ? ".3em" : ".1em";
       })
-      .style("fill", "none")
+      .style("fill", opts.background)
       .style("stroke-dasharray", function (d) {
         if(d.data.NA || d.data.col === "none"){
           console.log("dash array for d", d);
