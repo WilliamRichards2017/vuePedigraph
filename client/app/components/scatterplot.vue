@@ -22,6 +22,8 @@
 
 <script>
 
+import Sample from './../../js/sample.js'
+
 export default {
   name: 'vueScatter',
   data() {
@@ -37,6 +39,7 @@ export default {
     opts: null
 
   },
+
   methods: {
     buildPlot: function () {
 
@@ -48,12 +51,18 @@ export default {
 
       let x = self.rawData[0];
       let y = self.rawData[1];
+      let ids = self.rawData[2];
+      let sexes = self.rawData[3];
+
+
+      console.log("lengths", x.length, ids.length, sexes.length);
 
       for (let i = 0; i < x.length; i++){
 
         let d = {
           a : x[i],
-          b : y[i]
+          b : y[i],
+          id : ids[i]
         };
         data.push(d);
       }

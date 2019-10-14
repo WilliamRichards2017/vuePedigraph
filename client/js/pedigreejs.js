@@ -1217,12 +1217,7 @@ function mouseout() {
       .style("fill", opts.background)
       .style("stroke-dasharray", function (d) {
         if(d.data.NA || d.data.col === "none"){
-          console.log("dash array for d", d);
           return "5,5"
-        }
-        else{
-          console.log("else d", d);
-          // return "3,3"
         }
       });
       // .style("log", d => {console.log("d.data.sens", d.data.sens); return d.data.sens});

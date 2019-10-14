@@ -1079,12 +1079,12 @@
         $('#pedigree').on('nodeClick', self.onNodeClick)
 
         if (self.selectedRegression === "Linear") {
-          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear");
+          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset);
           self.ccType = "Pearson correlations coefficient";
         }
 
         else if (self.selectedRegression === "Polynomial"){
-          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Polynomial");
+          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Polynomial", self.opts.dataset);
           self.ccType = "Pearsons correlation coefficient";
         }
 
@@ -1159,12 +1159,12 @@
         let self = this;
 
         if (self.selectedRegression === "Linear") {
-          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear");
+          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset);
           self.ccType = "Pearson correlations coefficient";
         }
 
         else if (self.selectedRegression === "Polynomial"){
-          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Polynomial");
+          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Polynomial", self.opts.dataset);
           self.ccType = "Pearsons correlation coefficient";
         }
 

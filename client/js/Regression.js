@@ -6,11 +6,13 @@ import {fisherTest} from "fisher-transform";
 
 
 export default class Regression {
-  constructor(rawGenotypes, rawPhenotypes, regressionType) {
+  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset) {
     this.rawGenotypes = rawGenotypes;
     this.rawPhenotypes = rawPhenotypes;
 
     this.regressionType = regressionType;
+
+    this.dataset = dataset;
 
 
     this.projectCorrelation = -1;
@@ -43,8 +45,8 @@ export default class Regression {
   buildXandY() {
     let self = this;
 
-    console.log("this.rawGenotypes", self.rawGenotypes);
-    console.log("this.rawPhenotypes", self.rawPhenotypes);
+    // console.log("this.rawGenotypes", self.rawGenotypes);
+    // console.log("this.rawPhenotypes", self.rawPhenotypes);
 
     // console.log("genotypes", self.rawGenotypes);
     // console.log("phenotypes", self.rawPhenotypes);
@@ -59,6 +61,7 @@ export default class Regression {
 
       let gt = self.rawGenotypes[key];
       let pt = self.rawPhenotypes[key];
+      let sex = self.getSexFromSampleId(key);
 
       // console.log("gt", gt);
       // console.log("pt", pt);
@@ -126,8 +129,6 @@ export default class Regression {
       self.polyModel = PolynomialRegression.read(dataR, 3);
       self.terms = self.polyModel.getTerms();
 
-      console.log("data after push", dataR);
-
 
       self.regressionData = dataR.map((data) => ({
         x: data.x,
@@ -141,8 +142,6 @@ export default class Regression {
       }
 
       self.regressionData = [rx,ry];
-
-      console.log("self.regressionData", self.regressionData);
 
 
     }
@@ -197,8 +196,10 @@ export default class Regression {
 
     let x = [];
     let y = [];
+    let ids = [];
+    let sexes = [];
 
-   for(let i  = 0; i < sampleIds.length; i++){
+    for(let i  = 0; i < sampleIds.length; i++){
 
       let af = -1;
 
@@ -206,6 +207,12 @@ export default class Regression {
 
       let gt = self.rawGenotypes[key];
       let pt = self.rawPhenotypes[key];
+
+      let sex = self.getSexFromSampleId(key);
+
+
+      console.log("gt", gt);
+
 
       if(gt === "1/1"){
         af = 1;
@@ -224,20 +231,15 @@ export default class Regression {
       if(typeof af === "number" && typeof parseInt(pt) === "number" && !isNaN(pt)) {
         x.push(parseFloat(af));
         y.push(parseInt(pt));
+        ids.push(key);
+        sexes.push(sex);
       }
-
 
 
     }
 
-    self.scatterplotData = [x,y];
+    self.scatterplotData = [x,y,ids, sexes];
     self.linePoints = self.findLineByLeastSquares(x, y);
-
-
-
-    // self.regressionData = [rx,ry];
-
-
 
     let familyCorrelation = -1;
     let familyPVal = -1;
@@ -254,9 +256,9 @@ export default class Regression {
     }
     else if(self.regressionType === "Polynomial"){
 
-      console.log("Polynomial Regression selected");
-
-      console.log("x,y", x, y);
+      // console.log("Polynomial Regression selected");
+      //
+      // console.log("x,y", x, y);
 
 
       const correlation= new Correlation(x,y);
@@ -269,12 +271,6 @@ export default class Regression {
 
     }
     return [familyCorrelation, familyPVal];
-  }
-
-  getFamilyPValue(){
-
-
-
   }
 
   findLineByLeastSquares(values_x, values_y) {
@@ -367,6 +363,12 @@ export default class Regression {
 
     console.log("project pval", this.projectPVal);
 
+
+  }
+
+  getSexFromSampleId(id){
+
+    return "M";
 
   }
 
