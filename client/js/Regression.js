@@ -233,6 +233,7 @@ export default class Regression {
         y.push(parseInt(pt));
         ids.push(key);
         sexes.push(sex);
+        console.log("sex inside regression", sex);
       }
 
 
@@ -368,7 +369,15 @@ export default class Regression {
 
   getSexFromSampleId(id){
 
-    return "M";
+    console.log("this.dataset", this.dataset);
+
+    for(let i = 0; i < this.dataset.length; i++){
+      if(this.dataset[i].name === id.toString()){
+        return this.dataset[i].sex;
+      }
+    }
+
+    return "U";
 
   }
 

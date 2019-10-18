@@ -60,11 +60,26 @@ export default {
       for (let i = 0; i < x.length; i++){
 
         let d = {
-          a : x[i],
-          b : y[i],
-          id : ids[i]
+          x : x[i],
+          y : y[i],
+          id : ids[i],
+          sex: sexes[i]
         };
         data.push(d);
+      }
+
+      let M = [];
+      let F = [];
+
+      for(let i = 0; i < data.length; i++){
+        console.log("data.sex", data[i].sex);
+
+        if(data[i].sex === "M"){
+          M.push(data[i]);
+        }
+        else if(data[i].sex === "F"){
+          F.push(data[i]);
+        }
       }
 
 
@@ -76,11 +91,11 @@ export default {
 
       // Set up the scales
       var xScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d=> d.a)])
+        .domain([0, d3.max(data, d=> d.x)])
         .range([0, width]);
 
       var yScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d=> d.b)])
+        .domain([0, d3.max(data, d=> d.y)])
         .range([height, 0]);
 
       let svg = d3.select("#scatterplotSvg");
@@ -128,15 +143,28 @@ export default {
       xAxis
         .call(d3.axisBottom(xScale));
 
-      d3.select("#scatterplot")
-        .selectAll("circle")
-        .data(data).join("circle")
-        .attr("cx", d => xScale(d.a))
-        .attr("cy", d => yScale(d.b))
+      let circles = d3.select("#scatterplot").selectAll('circles')
+        .data(F).join("circle");
+
+     circles
+        .attr("cx", d => xScale(d.x))
+        .attr("cy", d => yScale(d.y))
         .attr("r", 10)
-        .on("click", d => console.log("(x,y): ", d.a, d.b))
-        .select("title")
-        .text(d => d.a.toString() + ", " + d.b.toString());
+        .on("click", d => console.log("(x,y): ", d.x, d.y));
+
+      let squares = d3.select("#scatterplot").selectAll('rect')
+        .data(M).join("rect");
+
+      squares
+        .attr("x", d => xScale(d.x))
+        .attr("y", d => yScale(d.y))
+        .attr("width", 20)
+        .attr("height", 20)
+
+        .on("click", d => console.log("(x,y): ", d.x, d.y));
+
+
+
 
 
     },
@@ -203,9 +231,10 @@ export default {
 
   /* style of scatter plot frame */
   .scatter-plot rect {
-    fill: none;
+    fill: dimgrey;
     stroke: #000000;
     stroke-width: 1;
+    opacity: 0.5;
   }
 
   #regression-line{
