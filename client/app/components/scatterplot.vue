@@ -146,35 +146,28 @@ export default {
       xAxis
         .call(d3.axisBottom(xScale));
 
+
+
+
+
       let circles = d3.select("#plot").selectAll('circles')
         .data(F).join("circle");
 
-      let circleText = d3.select("#plot").selectAll('text')
-        .data(F).join("text");
 
-      circleText
-        .attr("x", d => {console.log(xScale(d.x)); return xScale(d.x) - 10})
-        .attr("y", d => yScale(d.y))
-        .text(d => d.id);
 
-      let squareText = d3.select("#plot").selectAll('rect')
-        .data(M).join("text");
-
-      squareText
-        .attr("x", d => {console.log(xScale(d.x)); return xScale(d.x) - 10})
-        .attr("y", d => yScale(d.y))
-        .text(d => d.id);
-
-     circles
+      circles
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", 10)
-       .style("fill", d => {console.log("d.color", d.color); return d.color })
+        .style("fill", d => {console.log("d.color", d.color); return d.color })
         .on("click", d => console.log("(x,y): ", d.x, d.y))
-       .enter().append("text")
-       .text(d => d.name);
+        .enter().append("text")
+        .text(d => d.name);
 
-      let squares = d3.select("#scatterplot").selectAll('rect')
+
+
+
+      let squares = d3.select("#plot").selectAll('rect')
         .data(M).join("rect");
 
       squares
@@ -185,6 +178,26 @@ export default {
         .style("fill", d => d.color)
 
         .on("click", d => console.log("(x,y): ", d.x, d.y));
+
+
+      let squareText = d3.select("#plot").selectAll('text.sq')
+        .data(M).join("text")
+        .classed("sq", true);
+
+      squareText
+        .attr("x", d => {console.log(xScale(d.x)); return xScale(d.x) - 10})
+        .attr("y", d => yScale(d.y))
+        .text(d => d.id);
+
+
+      let circleText = d3.select("#plot").selectAll('text.circ')
+        .data(F).join("text")
+        .classed("circ", true);
+
+      circleText
+        .attr("x", d => {console.log(xScale(d.x)); return xScale(d.x) - 10})
+        .attr("y", d => yScale(d.y))
+        .text(d => d.id);
 
 
 
@@ -256,6 +269,7 @@ export default {
   .scatter-plot text {
     font-size: 8px;
     font-weight: bold;
+
   }
 
   /* style of scatter plot frame */
