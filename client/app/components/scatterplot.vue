@@ -10,6 +10,7 @@
 
       <!--<rect width="300" height="300"/>-->
       <g transform="translate(50, 50) " id="scatterplot">
+        <g id="plot"></g>
           <path id="regression-line"/>
         <g id="x-axis" transform="translate(0, 300)"></g>
         <g id="y-axis" transform="translate(0, 0)"></g>
@@ -143,21 +144,39 @@ export default {
       xAxis
         .call(d3.axisBottom(xScale));
 
-      let circles = d3.select("#scatterplot").selectAll('circles')
+      let circles = d3.select("#plot").selectAll('circles')
         .data(F).join("circle");
+
+      let circleText = d3.select("#plot").selectAll('text')
+        .data(F).join("text");
+
+      circleText
+        .attr("x", d => {console.log(xScale(d.x)); return xScale(d.x)})
+        .attr("y", d => yScale(d.y))
+        .text(d => d.id);
+
+      let squareText = d3.select("#plot").selectAll('rect')
+        .data(M).join("text");
+
+      squareText
+        .attr("x", d => {console.log(xScale(d.x)); return xScale(d.x) - 10})
+        .attr("y", d => yScale(d.y) -10)
+        .text(d => d.id);
 
      circles
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", 10)
-        .on("click", d => console.log("(x,y): ", d.x, d.y));
+        .on("click", d => console.log("(x,y): ", d.x, d.y))
+       .enter().append("text")
+       .text(d => d.name);
 
       let squares = d3.select("#scatterplot").selectAll('rect')
         .data(M).join("rect");
 
       squares
-        .attr("x", d => xScale(d.x))
-        .attr("y", d => yScale(d.y))
+        .attr("x", d => xScale(d.x) -10)
+        .attr("y", d => yScale(d.y) - 10)
         .attr("width", 20)
         .attr("height", 20)
 

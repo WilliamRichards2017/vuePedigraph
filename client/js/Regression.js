@@ -239,8 +239,39 @@ export default class Regression {
 
     }
 
-    self.scatterplotData = [x,y,ids, sexes];
+
+
+    let tempDat = [];
+
+    for (let i = 0; i < x.length; i++){
+
+      let d = {
+        x : x[i],
+        y : y[i],
+        id : ids[i],
+        sex: sexes[i]
+      };
+      tempDat.push(d);
+    }
+
+
+
     self.linePoints = self.findLineByLeastSquares(x, y);
+
+
+    //jitter x by hand
+    for(let i = 0; i < x.length; i++){
+      for(let j = 0; j < x.length; j++){
+        if(x[i] === x[j] && y[i] === y[j] && i !== j){
+
+          x[j] += 0.042;
+
+        }
+      }
+    }
+
+    self.scatterplotData = [x,y,ids, sexes];
+
 
     let familyCorrelation = -1;
     let familyPVal = -1;
