@@ -54,6 +54,8 @@ export default class Regression {
     self.x = [];
     self.y = [];
 
+    console.log("self.dataset", self.dataset);
+
     for (let key in self.rawGenotypes) {
 
       let af = -1;
@@ -76,7 +78,7 @@ export default class Regression {
         af = 0;
       }
       else{
-        console.log("error: could not interpret GT", gt);
+        // console.log("error: could not interpret GT", gt);
         af = "not a number";
       }
 
@@ -198,6 +200,7 @@ export default class Regression {
     let y = [];
     let ids = [];
     let sexes = [];
+    let colors = [];
 
     for(let i  = 0; i < sampleIds.length; i++){
 
@@ -209,6 +212,7 @@ export default class Regression {
       let pt = self.rawPhenotypes[key];
 
       let sex = self.getSexFromSampleId(key);
+      let color = self.getColorFromSampleId(key);
 
 
       console.log("gt", gt);
@@ -233,6 +237,7 @@ export default class Regression {
         y.push(parseInt(pt));
         ids.push(key);
         sexes.push(sex);
+        colors.push(color);
         console.log("sex inside regression", sex);
       }
 
@@ -270,7 +275,7 @@ export default class Regression {
       }
     }
 
-    self.scatterplotData = [x,y,ids, sexes];
+    self.scatterplotData = [x,y,ids, sexes, colors];
 
 
     let familyCorrelation = -1;
@@ -400,8 +405,6 @@ export default class Regression {
 
   getSexFromSampleId(id){
 
-    console.log("this.dataset", this.dataset);
-
     for(let i = 0; i < this.dataset.length; i++){
       if(this.dataset[i].name === id.toString()){
         return this.dataset[i].sex;
@@ -409,6 +412,18 @@ export default class Regression {
     }
 
     return "U";
+
+  }
+
+  getColorFromSampleId(id){
+
+    for(let i = 0; i < this.dataset.length; i++){
+      if(this.dataset[i].name === id.toString()){
+        return this.dataset[i].col;
+      }
+    }
+
+    return "none";
 
   }
 

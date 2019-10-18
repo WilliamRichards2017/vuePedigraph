@@ -54,6 +54,7 @@ export default {
       let y = self.rawData[1];
       let ids = self.rawData[2];
       let sexes = self.rawData[3];
+      let colors = self.rawData[4];
 
 
       console.log("lengths", x.length, ids.length, sexes.length);
@@ -64,7 +65,8 @@ export default {
           x : x[i],
           y : y[i],
           id : ids[i],
-          sex: sexes[i]
+          sex: sexes[i],
+          color: colors[i]
         };
         data.push(d);
       }
@@ -151,7 +153,7 @@ export default {
         .data(F).join("text");
 
       circleText
-        .attr("x", d => {console.log(xScale(d.x)); return xScale(d.x)})
+        .attr("x", d => {console.log(xScale(d.x)); return xScale(d.x) - 10})
         .attr("y", d => yScale(d.y))
         .text(d => d.id);
 
@@ -160,13 +162,14 @@ export default {
 
       squareText
         .attr("x", d => {console.log(xScale(d.x)); return xScale(d.x) - 10})
-        .attr("y", d => yScale(d.y) -10)
+        .attr("y", d => yScale(d.y))
         .text(d => d.id);
 
      circles
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", 10)
+       .style("fill", d => {console.log("d.color", d.color); return d.color })
         .on("click", d => console.log("(x,y): ", d.x, d.y))
        .enter().append("text")
        .text(d => d.name);
@@ -179,6 +182,7 @@ export default {
         .attr("y", d => yScale(d.y) - 10)
         .attr("width", 20)
         .attr("height", 20)
+        .style("fill", d => d.color)
 
         .on("click", d => console.log("(x,y): ", d.x, d.y));
 
@@ -242,18 +246,22 @@ export default {
 
 
 <style>
-  /* style of scatter plot */
   .scatter-plot circle {
-    fill: dimgrey;
-    opacity: 0.5;
+
+     stroke: #000000;
+     stroke-width: 1;
+
+  }
+
+  .scatter-plot text {
+    font-size: 8px;
+    font-weight: bold;
   }
 
   /* style of scatter plot frame */
   .scatter-plot rect {
-    fill: dimgrey;
     stroke: #000000;
     stroke-width: 1;
-    opacity: 0.5;
   }
 
   #regression-line{
