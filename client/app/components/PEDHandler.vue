@@ -33,6 +33,9 @@
 
       <v-spacer></v-spacer>
 
+      <v-select :items="affectedStatuses"
+                id="selectAffectedStatus" label="Display affected status as" v-model="displayAffectedAs"
+      ></v-select>
 
 
       <v-spacer></v-spacer>
@@ -58,12 +61,6 @@
         <v-card>
 
           <v-container fluid>
-
-            Display affected status as:
-            <v-radio-group v-model="displayAffectedAs"  :mandatory="false">
-              <v-radio label="Binary" value="binary"></v-radio>
-              <v-radio label="Gradient" value="gradient"></v-radio>
-            </v-radio-group>
 
 
             Affected cuttoff
@@ -147,14 +144,6 @@
           <div width="400px" height="40%">
           <!--<v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression" style="width: 75%; height: 100px"></v-select>-->
 
-            <div class="tableTitle">Select Regression Type</div>
-
-            <v-card class ="radioContainer" style="margin:10px">
-               <v-radio-group v-model="selectedRegression" class="radioGroup" row :mandatory="false">
-                  <v-radio label="Linear" value="Linear"></v-radio>
-                  <v-radio label="Polynomial" value="Polynomial"></v-radio>
-                </v-radio-group>
-              </v-card>
 
 
             <div class="tableTitle">Regression Statistics</div>
@@ -290,6 +279,7 @@
     },
     data() {
       return {
+        affectedStatuses: ["binary", "continuous"],
         txtLines: '',
         txtDict: {},
         pedDict: {},
@@ -324,7 +314,7 @@
         ccType: null,
         drawer: false,
         toggle: null,
-        displayAffectedAs: "binary",
+        displayAffectedAs: "continuous",
         operands: [">", "<", ">=", "<="],
         selectedRegression: null,
         showPed: true,
@@ -444,6 +434,45 @@
         self.populateModel();
         self.selectedFamily = self.txt.split(" ")[0];
       },
+
+      buildLinearRegression(){
+
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset)
+        self.buildPhenotypes();
+        self.buildGenotypes();
+
+
+        self.populateSampleIds();
+
+        self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
+        // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
+        // self.familyPVal= self.regression.getFamilyCorrelation(self.sampleIds)[1].toExponential(3);
+
+        let famCor = self.regression.getFamilyCorrelation(self.sampleIds);
+
+        self.familyCorrelation = famCor[0];
+        self.familyPVal = famCor[1];
+
+        self.projectPVal = self.regression.projectPVal;
+
+        // console.log("self.familyPVal inside PedHandler", self.familyPVal);
+
+        // console.log("self.familyPC", self.familyCorrelation);
+        self.scatterplotData = self.regression.getScatterplotData();
+
+        self.linePoints = self.regression.getLinePoints();
+
+
+        self.styleRegressionTable();
+
+
+      },
+
+      buildLogisticRegression(){
+
+      },
+
+
       populateModel() {
         let self = this;
         self.splitTxt();
@@ -1045,8 +1074,14 @@
 
       displayAffectedAs: function(){
         let self = this;
-
         self.buildPhenotypes();
+
+        if(displayAffectedAs === "binary"){
+          self.buildLogisticRegression();
+        }
+        else if(displayAffectedA === "continuous"){
+          self.buildLinearRegression();
+        }
       },
 
       selectedOperand: function(){
@@ -1075,47 +1110,25 @@
         self.selectedPhenotype = "PTC Sensitivity";
         self.selectedGenotype = "7:141972755_C/T";
 
+        self.buildPhenotypes();
+        self.buildGenotypes();
+
         // console.log("self.sampleIds in watcher", self.sampleIds);
         $('#pedigree').on('nodeClick', self.onNodeClick)
 
         if (self.selectedRegression === "Linear") {
           self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset);
           self.ccType = "Pearson correlations coefficient";
+          self.buildLinearRegression();
         }
 
-        else if (self.selectedRegression === "Polynomial"){
-          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Polynomial", self.opts.dataset);
+        else if (self.selectedRegression === "Logistic"){
+          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset);
           self.ccType = "Pearsons correlation coefficient";
+          self.buildLogisticRegression();
         }
 
 
-
-        self.buildPhenotypes();
-        self.buildGenotypes();
-
-
-        self.populateSampleIds();
-
-        self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
-        // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
-        // self.familyPVal= self.regression.getFamilyCorrelation(self.sampleIds)[1].toExponential(3);
-
-        let famCor = self.regression.getFamilyCorrelation(self.sampleIds);
-
-        self.familyCorrelation = famCor[0];
-        self.familyPVal = famCor[1];
-
-        self.projectPVal = self.regression.projectPVal;
-
-        // console.log("self.familyPVal inside PedHandler", self.familyPVal);
-
-        // console.log("self.familyPC", self.familyCorrelation);
-        self.scatterplotData = self.regression.getScatterplotData();
-
-        self.linePoints = self.regression.getLinePoints();
-
-
-        self.styleRegressionTable();
 
 
       },

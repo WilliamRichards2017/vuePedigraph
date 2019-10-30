@@ -264,12 +264,21 @@ export default class Regression {
     self.linePoints = self.findLineByLeastSquares(x, y);
 
 
+
+    let toggle = false;
     //jitter x by hand
     for(let i = 0; i < x.length; i++){
       for(let j = 0; j < x.length; j++){
         if(x[i] === x[j] && y[i] === y[j] && i !== j){
 
-          x[j] += 0.042;
+          if(toggle) {
+            x[j] += 0.1;
+            toggle=!toggle;
+          }
+          else{
+            x[j] -= 0.1;
+            toggle = !toggle;
+          }
 
         }
       }

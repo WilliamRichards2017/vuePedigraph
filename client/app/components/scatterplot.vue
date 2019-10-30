@@ -94,7 +94,7 @@ export default {
 
       // Set up the scales
       var xScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d=> d.x)])
+        .domain([-0.2, 1.2])
         .range([0, width]);
 
       var yScale = d3.scaleLinear()
@@ -102,6 +102,10 @@ export default {
         .range([height, 0]);
 
       let svg = d3.select("#scatterplotSvg");
+
+
+      let ticks=["hom ref (0 AF)", "hom alt (0.5 AF)", "hom alt (1 AF)"];
+
 
       // TO-DONE: Select and update the scatterplot
 
@@ -124,7 +128,10 @@ export default {
 
 
       xAxis
-        .call(d3.axisBottom(xScale));
+        .call(d3.axisBottom(xScale).ticks(3).tickFormat(function (d, i) {
+          return ticks[i];
+        })
+    );
 
 
       yAxis.append("text")
@@ -142,9 +149,9 @@ export default {
         .call(d3.axisLeft(yScale));
 
 
-
-      xAxis
-        .call(d3.axisBottom(xScale));
+      //
+      // xAxis
+      //   .call(d3.axisBottom(xScale));
 
 
 
@@ -250,6 +257,11 @@ export default {
 
   watch : {
     linePoints: function () {
+      this.buildPlot();
+      this.buildRegressionLine();
+    },
+    rawData: function(){
+      console.log("change in raw data inside scatter plot");
       this.buildPlot();
       this.buildRegressionLine();
     }
