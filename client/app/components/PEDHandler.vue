@@ -45,67 +45,8 @@
         :nudge-width="200"
         offset-x
       >
-        <template v-slot:activator="{ on }">
-          <v-btn
-            color="indigo"
-            dark
-            v-on="on"
-            class="btn"
-          >
-            configure
-            <br>
-            affected status
-          </v-btn>
-        </template>
-
-        <v-card>
-
-          <v-container fluid>
 
 
-            Affected cuttoff
-
-
-              <div class="affectedStatus"  v-show="displayAffectedAs === 'binary'">
-              <v-select :items="operands"
-                      id="selectOperands" label="operand" v-model="selectedOperand" class="operand" value=">">
-            </v-select>
-
-              <v-text-field
-                v-model="affectedCuttoff"
-                label="Affected Cutt-off"
-                outlined
-                clearable
-              ></v-text-field>
-
-              </div>
-
-              <div class="affectedStatus" v-show="displayAffectedAs === 'gradient'">
-
-                <v-text-field
-                  id="selectMinThreshold"
-                  v-model="minThreshold"
-                  label="minimum PT threshold"
-                  outlined
-                  clearable
-                ></v-text-field>
-
-                <v-text-field
-                  v-model="maxThreshold"
-                  label="maximum PT threshold"
-                  outlined
-                  clearable
-                ></v-text-field>
-
-              </div>
-
-          </v-container>
-
-
-
-
-
-        </v-card>
       </v-menu>
 
       <v-spacer></v-spacer>
@@ -314,7 +255,7 @@
         ccType: null,
         drawer: false,
         toggle: null,
-        displayAffectedAs: "continuous",
+        displayAffectedAs: null,
         operands: [">", "<", ">=", "<="],
         selectedRegression: null,
         showPed: true,
@@ -437,12 +378,12 @@
 
       buildLinearRegression(){
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset)
-        self.buildPhenotypes();
-        self.buildGenotypes();
+        let self = this;
+
+        self.buildDemoPhenotypes();
 
 
-        self.populateSampleIds();
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset);
 
         self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
         // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
@@ -792,6 +733,8 @@
 
                 self.affectedCuttoff == parseInt(self.affectedCuttoff);
 
+                console.log("display affected status as");
+
 
 
                 // console.log("self.displayAffectedAs", self.displayAffectedAs);
@@ -800,27 +743,34 @@
                   if (sens < self.affectedCuttoff) {
                     aff = 2;
                     color = "gray";
+                    console.log("im grey");
                   }
                 } else if (self.selectedOperand === ">") {
                   if (sens > self.affectedCuttoff) {
                     aff = 2;
                     color = "gray";
+                    console.log("im grey");
+
                   }
                 } else if (self.selectedOperand === ">=") {
                   if (sens >= self.affectedCuttoff) {
                     aff = 2;
                     color = "gray";
+                    console.log("im grey");
+
                   }
                 } else if (self.selectedOperand === "<=") {
                   if (sens <= self.affectedCuttoff) {
                     aff = 2;
                     color = "gray";
+                    console.log("im grey");
+
                   }
                 }
 
               }
 
-              else if (self.displayAffectedAs === "gradient"){
+              else if (self.displayAffectedAs === "continuous"){
 
                 console.log("sens inside gradient", sens);
 
@@ -1076,11 +1026,12 @@
         let self = this;
         self.buildPhenotypes();
 
-        if(displayAffectedAs === "binary"){
+        if(self.displayAffectedAs === "binary"){
           self.buildLogisticRegression();
         }
-        else if(displayAffectedA === "continuous"){
+        else if(self.displayAffectedAs === "continuous"){
           self.buildLinearRegression();
+          self.styleNodesAsGradient();
         }
       },
 
@@ -1104,8 +1055,6 @@
 
       selectedFamily: function () {
         let self = this;
-
-        self.populateSampleIds();
 
         self.selectedPhenotype = "PTC Sensitivity";
         self.selectedGenotype = "7:141972755_C/T";

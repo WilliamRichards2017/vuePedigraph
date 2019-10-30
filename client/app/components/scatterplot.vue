@@ -56,6 +56,8 @@ export default {
       let sexes = self.rawData[3];
       let colors = self.rawData[4];
 
+      console.log("colors", colors);
+
 
       console.log("lengths", x.length, ids.length, sexes.length);
 
@@ -149,29 +151,9 @@ export default {
         .call(d3.axisLeft(yScale));
 
 
-      //
-      // xAxis
-      //   .call(d3.axisBottom(xScale));
 
-
-
-
-
-      let circles = d3.select("#plot").selectAll('circles')
-        .data(F).join("circle");
-
-
-
-      circles
-        .attr("cx", d => xScale(d.x))
-        .attr("cy", d => yScale(d.y))
-        .attr("r", 10)
-        .style("fill", d => {console.log("d.color", d.color); return d.color })
-        .on("click", d => console.log("(x,y): ", d.x, d.y))
-        .enter().append("text")
-        .text(d => d.name);
-
-
+      xAxis
+        .call(d3.axisBottom(xScale));
 
 
       let squares = d3.select("#plot").selectAll('rect')
@@ -196,6 +178,17 @@ export default {
         .attr("y", d => yScale(d.y))
         .text(d => d.id);
 
+
+      let circles = d3.select("#plot").selectAll('circles')
+        .data(F).join("circle");
+
+
+      circles
+        .attr("cx", d => xScale(d.x))
+        .attr("cy", d => yScale(d.y))
+        .attr("r", 10)
+        .style("fill", d => {console.log("d.color", d.color); return d.color });
+        // .on("click", d => console.log("(x,y): ", d.x, d.y))
 
       let circleText = d3.select("#plot").selectAll('text.circ')
         .data(F).join("text")
@@ -251,14 +244,14 @@ export default {
     }
   },
   mounted() {
-    this.buildPlot();
-    this.buildRegressionLine();
+    // this.buildPlot();
+    // this.buildRegressionLine();
   },
 
   watch : {
     linePoints: function () {
-      this.buildPlot();
-      this.buildRegressionLine();
+      // this.buildPlot();
+      // this.buildRegressionLine();
     },
     rawData: function(){
       console.log("change in raw data inside scatter plot");
