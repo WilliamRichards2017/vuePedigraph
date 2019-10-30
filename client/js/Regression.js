@@ -1,5 +1,4 @@
 import pearsonCorrelation from "./pearson-correlation.js"
-import PolynomialRegression from "js-polynomial-regression";
 import Correlation from "js-polynomial-regression/src/Correlation";
 import {fisherTest} from "fisher-transform";
 
@@ -128,10 +127,10 @@ export default class Regression {
         dataR.push({x: self.x[i], y : self.y[i] });
       }
 
-      self.polyModel = PolynomialRegression.read(dataR, 3);
-      self.terms = self.polyModel.getTerms();
-
-
+      // self.polyModel = PolynomialRegression.read(dataR, 3);
+      // self.terms = self.polyModel.getTerms();
+      //
+      //
       self.regressionData = dataR.map((data) => ({
         x: data.x,
         y: self.polyModel.predictY(self.terms, data.x)
@@ -300,7 +299,7 @@ export default class Regression {
       familyPVal = ft.pvalue;
 
     }
-    else if(self.regressionType === "Polynomial"){
+    else if(self.regressionType === "Logistic"){
 
       // console.log("Polynomial Regression selected");
       //

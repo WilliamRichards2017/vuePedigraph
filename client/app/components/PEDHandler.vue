@@ -86,6 +86,9 @@
           <!--<v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression" style="width: 75%; height: 100px"></v-select>-->
 
 
+            <div id="legend">
+            </div>
+
 
             <div class="tableTitle">Regression Statistics</div>
 
@@ -288,6 +291,9 @@
 
       let self = this;
 
+      self.buildPTLegend();
+
+
 
       self.tableHeader = [
         {
@@ -353,15 +359,68 @@
         self.selectedFamily = "1463";
         self.selectedPhenotype = "PTC Sensitivity";
         self.selectedGenotype = "7:141972755_C/T";
-        // for(let key in self.PTCPhenotypes){
-        //   console.log("PT:", self.PTCPhenotypes[key]);
 
-
-
-
-
-        console.log("samplePC");
       },
+
+      buildPTLegend(){
+        var w = 200, h = 50;
+
+        var key = d3.select("#legend")
+          .append("svg")
+          .attr("width", w+10)
+          .attr("height", h);
+
+        var legend = key.append("defs")
+          .append("svg:linearGradient")
+          .attr("id", "gradient")
+          .attr("x1", "0%")
+          .attr("y1", "100%")
+          .attr("x2", "100%")
+          .attr("y2", "100%")
+          .attr("spreadMethod", "pad");
+
+        legend.append("stop")
+          .attr("offset", "0%")
+          .attr("stop-color", "#ffffff")
+          .attr("stop-opacity", 1);
+
+
+        legend.append("stop")
+          .attr("offset", "100%")
+          .attr("stop-color", "#000000")
+          .attr("stop-opacity", 1);
+
+        key.append("rect")
+          .attr("width", w)
+          .attr("height", h - 30)
+          .attr("x", 5)
+          .style("fill", "url(#gradient)")
+          .attr("transform", "translate(0,10)");
+
+        var y = d3.scaleLinear()
+          .range([w+5, 0])
+          .domain([12, 0]);
+
+        var yAxis = d3.axisBottom()
+          .scale(y)
+          .ticks(5);
+
+        key.append("g")
+          .attr("class", "y axis")
+          .attr("transform", "translate(0,30)")
+          .attr("x", 5)
+          .call(yAxis)
+          .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 0)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("axis title");
+
+
+      },
+
+
       buildFromHub() {
         let self = this;
         self.pedTxt = self.txt;
@@ -406,10 +465,40 @@
 
         self.styleRegressionTable();
 
+        // self.buildPTLegend();
+
 
       },
 
       buildLogisticRegression(){
+
+        let self = this;
+
+        self.buildDemoPhenotypes();
+
+
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset);
+
+        self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
+        // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
+        // self.familyPVal= self.regression.getFamilyCorrelation(self.sampleIds)[1].toExponential(3);
+
+        let famCor = self.regression.getFamilyCorrelation(self.sampleIds);
+
+        self.familyCorrelation = famCor[0];
+        self.familyPVal = famCor[1];
+
+        self.projectPVal = self.regression.projectPVal;
+
+        // console.log("self.familyPVal inside PedHandler", self.familyPVal);
+
+        // console.log("self.familyPC", self.familyCorrelation);
+        self.scatterplotData = self.regression.getScatterplotData();
+
+        self.linePoints = self.regression.getLinePoints();
+
+
+        self.styleRegressionTable();
 
       },
 

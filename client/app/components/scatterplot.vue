@@ -37,7 +37,8 @@ export default {
 
     rawData: null,
     linePoints: null,
-    opts: null
+    opts: null,
+
 
   },
 
@@ -179,7 +180,7 @@ export default {
         .text(d => d.id);
 
 
-      let circles = d3.select("#plot").selectAll('circles')
+      let circles = d3.select("#plot").selectAll('circle')
         .data(F).join("circle");
 
 
