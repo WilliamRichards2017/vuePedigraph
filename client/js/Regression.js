@@ -1,6 +1,8 @@
 import pearsonCorrelation from "./pearson-correlation.js"
 import Correlation from "js-polynomial-regression/src/Correlation";
 import {fisherTest} from "fisher-transform";
+import LogisticRegression from "ml-logistic-regression";
+import Matrix from "ml-matrix";
 
 
 
@@ -102,6 +104,10 @@ export default class Regression {
 
     let self = this;
 
+    console.log("self.regressionType", self.regressionType);
+
+
+
     if(self.regressionType === "Linear") {
       let data = [self.x,self.y];
 
@@ -109,40 +115,12 @@ export default class Regression {
         self.projectCorrelation = self.pearsonCorrelation(data, 0, 1);
     }
 
-    else if(self.regressionType === 'Polynomial') {
-
-      const correlation = new Correlation(self.x,self.y);
-
-      self.projectCorrelation = correlation.correlationCoefficient();
+    else if(self.regressionType === 'Logistic') {
 
 
 
-      let rx= [];
-      let ry = [];
 
-
-      let dataR = [];
-
-      for(let i = 0; i < self.x.length; i++){
-        dataR.push({x: self.x[i], y : self.y[i] });
-      }
-
-      // self.polyModel = PolynomialRegression.read(dataR, 3);
-      // self.terms = self.polyModel.getTerms();
-      //
-      //
-      self.regressionData = dataR.map((data) => ({
-        x: data.x,
-        y: self.polyModel.predictY(self.terms, data.x)
-      }));
-
-
-      for(let i = 0; i < self.regressionData.length; i++){
-        rx.push(self.regressionData[i].x);
-        ry.push(self.regressionData[i].y);
-      }
-
-      self.regressionData = [rx,ry];
+      // self.regressionData = [rx,ry];
 
 
     }
@@ -191,8 +169,6 @@ export default class Regression {
 
   getFamilyCorrelation(sampleIds) {
 
-    console.log("sampleIds in getFamilyCorrelation", sampleIds);
-
     let self = this;
 
     let x = [];
@@ -214,7 +190,6 @@ export default class Regression {
       let color = self.getColorFromSampleId(key);
 
 
-      console.log("gt", gt);
 
 
       if(gt === "1/1"){
@@ -237,7 +212,6 @@ export default class Regression {
         ids.push(key);
         sexes.push(sex);
         colors.push(color);
-        console.log("sex inside regression", sex);
       }
 
 
@@ -305,10 +279,25 @@ export default class Regression {
       //
       // console.log("x,y", x, y);
 
+      console.log("x,y", x, y);
 
-      const correlation= new Correlation(x,y);
 
-      familyCorrelation = correlation.correlationCoefficient();
+      let xM = Matrix.columnVector(x);
+
+      let yM = Matrix.columnVector([0,0,0,1,1,1,1,1,1,1,1]);
+
+      let tM = Matrix.columnVector([1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]);
+
+
+      let logreg = new LogisticRegression({numSteps: 10000, learningRate: 5e-3});
+
+      logreg.train(xM,yM);
+
+
+      var finalResults = logreg.predict(tM);
+
+      console.log("final Results", finalResults);
+
 
       if(isNaN(familyCorrelation)){
         familyCorrelation = 0;

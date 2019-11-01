@@ -47,7 +47,6 @@ export default {
 
       let self = this;
 
-      console.log("self.opts.dataset inside scatterplot", self.opts.dataset);
 
       let data = [];
 
@@ -57,10 +56,6 @@ export default {
       let sexes = self.rawData[3];
       let colors = self.rawData[4];
 
-      console.log("colors", colors);
-
-
-      console.log("lengths", x.length, ids.length, sexes.length);
 
       for (let i = 0; i < x.length; i++){
 
@@ -78,7 +73,6 @@ export default {
       let F = [];
 
       for(let i = 0; i < data.length; i++){
-        console.log("data.sex", data[i].sex);
 
         if(data[i].sex === "M"){
           M.push(data[i]);
@@ -89,7 +83,6 @@ export default {
       }
 
 
-      console.log("Data", data);
 
       let width = 300;
       let height = 300;
@@ -112,8 +105,6 @@ export default {
 
       // TO-DONE: Select and update the scatterplot
 
-
-      console.log("d3", d3);
 
 
       let yAxis = d3.select("#y-axis");
@@ -188,7 +179,7 @@ export default {
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", 10)
-        .style("fill", d => {console.log("d.color", d.color); return d.color });
+        .style("fill", d =>  d.color );
         // .on("click", d => console.log("(x,y): ", d.x, d.y))
 
       let circleText = d3.select("#plot").selectAll('text.circ')
@@ -196,7 +187,7 @@ export default {
         .classed("circ", true);
 
       circleText
-        .attr("x", d => {console.log(xScale(d.x)); return xScale(d.x) - 10})
+        .attr("x", d => xScale(d.x) - 10)
         .attr("y", d => yScale(d.y))
         .text(d => d.id);
 
@@ -212,8 +203,6 @@ export default {
 
       let width = 300;
       let height = 300;
-
-      console.log("this.linePoints inside regression", this.linePoints);
 
 
       let coords = [];
@@ -255,7 +244,6 @@ export default {
       // this.buildRegressionLine();
     },
     rawData: function(){
-      console.log("change in raw data inside scatter plot");
       this.buildPlot();
       this.buildRegressionLine();
     }

@@ -826,33 +826,33 @@
 
 
 
+                let col = d3.interpolateRgb("white", "#5810A5")(0.8);
+
+
+
+
                 // console.log("self.displayAffectedAs", self.displayAffectedAs);
 
                 if (self.selectedOperand === "<") {
                   if (sens < self.affectedCuttoff) {
                     aff = 2;
-                    color = "gray";
-                    console.log("im grey");
+                    color = col;
                   }
                 } else if (self.selectedOperand === ">") {
                   if (sens > self.affectedCuttoff) {
                     aff = 2;
-                    color = "gray";
-                    console.log("im grey");
-
+                    color = col;
                   }
                 } else if (self.selectedOperand === ">=") {
                   if (sens >= self.affectedCuttoff) {
                     aff = 2;
-                    color = "gray";
-                    console.log("im grey");
+                    color = col;
 
                   }
                 } else if (self.selectedOperand === "<=") {
                   if (sens <= self.affectedCuttoff) {
                     aff = 2;
-                    color = "gray";
-                    console.log("im grey");
+                    color = col;
 
                   }
                 }
@@ -879,7 +879,7 @@
 
                 // color =  d3.interpolateGreys(sens/12);
 
-                color = d3.interpolateRgb("white", "#5810A5")(sens/12);
+                color = d3.interpolateRgb("white", "#5810A5")(1-sens/12);
 
                 // console.log("color in displayAsGradient", color, scaledSens);
               }
@@ -1027,6 +1027,9 @@
       drawGenotypeBars: function(){
         let self = this;
 
+        let blue = "#0059D1";
+        let red = "#DD0000";
+
         // console.log("cachedGenotypes inside draw bars", self.cachedGenotypes);
 
         for(let key in self.cachedGenotypes){
@@ -1044,8 +1047,6 @@
 
           }
 
-          let blue = "dodgerblue";
-          let red = "#ff3333";
 
           if(gt === "0/1") {
 

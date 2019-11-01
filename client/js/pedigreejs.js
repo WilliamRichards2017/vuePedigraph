@@ -1064,8 +1064,8 @@ function mouseout() {
 
 
 
-    let blue = "dodgerblue";
-    let red = "#ff3333";
+    let blue = "#0059D1";
+    let red = "#DD0000";
 
 
 
