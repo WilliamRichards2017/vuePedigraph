@@ -19,38 +19,46 @@ export default class Regression {
     this.projectCorrelation = -1;
     this.projectPVal = -1;
 
+    this.projectPrecision = -1;
+    this.projectRecall = -1;
+    this.projectF1 = -1
 
-    this.scatterplotData = null;
-    this.linePoints = null;
 
-    this.x = null;
-    this.y = null;
+    this.scatterplotDataLin = null;
+    this.scatterplotDataLog = null;
+    this.linePointsLin = null;
 
-    this.famX = null;
-    this.famY = null;
+    this.xRaw = null;
+    this.yRaw = null;
 
-    this.polyModel = null;
+
+    this.xLog = null;
+    this.yLog = null;
+
+    this.sourceXLin = null;
+    this.sourceYLin = null;
+
+    this.sourceXLog = null;
+    this.sourceYLog = null;
+
     this.regressionData = null;
-    this.terms = null;
 
 
 
+    this.populateRawCoords();
+    this.populateLinearScatterplotData();
+    this.populateLogCoords();
 
-    this.buildXandY();
     this.calculateProjectCorrelation();
     this.calculateProjectPVal();
 
   }
 
 
-  buildXandY() {
+
+
+  populateRawCoords() {
     let self = this;
-
-    // console.log("this.rawGenotypes", self.rawGenotypes);
-    // console.log("this.rawPhenotypes", self.rawPhenotypes);
-
-    // console.log("genotypes", self.rawGenotypes);
-    // console.log("phenotypes", self.rawPhenotypes);
 
     self.x = [];
     self.y = [];
@@ -89,8 +97,8 @@ export default class Regression {
           pt = pt.slice(-1);
         }
         if (typeof af === "number" && typeof parseInt(pt) === "number" && !isNaN(pt)) {
-          self.x.push(parseFloat(af));
-          self.y.push(parseInt(pt));
+          self.xRaw.push(parseFloat(af));
+          self.yRaw.push(parseInt(pt));
         }
       }
       else{
@@ -101,73 +109,12 @@ export default class Regression {
 
   calculateProjectCorrelation(){
 
-
     let self = this;
+    self.projectCorrelation = self.pearsonCorrelation([self.xRaw, self.yRaw], 0, 1);
 
-    console.log("self.regressionType", self.regressionType);
-
-
-
-    if(self.regressionType === "Linear") {
-      let data = [self.x,self.y];
-
-
-        self.projectCorrelation = self.pearsonCorrelation(data, 0, 1);
-    }
-
-    else if(self.regressionType === 'Logistic') {
-
-
-
-
-      // self.regressionData = [rx,ry];
-
-
-    }
   }
 
-  pearsonCorrelation(prefs, p1, p2) {
-    var si = [];
-
-    for (var key in prefs[p1]) {
-      if (prefs[p2][key]) si.push(key);
-    }
-
-    var n = si.length;
-
-    if (n == 0) return 0;
-
-    var sum1 = 0;
-    for (var i = 0; i < si.length; i++) sum1 += prefs[p1][si[i]];
-
-    var sum2 = 0;
-    for (var i = 0; i < si.length; i++) sum2 += prefs[p2][si[i]];
-
-    var sum1Sq = 0;
-    for (var i = 0; i < si.length; i++) {
-      sum1Sq += Math.pow(prefs[p1][si[i]], 2);
-    }
-
-    var sum2Sq = 0;
-    for (var i = 0; i < si.length; i++) {
-      sum2Sq += Math.pow(prefs[p2][si[i]], 2);
-    }
-
-    var pSum = 0;
-    for (var i = 0; i < si.length; i++) {
-      pSum += prefs[p1][si[i]] * prefs[p2][si[i]];
-    }
-
-    var num = pSum - (sum1 * sum2 / n);
-    var den = Math.sqrt((sum1Sq - Math.pow(sum1, 2) / n) *
-      (sum2Sq - Math.pow(sum2, 2) / n));
-
-    if (den == 0) return 0;
-
-    return num / den;
-  }
-
-  getFamilyCorrelation(sampleIds) {
+  populateLinearScatterplotData(){
 
     let self = this;
 
@@ -180,16 +127,11 @@ export default class Regression {
     for(let i  = 0; i < sampleIds.length; i++){
 
       let af = -1;
-
       let key = sampleIds[i];
-
       let gt = self.rawGenotypes[key];
       let pt = self.rawPhenotypes[key];
-
       let sex = self.getSexFromSampleId(key);
       let color = self.getColorFromSampleId(key);
-
-
 
 
       if(gt === "1/1"){
@@ -213,43 +155,26 @@ export default class Regression {
         sexes.push(sex);
         colors.push(color);
       }
-
-
     }
-
-
-
-    let tempDat = [];
-
-    for (let i = 0; i < x.length; i++){
-
-      let d = {
-        x : x[i],
-        y : y[i],
-        id : ids[i],
-        sex: sexes[i]
-      };
-      tempDat.push(d);
-    }
-
-
-
-    self.linePoints = self.findLineByLeastSquares(x, y);
-
 
 
     let toggle = false;
+
+    let xSource = x.slice(-1);
+    let ySource = y.slice(-1);
+
     //jitter x by hand
+    //Todo: handle cases for large overlaps
     for(let i = 0; i < x.length; i++){
       for(let j = 0; j < x.length; j++){
         if(x[i] === x[j] && y[i] === y[j] && i !== j){
 
           if(toggle) {
-            x[j] += 0.1;
+            xSource[j] += 0.1;
             toggle=!toggle;
           }
           else{
-            x[j] -= 0.1;
+            xSource[j] -= 0.1;
             toggle = !toggle;
           }
 
@@ -257,53 +182,24 @@ export default class Regression {
       }
     }
 
-    self.scatterplotData = [x,y,ids, sexes, colors];
+    self.scatterplotDataLin = [x,y,ids, sexes, colors, xSource, ySource];
+    self.linePointsLin = self.findLineByLeastSquares(x, y);
 
+  }
+
+  getFamilyCorrelation(sampleIds) {
+
+    let self = this;
 
     let familyCorrelation = -1;
     let familyPVal = -1;
-    if(self.regressionType === "Linear"){
-      console.log("linear Regression selected");
-      familyCorrelation = self.pearsonCorrelation(self.scatterplotData, 0, 1);
+    familyCorrelation = self.pearsonCorrelation(self.scatterplotData, 0, 1);
 
+    let rho = familyCorrelation;
 
-      let rho = familyCorrelation;
+    let ft = fisherTest(rho,x.length);
+    familyPVal = ft.pvalue;
 
-      let ft = fisherTest(rho,x.length);
-      familyPVal = ft.pvalue;
-
-    }
-    else if(self.regressionType === "Logistic"){
-
-      // console.log("Polynomial Regression selected");
-      //
-      // console.log("x,y", x, y);
-
-      console.log("x,y", x, y);
-
-
-      let xM = Matrix.columnVector(x);
-
-      let yM = Matrix.columnVector([0,0,0,1,1,1,1,1,1,1,1]);
-
-      let tM = Matrix.columnVector([1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]);
-
-
-      let logreg = new LogisticRegression({numSteps: 10000, learningRate: 5e-3});
-
-      logreg.train(xM,yM);
-
-
-      var finalResults = logreg.predict(tM);
-
-      console.log("final Results", finalResults);
-
-
-      if(isNaN(familyCorrelation)){
-        familyCorrelation = 0;
-      }
-
-    }
     return [familyCorrelation, familyPVal];
   }
 
@@ -422,6 +318,47 @@ export default class Regression {
 
     return "none";
 
+  }
+
+  pearsonCorrelation(prefs, p1, p2) {
+    var si = [];
+
+    for (var key in prefs[p1]) {
+      if (prefs[p2][key]) si.push(key);
+    }
+
+    var n = si.length;
+
+    if (n == 0) return 0;
+
+    var sum1 = 0;
+    for (var i = 0; i < si.length; i++) sum1 += prefs[p1][si[i]];
+
+    var sum2 = 0;
+    for (var i = 0; i < si.length; i++) sum2 += prefs[p2][si[i]];
+
+    var sum1Sq = 0;
+    for (var i = 0; i < si.length; i++) {
+      sum1Sq += Math.pow(prefs[p1][si[i]], 2);
+    }
+
+    var sum2Sq = 0;
+    for (var i = 0; i < si.length; i++) {
+      sum2Sq += Math.pow(prefs[p2][si[i]], 2);
+    }
+
+    var pSum = 0;
+    for (var i = 0; i < si.length; i++) {
+      pSum += prefs[p1][si[i]] * prefs[p2][si[i]];
+    }
+
+    var num = pSum - (sum1 * sum2 / n);
+    var den = Math.sqrt((sum1Sq - Math.pow(sum1, 2) / n) *
+      (sum2Sq - Math.pow(sum2, 2) / n));
+
+    if (den == 0) return 0;
+
+    return num / den;
   }
 
 }

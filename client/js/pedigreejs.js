@@ -1041,6 +1041,7 @@ function mouseout() {
       .attr("x", 0)
       .attr("y", 0)
       .attr("fill", "#F2F2F2")
+      .attr("z-index", 1)
       .style("stroke", "black")
       .style("stroke-width", "1px");
 
@@ -1049,15 +1050,21 @@ function mouseout() {
       style("fill", "white")
       .style("stroke", "black")
       .style("stroke-width", "1px")
+      .attr("z-axis", 1)
+
     svg.append("rect").attr("x",5).attr("y",65).attr("width", 20).attr("height", 20)
       .style("fill", "lightgrey")
       .style("stroke", "black")
       .style("stroke-width", "1px")
+      .attr("z-index", 1);
+
     svg.append("circle").attr("cx",15).attr("cy",105).attr("r", 10)
       .style("fill", "none")
       .style("stroke", "black")
       .style("stroke-width", "1px")
-      .style("stroke-dasharray", "2,4");
+      .style("stroke-dasharray", "2,4")
+      .attr("z-index", 1);
+
 
 
 
