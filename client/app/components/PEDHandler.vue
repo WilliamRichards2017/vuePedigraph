@@ -258,7 +258,7 @@
         ccType: null,
         drawer: false,
         toggle: null,
-        displayAffectedAs: null,
+        displayAffectedAs: "continuous",
         operands: [">", "<", ">=", "<="],
         selectedRegression: null,
         showPed: true,
@@ -367,8 +367,8 @@
 
         var key = d3.select("#legend")
           .append("svg")
-          .attr("width", w+10)
-          .attr("height", h);
+          .attr("width", 220)
+          .attr("height", 200);
 
         var legend = key.append("defs")
           .append("svg:linearGradient")
@@ -381,41 +381,41 @@
 
         legend.append("stop")
           .attr("offset", "0%")
-          .attr("stop-color", "#ffffff")
+          .attr("stop-color", "#F9F9F9")
           .attr("stop-opacity", 1);
 
 
         legend.append("stop")
           .attr("offset", "100%")
-          .attr("stop-color", "#000000")
+          .attr("stop-color", "#5810A5")
           .attr("stop-opacity", 1);
 
         key.append("rect")
-          .attr("width", w)
+          .attr("width", w+1)
           .attr("height", h - 30)
-          .attr("x", 5)
           .style("fill", "url(#gradient)")
-          .attr("transform", "translate(0,10)");
+          .attr("transform", "translate(0,60)");
 
-        var y = d3.scaleLinear()
-          .range([w+5, 0])
+        let yScale = d3.scaleLinear()
+          .range([w, 0])
           .domain([12, 0]);
 
         var yAxis = d3.axisBottom()
-          .scale(y)
+          .scale(yScale)
           .ticks(5);
 
         key.append("g")
           .attr("class", "y axis")
-          .attr("transform", "translate(0,30)")
-          .attr("x", 5)
+          .attr("transform", "translate(0,80)")
           .call(yAxis)
           .append("text")
           .attr("transform", "rotate(-90)")
-          .attr("y", 0)
           .attr("dy", ".71em")
           .style("text-anchor", "end")
-          .text("axis title");
+
+        key.append("text")
+          .attr("transform", "translate(0,50)")
+          .text("less affected <----> more affected");
 
 
       },
@@ -877,7 +877,9 @@
 
                 scaledSens = (1 - scaledSens)/1.5;
 
-                color =  d3.interpolateGreys(sens/12);
+                // color =  d3.interpolateGreys(sens/12);
+
+                color = d3.interpolateRgb("white", "#5810A5")(sens/12);
 
                 // console.log("color in displayAsGradient", color, scaledSens);
               }
@@ -1332,7 +1334,22 @@
     font-style: normal;
     font-weight: bold;
     margin:5px;
+    text-shadow:
+      0.07em 0 black,
+      0 0.07em black,
+      -0.07em 0 black,
+      0 -0.07em black;
   }
+
+
+  text {
+    /*color: white;*/
+    fill: black;
+    text-shadow: 2px 2px 11px white;
+
+  }
+
+
 
 
 

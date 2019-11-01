@@ -996,6 +996,7 @@ function mouseout() {
       font_family: 'Helvetica',
       font_weight: 700,
       background: "#dde9ee",
+
       node_background: '#fdfdfd',
       validate: true,
       DEBUG: false}, options );
