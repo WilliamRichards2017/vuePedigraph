@@ -77,17 +77,23 @@
         <v-card height="100%" width="450px" justify-content="space-evenly"></v-card>
 
 
-          <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts"></vueScatter>
+        <v-card width="400px" height="420px">
+
+
+        <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts"></vueScatter>
 
 
           <br>
 
-          <div width="400px" height="40%">
+
+        </v-card>
+
+        <div width="400px" height="40%">
           <!--<v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression" style="width: 75%; height: 100px"></v-select>-->
 
+          <div id="legend">
+          </div>
 
-            <div id="legend">
-            </div>
 
 
             <div class="tableTitle">Regression Statistics</div>
@@ -291,10 +297,6 @@
 
       let self = this;
 
-      self.buildPTLegend();
-
-
-
       self.tableHeader = [
         {
           text: ' ',
@@ -314,12 +316,7 @@
           sortable: false,
           value: 'family',
         }];
-      //
-      // self.tableData = [
-      //   {name: 'Pearsons r', project: self.projectCorrelation, family: self.familyCorrelation},
-      //   {name: 'r**2', project: self.projectCorrelation**2, family: self.familyCorrelation**2},
-      //   {name: 'P-val', project: self.projectPVal, family: self.familyPVal}
-      // ];
+
 
 
       self.tableData = [
@@ -351,7 +348,7 @@
         self.populateModel();
         self.populatePTC();
         // self.selectedPhenotype = "PTC Sensitivity";
-        self.selectedRegression = "Linear"
+        self.selectedRegression = "Linear";
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
 
@@ -362,63 +359,6 @@
 
       },
 
-      buildPTLegend(){
-        var w = 200, h = 50;
-
-        var key = d3.select("#legend")
-          .append("svg")
-          .attr("width", 220)
-          .attr("height", 200);
-
-        var legend = key.append("defs")
-          .append("svg:linearGradient")
-          .attr("id", "gradient")
-          .attr("x1", "0%")
-          .attr("y1", "100%")
-          .attr("x2", "100%")
-          .attr("y2", "100%")
-          .attr("spreadMethod", "pad");
-
-        legend.append("stop")
-          .attr("offset", "0%")
-          .attr("stop-color", "#F9F9F9")
-          .attr("stop-opacity", 1);
-
-
-        legend.append("stop")
-          .attr("offset", "100%")
-          .attr("stop-color", "#5810A5")
-          .attr("stop-opacity", 1);
-
-        key.append("rect")
-          .attr("width", w+1)
-          .attr("height", h - 30)
-          .style("fill", "url(#gradient)")
-          .attr("transform", "translate(0,60)");
-
-        let yScale = d3.scaleLinear()
-          .range([w, 0])
-          .domain([12, 0]);
-
-        var yAxis = d3.axisBottom()
-          .scale(yScale)
-          .ticks(5);
-
-        key.append("g")
-          .attr("class", "y axis")
-          .attr("transform", "translate(0,80)")
-          .call(yAxis)
-          .append("text")
-          .attr("transform", "rotate(-90)")
-          .attr("dy", ".71em")
-          .style("text-anchor", "end")
-
-        key.append("text")
-          .attr("transform", "translate(0,50)")
-          .text("less affected <----> more affected");
-
-
-      },
 
 
       buildFromHub() {
@@ -441,14 +381,23 @@
 
         self.buildDemoPhenotypes();
 
+        self.populateSampleIds();
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset);
+        console.log("self.sampleIds selected rlinear regression", self.sampleIds);
+
+
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds);
+
+        self.linePoints = self.regression.getLinePoints();
+
+
+
 
         self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
         // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
         // self.familyPVal= self.regression.getFamilyCorrelation(self.sampleIds)[1].toExponential(3);
 
-        let famCor = self.regression.getFamilyCorrelation(self.sampleIds);
+        let famCor = self.regression.getFamilyCorrelation();
 
         self.familyCorrelation = famCor[0];
         self.familyPVal = famCor[1];
@@ -457,10 +406,8 @@
 
         // console.log("self.familyPVal inside PedHandler", self.familyPVal);
 
-        // console.log("self.familyPC", self.familyCorrelation);
         self.scatterplotData = self.regression.getScatterplotData();
 
-        self.linePoints = self.regression.getLinePoints();
 
 
         self.styleRegressionTable();
@@ -483,7 +430,7 @@
         // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
         // self.familyPVal= self.regression.getFamilyCorrelation(self.sampleIds)[1].toExponential(3);
 
-        let famCor = self.regression.getFamilyCorrelation(self.sampleIds);
+        let famCor = self.regression.getFamilyCorrelation();
 
         self.familyCorrelation = famCor[0];
         self.familyPVal = famCor[1];
@@ -1119,7 +1066,7 @@
         self.buildPhenotypes();
 
         if(self.displayAffectedAs === "binary"){
-          self.buildLogisticRegression();
+          // self.buildLogisticRegression();
         }
         else if(self.displayAffectedAs === "continuous"){
           self.buildLinearRegression();
@@ -1156,18 +1103,6 @@
 
         // console.log("self.sampleIds in watcher", self.sampleIds);
         $('#pedigree').on('nodeClick', self.onNodeClick)
-
-        if (self.selectedRegression === "Linear") {
-          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset);
-          self.ccType = "Pearson correlations coefficient";
-          self.buildLinearRegression();
-        }
-
-        else if (self.selectedRegression === "Logistic"){
-          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset);
-          self.ccType = "Pearsons correlation coefficient";
-          self.buildLogisticRegression();
-        }
 
 
 
@@ -1212,25 +1147,25 @@
       selectedRegression: function() {
         let self = this;
 
+        self.populateSampleIds();
+
+        console.log("self.sampleIds selected regression", self.sampleIds);
+
         if (self.selectedRegression === "Linear") {
-          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset);
-          self.ccType = "Pearson correlations coefficient";
+          self.buildLinearRegression();
+
         }
 
-        else if (self.selectedRegression === "Polynomial"){
-          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Polynomial", self.opts.dataset);
-          self.ccType = "Pearsons correlation coefficient";
+        else if (self.selectedRegression === "Logistic"){
+          self.buildLogisticRegression();
         }
-
-
 
           self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
 
           self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
           self.opts.dataset = io.readLinkage(self.pedTxt);
 
-          self.populateSampleIds();
-          self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
+          self.familyCorrelation = self.regression.getFamilyCorrelation()[0].toFixed(4);
           self.scatterplotData = self.regression.getScatterplotData();
           self.linePoints = self.regression.getLinePoints();
 

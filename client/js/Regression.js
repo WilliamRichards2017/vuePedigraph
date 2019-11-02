@@ -7,13 +7,14 @@ import Matrix from "ml-matrix";
 
 
 export default class Regression {
-  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset) {
+  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds) {
     this.rawGenotypes = rawGenotypes;
     this.rawPhenotypes = rawPhenotypes;
 
     this.regressionType = regressionType;
 
     this.dataset = dataset;
+    this.sampleIds = sampleIds;
 
 
     this.projectCorrelation = -1;
@@ -47,7 +48,7 @@ export default class Regression {
 
     this.populateRawCoords();
     this.populateLinearScatterplotData();
-    this.populateLogCoords();
+    // this.populateLogCoords();
 
     this.calculateProjectCorrelation();
     this.calculateProjectPVal();
@@ -60,8 +61,8 @@ export default class Regression {
   populateRawCoords() {
     let self = this;
 
-    self.x = [];
-    self.y = [];
+    self.xRaw = [];
+    self.yRaw = [];
 
     console.log("self.dataset", self.dataset);
 
@@ -72,10 +73,7 @@ export default class Regression {
 
       let gt = self.rawGenotypes[key];
       let pt = self.rawPhenotypes[key];
-      let sex = self.getSexFromSampleId(key);
 
-      // console.log("gt", gt);
-      // console.log("pt", pt);
 
       if(gt === "1/1"){
         af = 1;
@@ -109,7 +107,12 @@ export default class Regression {
 
   calculateProjectCorrelation(){
 
+
     let self = this;
+
+    console.log("self.rawX", self.xRaw, self.yRaw)
+
+
     self.projectCorrelation = self.pearsonCorrelation([self.xRaw, self.yRaw], 0, 1);
 
   }
@@ -124,10 +127,10 @@ export default class Regression {
     let sexes = [];
     let colors = [];
 
-    for(let i  = 0; i < sampleIds.length; i++){
+    for(let i  = 0; i < self.sampleIds.length; i++){
 
       let af = -1;
-      let key = sampleIds[i];
+      let key = self.sampleIds[i];
       let gt = self.rawGenotypes[key];
       let pt = self.rawPhenotypes[key];
       let sex = self.getSexFromSampleId(key);
@@ -161,7 +164,6 @@ export default class Regression {
     let toggle = false;
 
     let xSource = x.slice(-1);
-    let ySource = y.slice(-1);
 
     //jitter x by hand
     //Todo: handle cases for large overlaps
@@ -182,23 +184,19 @@ export default class Regression {
       }
     }
 
-    self.scatterplotDataLin = [x,y,ids, sexes, colors, xSource, ySource];
+    self.scatterplotDataLin = [x,y,ids, sexes, colors, xSource];
     self.linePointsLin = self.findLineByLeastSquares(x, y);
 
   }
 
-  getFamilyCorrelation(sampleIds) {
+  getFamilyCorrelation() {
 
     let self = this;
+    let familyCorrelation = self.pearsonCorrelation(self.scatterplotDataLin, 0, 1);
 
-    let familyCorrelation = -1;
-    let familyPVal = -1;
-    familyCorrelation = self.pearsonCorrelation(self.scatterplotData, 0, 1);
-
-    let rho = familyCorrelation;
-
-    let ft = fisherTest(rho,x.length);
-    familyPVal = ft.pvalue;
+    //where family correlation is rho
+    let ft = fisherTest(familyCorrelation, self.xRaw.length);
+    let familyPVal = ft.pvalue;
 
     return [familyCorrelation, familyPVal];
   }
@@ -265,7 +263,15 @@ export default class Regression {
   }
 
   getScatterplotData(){
+
     let self = this;
+
+    if(self.regressionType === "Linear"){
+      return self.scatterplotDataLin;
+    }
+    else if(self.regressionType === "Polynomial"){
+      return self.scatterplotDataLog;
+    }
     return self.scatterplotData;
   }
 
@@ -285,7 +291,7 @@ export default class Regression {
 
     let rho = this.projectCorrelation;
 
-    let ft = fisherTest(rho, this.x.length);
+    let ft = fisherTest(rho, this.xRaw.length);
 
     this.projectPVal = ft.pvalue;
 

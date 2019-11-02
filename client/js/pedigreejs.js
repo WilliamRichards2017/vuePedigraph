@@ -995,7 +995,7 @@ function mouseout() {
       font_size: '.75em',
       font_family: 'Helvetica',
       font_weight: 700,
-      background: "#dde9ee",
+      background: "#f5f9ff",
 
       node_background: '#fdfdfd',
       validate: true,
@@ -1029,113 +1029,11 @@ function mouseout() {
     svg.append("rect")
       .attr("width", "100%")
       .attr("height", "96vh")
-      .attr("rx", 6)
-      .attr("ry", 6)
       .style("stroke", "darkgrey")
       .style("fill", opts.background) // or none
       .style("stroke-width", 1);
 
-    svg.append("rect")
-      .attr("width", "200px")
-      .attr("height", "250px")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("fill", "#F2F2F2")
-      .attr("z-index", 1)
-      .style("stroke", "black")
-      .style("stroke-width", "1px");
 
-
-    svg.append("circle").attr("cx",15).attr("cy",45).attr("r", 10).
-      style("fill", "white")
-      .style("stroke", "black")
-      .style("stroke-width", "1px")
-      .attr("z-axis", 1)
-
-    svg.append("rect").attr("x",5).attr("y",65).attr("width", 20).attr("height", 20)
-      .style("fill", "lightgrey")
-      .style("stroke", "black")
-      .style("stroke-width", "1px")
-      .attr("z-index", 1);
-
-    svg.append("circle").attr("cx",15).attr("cy",105).attr("r", 10)
-      .style("fill", "none")
-      .style("stroke", "black")
-      .style("stroke-width", "1px")
-      .style("stroke-dasharray", "2,4")
-      .attr("z-index", 1);
-
-
-
-
-
-
-
-    let blue = "#0059D1";
-    let red = "#DD0000";
-
-
-
-
-    svg.append("text").attr("x", 35).attr("y", 20).text("Phenotype").style("font-size", "17px").attr("alignment-baseline","middle").style("text-decoration", "underline");
-
-    svg.append("text").attr("x", 35).attr("y", 45).text("Unaffected Female").style("font-size", "15px").attr("alignment-baseline","middle");
-    svg.append("text").attr("x", 35).attr("y", 75).text("Affected Male").style("font-size", "15px").attr("alignment-baseline","middle");
-    svg.append("text").attr("x", 35).attr("y", 105).text("Phenotype N/A").style("font-size", "15px").attr("alignment-baseline","middle");
-    svg.append("rect")
-      .attr("width", "5px")
-      .attr('height', "13px")
-      .attr("x", 10)
-      .attr("y", 158)
-      .attr("fill", blue);
-
-
-
-    svg.append("rect")
-      .attr("width", "5px")
-      .attr('height', "13px")
-      .attr("x", 20)
-      .attr("y", 158)
-      .attr("fill", blue);
-
-
-    svg.append("text").attr("x", 35).attr("y", 140).text("Genotype").style("font-size", "17px").attr("alignment-baseline","middle").style("text-decoration", "underline");
-
-    svg.append("text").attr("x", 35).attr("y", 165).text("Homozygous Ref.").style("font-size", "15px").attr("alignment-baseline","middle");
-
-
-    svg.append("rect")
-      .attr("width", "5px")
-      .attr('height', "13px")
-      .attr("x", 10)
-      .attr("y", 183)
-      .attr("fill", blue);
-
-    svg.append("rect")
-      .attr("width", "5px")
-      .attr('height', "13px")
-      .attr("x", 20)
-      .attr("y", 183)
-      .attr("fill", red);
-
-    svg.append("text").attr("x", 35).attr("y", 190).text("Heterozygous").style("font-size", "15px").attr("alignment-baseline","middle");
-
-
-    svg.append("rect")
-      .attr("width", "5px")
-      .attr('height', "13px")
-      .attr("x", 10)
-      .attr("y", 208)
-      .attr("fill", red);
-
-    svg.append("rect")
-      .attr("width", "5px")
-      .attr('height', "13px")
-      .attr("x", 20)
-      .attr("y", 208)
-      .attr("fill", red);
-
-    svg.append("text").attr("x", 35).attr("y", 215).text("Homozygous Alt.").style("font-size", "15px").attr("alignment-baseline","middle");
 
 
     // var xytransform = pedcache.getposition(opts);  // cached position
@@ -1601,6 +1499,70 @@ function mouseout() {
       ped.attr('transform', 'translate(' + pos[0] + ',' + pos[1] + ') scale(' + t.k + ')');
     }
     svg.call(zoom);
+
+
+    let pedLegend = svg.append("g")
+      .attr("id", "pedLegend")
+      .attr("z-index", 1);
+
+
+    pedLegend.append("rect").attr("width", 133).attr("height", 120).style("fill", "#dde9f9").style("opacity", 0.9).style("stroke", "black");
+
+    pedLegend.append("text").attr("x", 35).attr("y", 15).text("Phenotype N/A").style("font-size", "12px").attr("alignment-baseline","middle");
+    pedLegend.append("text").attr("x", 35).attr("y", 46).text("Hom. Ref.").style("font-size", "12px").attr("alignment-baseline","middle");
+    pedLegend.append("text").attr("x", 35).attr("y", 71).text("Het.").style("font-size", "12px").attr("alignment-baseline","middle");
+    pedLegend.append("text").attr("x", 35).attr("y", 97).text("Hom. Alt.").style("font-size", "12px").attr("alignment-baseline","middle");
+
+    pedLegend.append("circle").attr("cx",15).attr("cy",15).attr("r", 7)
+      .style("fill", "none")
+      .style("stroke", "black")
+      .style("stroke-width", "1px")
+      .style("stroke-dasharray", "2,4");
+
+
+    let blue = "#0059D1";
+    let red = "#DD0000";
+
+
+    pedLegend.append("rect").attr("width", "5px").attr('height', "13px")
+      .attr("x", 10)
+      .attr("y", 37)
+      .attr("fill", blue);
+
+    pedLegend.append("rect").attr("width", "5px").attr('height', "13px")
+      .attr("x", 20)
+      .attr("y", 37)
+      .attr("fill", blue);
+
+    pedLegend.append("rect")
+      .attr("width", "5px")
+      .attr('height', "13px")
+      .attr("x", 10)
+      .attr("y", 62)
+      .attr("fill", blue);
+
+    pedLegend.append("rect")
+      .attr("width", "5px")
+      .attr('height', "13px")
+      .attr("x", 20)
+      .attr("y", 62)
+      .attr("fill", red);
+
+    pedLegend.append("rect")
+      .attr("width", "5px")
+      .attr('height', "13px")
+      .attr("x", 10)
+      .attr("y", 90)
+      .attr("fill", red);
+
+    pedLegend.append("rect")
+      .attr("width", "5px")
+      .attr('height', "13px")
+      .attr("x", 20)
+      .attr("y", 90)
+      .attr("fill", red);
+
+
     return opts;
   };
 
