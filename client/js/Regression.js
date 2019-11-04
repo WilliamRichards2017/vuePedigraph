@@ -32,16 +32,6 @@ export default class Regression {
     this.xRaw = null;
     this.yRaw = null;
 
-
-    this.xLog = null;
-    this.yLog = null;
-
-    this.sourceXLin = null;
-    this.sourceYLin = null;
-
-    this.sourceXLog = null;
-    this.sourceYLog = null;
-
     this.regressionData = null;
 
 
@@ -64,7 +54,6 @@ export default class Regression {
     self.xRaw = [];
     self.yRaw = [];
 
-    console.log("self.dataset", self.dataset);
 
     for (let key in self.rawGenotypes) {
 
@@ -110,10 +99,82 @@ export default class Regression {
 
     let self = this;
 
-    console.log("self.rawX", self.xRaw, self.yRaw)
-
 
     self.projectCorrelation = self.pearsonCorrelation([self.xRaw, self.yRaw], 0, 1);
+
+  }
+
+  linearJitter(xSource, ySource, ids){
+
+    let coords = {};
+
+    let xy = [];
+
+    for(let i = 0; i < xSource.length; i++){
+      xy.push([xSource[i], ySource[i]]);
+    }
+
+    for(let i = 0; i < xy.length; i++){
+      if(coords.hasOwnProperty(xy[i])){
+        coords[xy[i]].push(ids[i]);
+      }
+      else{
+        coords[xy[i]] = [];
+        coords[xy[i]].push(ids[i]);
+      }
+    }
+
+
+    let jitterCoords = {};
+
+    let xs = [];
+    let ys = [];
+
+    for(let key of Object.keys(coords)){
+      let value = coords[key];
+
+
+      let s = key.split(',');
+
+      console.log("s", s);
+
+      let xi = parseFloat(s[0]);
+      let yi = parseFloat(s[1]);
+
+      if(value.length % 2 === 1){
+
+        let ls = -1*(value.length-1)/2;
+        for(let i = 0; i < value.length; i++) {
+          let x = xi + ls*0.11;
+          let y = yi;
+          xs.push(x);
+          ys.push(y)
+          jitterCoords[value[i]] = [x,y];
+          ls +=1;
+        }
+      }
+      else if (value.length % 2 === 0){
+
+        console.log("value.length 1", value.length);
+        let ls = -1*(value.length)/2;
+        console.log("value.length 2", value.length);
+        for(let i = 0; i < value.length; i++) {
+          let x = xi + ls*0.1;
+          let y = yi;
+          xs.push(x);
+          ys.push(y);
+          jitterCoords[value[i]] = [x,y];
+          ls +=1;
+        }
+      }
+    }
+
+    console.log("coords dict", coords);
+    console.log("coords after jitter", jitterCoords);
+
+    console.log("xs, ys", xs, ys);
+
+    return [ids, xs, ys];
 
   }
 
@@ -163,28 +224,17 @@ export default class Regression {
 
     let toggle = false;
 
-    let xSource = x.slice(-1);
+    let xSource = x.slice();
+    let ySource = y.slice();
 
-    //jitter x by hand
-    //Todo: handle cases for large overlaps
-    for(let i = 0; i < x.length; i++){
-      for(let j = 0; j < x.length; j++){
-        if(x[i] === x[j] && y[i] === y[j] && i !== j){
 
-          if(toggle) {
-            xSource[j] += 0.1;
-            toggle=!toggle;
-          }
-          else{
-            xSource[j] -= 0.1;
-            toggle = !toggle;
-          }
+    let source = self.linearJitter(xSource, ySource, ids);
 
-        }
-      }
-    }
+    let jIds = source[0];
+    let xSourceJ = source[1];
+    let ySourceJ = source[2];
 
-    self.scatterplotDataLin = [x,y,ids, sexes, colors, xSource];
+    self.scatterplotDataLin = [x,y,ids, sexes, colors, xSourceJ, ySourceJ];
     self.linePointsLin = self.findLineByLeastSquares(x, y);
 
   }

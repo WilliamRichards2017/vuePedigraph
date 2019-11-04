@@ -53,11 +53,16 @@ export default {
       console.log("self.rawData", self.rawData);
 
       let x = self.rawData[0];
-      let xSource = self.rawData[5];
       let y = self.rawData[1];
       let ids = self.rawData[2];
       let sexes = self.rawData[3];
       let colors = self.rawData[4];
+      let xSource = self.rawData[5];
+      let ySource = self.rawData[6];
+
+      console.log("xSource in scatter plot", xSource);
+      console.log("ySource in scatter plot", ySource);
+
 
 
 
@@ -65,11 +70,13 @@ export default {
 
         let d = {
           x : x[i],
-          xSource : x[i],
           y : y[i],
           id : ids[i],
           sex: sexes[i],
-          color: colors[i]
+          color: colors[i],
+          xSource : xSource[i],
+          ySource: ySource[i],
+
         };
         data.push(d);
       }
@@ -157,8 +164,8 @@ export default {
         .data(M).join("rect");
 
       squares
-        .attr("x", d => xScale(d.x) -10)
-        .attr("y", d => yScale(d.y) - 10)
+        .attr("x", d => xScale(d.xSource) -10)
+        .attr("y", d => yScale(d.ySource) - 10)
         .attr("width", 20)
         .attr("height", 20)
         .style("fill", d => d.color)
@@ -168,32 +175,33 @@ export default {
 
       let squareText = d3.select("#plot").selectAll('text.sq')
         .data(M).join("text")
+        .style("text-shadow", "2px 2px 11px white")
         .classed("sq", true);
 
       squareText
-        .attr("x", d => {console.log(xScale(d.x)); return xScale(d.xSource) - 10})
-        .attr("y", d => yScale(d.y))
+        .attr("x", d =>  xScale(d.xSource) - 10)
+        .attr("y", d => yScale(d.ySource))
         .text(d => d.id);
 
 
       let circles = d3.select("#plot").selectAll('circle')
         .data(F).join("circle");
 
-
       circles
         .attr("cx", d => xScale(d.xSource))
-        .attr("cy", d => yScale(d.y))
+        .attr("cy", d => yScale(d.ySource))
         .attr("r", 10)
-        .style("fill", d =>  d.color );
-        // .on("click", d => console.log("(x,y): ", d.x, d.y))
+        .style("fill", d =>  d.color )
+        .on("click", d => console.log("(x,y): ", d.x, d.y));
 
       let circleText = d3.select("#plot").selectAll('text.circ')
         .data(F).join("text")
+        .style("text-shadow", "2px 2px 11px white")
         .classed("circ", true);
 
       circleText
         .attr("x", d => xScale(d.xSource) - 10)
-        .attr("y", d => yScale(d.y))
+        .attr("y", d => yScale(d.ySource))
         .text(d => d.id);
 
 
@@ -369,6 +377,8 @@ export default {
   #regression-line {
     fill: none;
   }
+
+
 
   .chartTitle{
     /*text-decoration: underline;*/
