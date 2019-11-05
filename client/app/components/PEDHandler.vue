@@ -360,7 +360,6 @@
       },
 
 
-
       buildFromHub() {
         let self = this;
         self.pedTxt = self.txt;
@@ -375,7 +374,7 @@
         self.selectedFamily = self.txt.split(" ")[0];
       },
 
-      buildLinearRegression(){
+      buildLinearRegression() {
 
         let self = this;
 
@@ -389,8 +388,6 @@
         self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds);
 
         self.linePoints = self.regression.getLinePoints();
-
-
 
 
         self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
@@ -409,7 +406,6 @@
         self.scatterplotData = self.regression.getScatterplotData();
 
 
-
         self.styleRegressionTable();
 
         self.buildPTLegend();
@@ -417,7 +413,7 @@
 
       },
 
-      buildLogisticRegression(){
+      buildLogisticRegression() {
 
         let self = this;
 
@@ -447,6 +443,9 @@
 
         self.styleRegressionTable();
 
+        console.log("inside buildLogisticRegression");
+
+
       },
 
 
@@ -458,12 +457,12 @@
         self.populateFamilies();
         self.rebuildPedDict();
         self.highlightFamily();
-        if(self.launchedFrom !== "U") {
+        if (self.launchedFrom !== "U") {
           // self.parseVariants();
           // console.log("self.parsedVariants inside populateModel", self.parsedVariants);
         }
       },
-      buildPhenotypes: function() {
+      buildPhenotypes: function () {
         let self = this;
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
@@ -477,7 +476,7 @@
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
 
-      buildGenotypes: function(){
+      buildGenotypes: function () {
 
         console.log("inside build genotypes");
 
@@ -495,10 +494,10 @@
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
       //Needed for when mosaic has variants for a project with ped data
-      parseVariants: function() {
+      parseVariants: function () {
         let self = this;
         self.parsedVariants = [];
-        for(let i = 0; i < self.variants.length; i++){
+        for (let i = 0; i < self.variants.length; i++) {
           let parsedVariant = self.variants[i].chr + ":" + self.variants[i].pos + "_" + self.variants[i].ref + "/" + self.variants[i].alt;
           self.parsedVariants.push(parsedVariant);
         }
@@ -534,23 +533,23 @@
             let col = self.cachedColors[id];
             opts.dataset[i].affected = aff;
             opts.dataset[i].col = col;
-           }
+          }
           if (self.cachedNulls.includes(id)) {
             opts.dataset[i].NA = true;
           }
         }
         return opts;
       },
-      populateSampleIds: function(){
+      populateSampleIds: function () {
         let self = this;
         self.sampleIds = [];
 
-        if(typeof self.opts.dataset === "undefined"){
+        if (typeof self.opts.dataset === "undefined") {
           return;
         }
 
         console.log("opts.dataset in populateSampleIds", self.opts.dataset);
-        for(let i = 0; i < self.opts.dataset.length; i++){
+        for (let i = 0; i < self.opts.dataset.length; i++) {
           let sampleId = parseInt(self.opts.dataset[i].name);
           self.sampleIds.push(sampleId);
         }
@@ -560,8 +559,8 @@
         let self = this;
         let parentNodes =
           d3.selectAll(".node").nodes().map(function (d) {
-          return d.parentNode;
-        });
+            return d.parentNode;
+          });
         parentNodes.forEach(function (n) {
           let nodeToHightlight = d3.select(n.nextSibling.childNodes[0]);
           let border = d3.select(n.previousSibling);
@@ -587,66 +586,81 @@
           }
         });
 
-            self.highlightGTs();
-        },
+        self.highlightGTs();
+      },
 
-      buildPTLegend(){
+      buildPTLegend() {
 
-        console.log("build pt legends");
+        let self = this;
 
-        var w = 200, h = 50;
+        d3.select("#legend").selectAll("svg").remove();
 
-        var key = d3.select("#legend")
-          .append("svg")
-          .attr("width", 220)
-          .attr("height", 100);
+        console.log("building pt legend");
 
-        var legend = key.append("defs")
-          .append("svg:linearGradient")
-          .attr("id", "gradient")
-          .attr("x1", "0%")
-          .attr("y1", "100%")
-          .attr("x2", "100%")
-          .attr("y2", "100%")
-          .attr("spreadMethod", "pad");
-
-        legend.append("stop")
-          .attr("offset", "0%")
-          .attr("stop-color", "#F9F9F9")
-          .attr("stop-opacity", 1);
+        console.log("displayAffectedAs", self.displayAffectedAs);
 
 
-        legend.append("stop")
-          .attr("offset", "100%")
-          .attr("stop-color", "#5810A5")
-          .attr("stop-opacity", 1);
+        if(self.displayAffectedAs === "continuous") {
 
-        key.append("rect")
-          .attr("width", w+1)
-          .attr("height", h - 30)
-          .style("fill", "url(#gradient)")
-          .attr("transform", "translate(5,60)");
+          var w = 200, h = 50;
 
-        let yScale = d3.scaleLinear()
-          .range([w, 0])
-          .domain([12, 0]);
+          let key = d3.select("#legend")
+            .append("svg")
+            .attr("width", 220)
+            .attr("height", 100);
 
-        var yAxis = d3.axisBottom()
-          .scale(yScale)
-          .ticks(5);
 
-        key.append("g")
-          .attr("class", "y axis")
-          .attr("transform", "translate(5,80)")
-          .call(yAxis)
-          .append("text")
-          .attr("transform", "rotate(-90)")
-          .attr("dy", ".71em")
-          .style("text-anchor", "end")
+          console.log("build pt legends");
 
-        key.append("text")
-          .attr("transform", "translate(0,50)")
-          .text("less affected <----> more affected");
+
+          var legend = key.append("defs")
+            .append("svg:linearGradient")
+            .attr("id", "gradient")
+            .attr("x1", "0%")
+            .attr("y1", "100%")
+            .attr("x2", "100%")
+            .attr("y2", "100%")
+            .attr("spreadMethod", "pad");
+
+          legend.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "#F9F9F9")
+            .attr("stop-opacity", 1);
+
+
+          legend.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "#5810A5")
+            .attr("stop-opacity", 1);
+
+          key.append("rect")
+            .attr("width", w + 1)
+            .attr("height", h - 30)
+            .style("fill", "url(#gradient)")
+            .attr("transform", "translate(5,60)");
+
+          let yScale = d3.scaleLinear()
+            .range([w, 0])
+            .domain([12, 0]);
+
+          var yAxis = d3.axisBottom()
+            .scale(yScale)
+            .ticks(5);
+
+          key.append("g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(5,80)")
+            .call(yAxis)
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+
+          key.append("text")
+            .attr("transform", "translate(0,50)")
+            .text("less affected <----> more affected");
+
+        }
 
 
       },
@@ -829,8 +843,6 @@
                 // console.log("typeof sens", typeof sens);
 
                 self.affectedCuttoff == parseInt(self.affectedCuttoff);
-
-                console.log("display affected status as");
 
 
 
@@ -1132,11 +1144,16 @@
 
         if(self.displayAffectedAs === "binary"){
           // self.buildLogisticRegression();
+          self.selectedRegression = "Logistic";
         }
         else if(self.displayAffectedAs === "continuous"){
           self.buildLinearRegression();
           self.styleNodesAsGradient();
+          self.selectedRegression = "Linear";
         }
+
+        console.log("self.selectedRegression", self.selectedRegression);
+
       },
 
       selectedOperand: function(){
@@ -1214,6 +1231,9 @@
 
         self.populateSampleIds();
 
+        console.log("inside selectedRegression watcher", self.selectedRegression);
+
+
         console.log("self.sampleIds selected regression", self.sampleIds);
 
         if (self.selectedRegression === "Linear") {
@@ -1222,7 +1242,8 @@
         }
 
         else if (self.selectedRegression === "Logistic"){
-          self.buildLogisticRegression();
+          // self.buildLogisticRegression();
+          self.buildLinearRegression();
         }
 
           self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
