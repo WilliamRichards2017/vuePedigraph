@@ -411,6 +411,7 @@
         self.buildPTLegend();
 
 
+
       },
 
       buildLogisticRegression() {
@@ -593,27 +594,24 @@
 
         let self = this;
 
-        d3.select("#legend").selectAll("svg").remove();
+        d3.select("#legendSvg").remove();
 
-        console.log("building pt legend");
 
-        console.log("displayAffectedAs", self.displayAffectedAs);
 
 
         if(self.displayAffectedAs === "continuous") {
+
+          console.log("continous");
 
           var w = 200, h = 50;
 
           let key = d3.select("#legend")
             .append("svg")
+            .attr("id", "legendSvg")
             .attr("width", 220)
             .attr("height", 100);
 
-
-          console.log("build pt legends");
-
-
-          var legend = key.append("defs")
+          let legend = key.append("defs")
             .append("svg:linearGradient")
             .attr("id", "gradient")
             .attr("x1", "0%")
@@ -659,6 +657,57 @@
           key.append("text")
             .attr("transform", "translate(0,50)")
             .text("less affected <----> more affected");
+
+        }
+        else if(self.displayAffectedAs === "binary"){
+
+          console.log("display affected status as binary");
+
+          var w = 200, h = 50;
+
+          let key = d3.select("#legend")
+            .append("svg")
+            .attr("width", 220)
+            .attr("height", 100);
+
+          key.append("rect")
+            .attr("width", 100)
+            .attr("height", h-30)
+            .style("fill", "white")
+            .style("stroke", "black")
+            .attr("transform", "translate(5,60)");
+
+          key.append("rect")
+            .attr("width", 100)
+            .attr("height", h-30)
+            .style("fill", "#5810A5")
+            .style("stroke", "black")
+            .attr("transform", "translate(105,60)");
+
+
+          // let ticks = ["7"];
+          let yScale = d3.scaleLinear()
+            .range([w, 0])
+            .domain([12, 0]);
+
+          var yAxis = d3.axisBottom()
+            .scale(yScale)
+            .ticks(1).tickFormat(function (d, i) {
+              return "7";
+            });
+
+          key.append("g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(5,80)")
+            .call(yAxis)
+            .attr("transform", "rotate(-90)")
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+
+          key.append("text")
+            .attr("transform", "translate(20,50)")
+            .text("Un-affected <----> Affected");
+
 
         }
 
@@ -1151,7 +1200,6 @@
           self.styleNodesAsGradient();
           self.selectedRegression = "Linear";
         }
-
         console.log("self.selectedRegression", self.selectedRegression);
 
       },
@@ -1258,8 +1306,6 @@
           console.log("self.linePoints in ped handler", self.linePoints);
 
         self.styleRegressionTable();
-
-
 
       }
     }
