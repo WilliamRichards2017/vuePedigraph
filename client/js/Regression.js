@@ -28,6 +28,7 @@ export default class Regression {
     this.scatterplotDataLin = null;
     this.scatterplotDataLog = null;
     this.linePointsLin = null;
+    this.linePointsLog = null;
 
     this.xRaw = null;
     this.yRaw = null;
@@ -127,12 +128,8 @@ export default class Regression {
 
     let jitterCoords = {};
 
-    let xs = [];
-    let ys = [];
-
     for(let key of Object.keys(coords)){
       let value = coords[key];
-
 
       let s = key.split(',');
 
@@ -141,15 +138,14 @@ export default class Regression {
       let xi = parseFloat(s[0]);
       let yi = parseFloat(s[1]);
 
+
       if(value.length % 2 === 1){
 
         let ls = -1*(value.length-1)/2;
         for(let i = 0; i < value.length; i++) {
           let x = xi + ls*0.11;
-          let y = yi;
-          xs.push(x);
-          ys.push(y)
-          jitterCoords[value[i]] = [x,y];
+
+          jitterCoords[value[i]] = [x,yi];
           ls +=1;
         }
       }
@@ -160,23 +156,32 @@ export default class Regression {
         console.log("value.length 2", value.length);
         for(let i = 0; i < value.length; i++) {
           let x = xi + ls*0.1;
-          let y = yi;
-          xs.push(x);
-          ys.push(y);
-          jitterCoords[value[i]] = [x,y];
+          jitterCoords[value[i]] = [x,yi];
           ls +=1;
         }
       }
     }
-
-    console.log("coords dict", coords);
     console.log("coords after jitter", jitterCoords);
 
-    console.log("xs, ys", xs, ys);
 
-    return [ids, xs, ys];
+    let xs = [];
+    let ys = [];
+    let is = [];
 
-  }
+    for(let key of Object.keys(jitterCoords)) {
+      let value = jitterCoords[key];
+      let x = value[0];
+      let y = value[1];
+      let id = key;
+      xs.push(x);
+      ys.push(y);
+      is.push(id);
+      }
+
+    return [is, xs, ys];
+    }
+
+
 
   populateLinearScatterplotData(){
 
@@ -234,8 +239,10 @@ export default class Regression {
     let xSourceJ = source[1];
     let ySourceJ = source[2];
 
-    self.scatterplotDataLin = [x,y,ids, sexes, colors, xSourceJ, ySourceJ];
+    self.scatterplotDataLin = [x,y,jIds, sexes, colors, xSourceJ, ySourceJ];
     self.linePointsLin = self.findLineByLeastSquares(x, y);
+
+    console.log("self.linePointsLin", self.linePointsLin);
 
   }
 
@@ -329,10 +336,10 @@ export default class Regression {
     let self = this;
 
     if(self.regressionType === "Linear"){
-      return self.linePoints;
+      return self.linePointsLin;
     }
-    else if(self.regressionType === "Polynomial"){
-      return self.regressionData;
+    else if(self.regressionType === "Continious"){
+      return self.linePointsLog;
     }
 
   }

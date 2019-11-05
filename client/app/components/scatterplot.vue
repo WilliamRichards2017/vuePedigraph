@@ -50,6 +50,8 @@ export default {
 
       let data = [];
 
+      console.log("self.linePoints", self.linePoints);
+
       console.log("self.rawData", self.rawData);
 
       let x = self.rawData[0];
@@ -60,13 +62,14 @@ export default {
       let xSource = self.rawData[5];
       let ySource = self.rawData[6];
 
+      console.log("ids", ids);
       console.log("xSource in scatter plot", xSource);
       console.log("ySource in scatter plot", ySource);
 
 
 
 
-      for (let i = 0; i < x.length; i++){
+      for (let i = 0; i < xSource.length; i++){
 
         let d = {
           x : x[i],
@@ -168,7 +171,11 @@ export default {
         .attr("y", d => yScale(d.ySource) - 10)
         .attr("width", 20)
         .attr("height", 20)
-        .style("fill", d => d.color)
+        .style("fill", d =>  {
+          let color = d3.interpolateRgb("white", "#8629EA")(1-(d.ySource/12));
+          console.log("d", d);
+          return color;
+        })
 
         .on("click", d => console.log("(x,y): ", d.x, d.y));
 
@@ -191,7 +198,11 @@ export default {
         .attr("cx", d => xScale(d.xSource))
         .attr("cy", d => yScale(d.ySource))
         .attr("r", 10)
-        .style("fill", d =>  d.color )
+        .style("fill", d =>  {
+          let color = d3.interpolateRgb("white", "#8629EA")(1-(d.ySource/12));
+          console.log("d", d);
+          return color;
+        })
         .on("click", d => console.log("(x,y): ", d.x, d.y));
 
       let circleText = d3.select("#plot").selectAll('text.circ')

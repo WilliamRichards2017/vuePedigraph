@@ -816,17 +816,19 @@
                   scaledSens = 0;
                 }
                 else if(sens > self.maxThreshold){
-                  scaledSens = 1;
+                  scaledSens= 1;
                 }
                 else{
                   scaledSens = (sens-self.minThreshold)/(self.maxThreshold - self.minThreshold)
                 }
 
-                scaledSens = (1 - scaledSens)/1.5;
+                // scaledSens = (1 - scaledSens)/1.5;
 
                 // color =  d3.interpolateGreys(sens/12);
 
-                color = d3.interpolateRgb("white", "#5810A5")(1-sens/12);
+                color = d3.interpolateRgb("white", "#8629EA")(1-(sens/12));
+
+                // console.log("color, sens, id", color, sens, id);
 
                 // console.log("color in displayAsGradient", color, scaledSens);
               }
@@ -835,6 +837,8 @@
               self.opts.dataset[i].affected = aff;
               // console.log("color", color);
               self.opts.dataset[i].col = color;
+
+              console.log("dataset[i]", self.opts.dataset[i]);
 
               self.cachedPhenotypes[id] = aff;
               self.cachedColors[id] = color;
@@ -1168,6 +1172,8 @@
           self.familyCorrelation = self.regression.getFamilyCorrelation()[0].toFixed(4);
           self.scatterplotData = self.regression.getScatterplotData();
           self.linePoints = self.regression.getLinePoints();
+
+          console.log("self.linePoints in ped handler", self.linePoints);
 
         self.styleRegressionTable();
 
