@@ -412,7 +412,7 @@
 
         self.styleRegressionTable();
 
-        // self.buildPTLegend();
+        self.buildPTLegend();
 
 
       },
@@ -589,6 +589,67 @@
 
             self.highlightGTs();
         },
+
+      buildPTLegend(){
+
+        console.log("build pt legends");
+
+        var w = 200, h = 50;
+
+        var key = d3.select("#legend")
+          .append("svg")
+          .attr("width", 220)
+          .attr("height", 100);
+
+        var legend = key.append("defs")
+          .append("svg:linearGradient")
+          .attr("id", "gradient")
+          .attr("x1", "0%")
+          .attr("y1", "100%")
+          .attr("x2", "100%")
+          .attr("y2", "100%")
+          .attr("spreadMethod", "pad");
+
+        legend.append("stop")
+          .attr("offset", "0%")
+          .attr("stop-color", "#F9F9F9")
+          .attr("stop-opacity", 1);
+
+
+        legend.append("stop")
+          .attr("offset", "100%")
+          .attr("stop-color", "#5810A5")
+          .attr("stop-opacity", 1);
+
+        key.append("rect")
+          .attr("width", w+1)
+          .attr("height", h - 30)
+          .style("fill", "url(#gradient)")
+          .attr("transform", "translate(5,60)");
+
+        let yScale = d3.scaleLinear()
+          .range([w, 0])
+          .domain([12, 0]);
+
+        var yAxis = d3.axisBottom()
+          .scale(yScale)
+          .ticks(5);
+
+        key.append("g")
+          .attr("class", "y axis")
+          .attr("transform", "translate(5,80)")
+          .call(yAxis)
+          .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+
+        key.append("text")
+          .attr("transform", "translate(0,50)")
+          .text("less affected <----> more affected");
+
+
+      },
 
       highlightGTs: function(){
 
