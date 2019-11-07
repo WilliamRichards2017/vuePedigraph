@@ -595,6 +595,7 @@
         let self = this;
 
         d3.select("#legendSvg").remove();
+        d3.select("#legend").selectAll("g").remove();
 
 
 
@@ -622,13 +623,13 @@
 
           legend.append("stop")
             .attr("offset", "0%")
-            .attr("stop-color", "#F9F9F9")
+            .attr("stop-color", "#5810A5")
             .attr("stop-opacity", 1);
 
 
           legend.append("stop")
             .attr("offset", "100%")
-            .attr("stop-color", "#5810A5")
+            .attr("stop-color", "#F9F9F9")
             .attr("stop-opacity", 1);
 
           key.append("rect")
@@ -656,33 +657,39 @@
 
           key.append("text")
             .attr("transform", "translate(0,50)")
-            .text("less affected <----> more affected");
+            .text("More affected <----> Less affected");
 
         }
         else if(self.displayAffectedAs === "binary"){
+
+          d3.select("#legend").selectAll("svg").remove();
 
           console.log("display affected status as binary");
 
           var w = 200, h = 50;
 
+          let ticks = ["0", "6", "7", "12"]
+
           let key = d3.select("#legend")
+            .append('svg')
+            .attr("id", "legendSvg")
             .append("svg")
             .attr("width", 220)
             .attr("height", 100);
 
           key.append("rect")
-            .attr("width", 100)
+            .attr("width", 83.333)
             .attr("height", h-30)
             .style("fill", "white")
             .style("stroke", "black")
-            .attr("transform", "translate(5,60)");
+            .attr("transform", "translate(122,60)");
 
           key.append("rect")
-            .attr("width", 100)
+            .attr("width", 116.666)
             .attr("height", h-30)
             .style("fill", "#5810A5")
             .style("stroke", "black")
-            .attr("transform", "translate(105,60)");
+            .attr("transform", "translate(5,60)");
 
 
           // let ticks = ["7"];
@@ -692,21 +699,19 @@
 
           var yAxis = d3.axisBottom()
             .scale(yScale)
-            .ticks(1).tickFormat(function (d, i) {
-              return "7";
-            });
+            .ticks(10);
 
           key.append("g")
             .attr("class", "y axis")
             .attr("transform", "translate(5,80)")
             .call(yAxis)
-            .attr("transform", "rotate(-90)")
             .attr("dy", ".71em")
             .style("text-anchor", "end")
 
+
           key.append("text")
             .attr("transform", "translate(20,50)")
-            .text("Un-affected <----> Affected");
+            .text("Affected <----> Un-affected");
 
 
         }
