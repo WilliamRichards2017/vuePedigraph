@@ -2,7 +2,7 @@ import pearsonCorrelation from "./pearson-correlation.js"
 import Correlation from "js-polynomial-regression/src/Correlation";
 import {fisherTest} from "fisher-transform";
 import LogisticRegression from "ml-logistic-regression";
-import Matrix from "ml-matrix";
+import {Matrix} from "ml-matrix";
 
 
 
@@ -19,6 +19,9 @@ export default class Regression {
 
     this.projectCorrelation = -1;
     this.projectPVal = -1;
+
+    this.purple =  "#5810A5";
+
 
     this.projectPrecision = -1;
     this.projectRecall = -1;
@@ -38,7 +41,8 @@ export default class Regression {
 
 
     this.populateRawCoords();
-    this.populateLinearScatterplotData();
+
+    this.populateScatterplotData();
     // this.populateLogCoords();
 
     this.calculateProjectCorrelation();
@@ -90,7 +94,7 @@ export default class Regression {
         }
       }
       else{
-        console.log("could not interpret PT", pt);
+        // console.log("could not interpret PT", pt);
       }
     }
   }
@@ -133,7 +137,6 @@ export default class Regression {
 
       let s = key.split(',');
 
-      console.log("s", s);
 
       let xi = parseFloat(s[0]);
       let yi = parseFloat(s[1]);
@@ -150,10 +153,7 @@ export default class Regression {
         }
       }
       else if (value.length % 2 === 0){
-
-        console.log("value.length 1", value.length);
         let ls = -1*(value.length)/2;
-        console.log("value.length 2", value.length);
         for(let i = 0; i < value.length; i++) {
           let x = xi + ls*0.1;
           jitterCoords[value[i]] = [x,yi];
@@ -161,8 +161,6 @@ export default class Regression {
         }
       }
     }
-    console.log("coords after jitter", jitterCoords);
-
 
     let xs = [];
     let ys = [];
@@ -181,6 +179,119 @@ export default class Regression {
     return [is, xs, ys];
     }
 
+  populateScatterplotData(){
+    let self = this;
+    if(self.regressionType === "Linear"){
+      self.populateLinearScatterplotData();
+    }
+    else if(self.regressionType === "Logistic"){
+      self.populateLogisticScatterplotData();
+    }
+  }
+
+  translateYtoBinary(y){
+    console.log(y);
+    let yB = [];
+    for(let i = 0; i < y.length; i++) {
+      if (y[i] <= 7) {
+        yB.push(0.3);
+      }
+      else{
+       yB.push(2);
+      }
+    }
+    return yB;
+  }
+
+  findLogRegressionLine(x, y){
+
+    let self = this;
+
+
+    let yB = self.translateYtoBinary(y);
+
+    console.log(yB);
+
+    let xM = Matrix.columnVector(x);
+    let yM = Matrix.columnVector(yB);
+
+
+
+    console.log(x,yB);
+
+    let logreg = new LogisticRegression({numSteps: 1000, learningRate: 5e-3});
+    logreg.train(xM,yM);
+
+    let yPred= logreg.predict(xM);
+
+    let finalResults = [x,yPred];
+
+    return finalResults;
+
+  }
+
+  populateLogisticScatterplotData(){
+    let self = this;
+
+    let x = [];
+    let y = [];
+    let ids = [];
+    let sexes = [];
+    let colors = [];
+
+
+      for(let i  = 0; i < self.sampleIds.length; i++){
+
+        let af = -1;
+        let key = self.sampleIds[i];
+        let gt = self.rawGenotypes[key];
+        let pt = self.rawPhenotypes[key];
+        let sex = self.getSexFromSampleId(key);
+        let color = self.getColorFromSampleId(key);
+
+
+        if(gt === "1/1"){
+          af = 1;
+        }
+        else if(gt === "1/0" || gt === "0/1"){
+          af = 0.5;
+        }
+        else if(gt === "0/0"){
+          af = 0;
+        }
+        else{
+          // console.log("error: could not interpret GT", gt);
+          af = "not a number";
+        }
+
+        if(typeof af === "number" && typeof parseInt(pt) === "number" && !isNaN(pt)) {
+          x.push(parseFloat(af));
+          y.push(parseInt(pt));
+          ids.push(key);
+          sexes.push(sex);
+          colors.push(color);
+        }
+      }
+
+
+    let xSource = x.slice();
+    let ySource = y.slice();
+
+
+    let source = self.linearJitter(xSource, ySource, ids);
+
+    let jIds = source[0];
+    let xSourceJ = source[1];
+    let ySourceJ = source[2];
+
+    self.scatterplotDataLog = [x,y,jIds, sexes, colors, xSourceJ, ySourceJ];
+
+    self.linePointsLog = 7;
+
+
+
+
+  }
 
 
   populateLinearScatterplotData(){
@@ -213,7 +324,7 @@ export default class Regression {
         af = 0;
       }
       else{
-        console.log("error: could not interpret GT", gt);
+        // console.log("error: could not interpret GT", gt);
         af = "not a number";
       }
 
@@ -225,9 +336,6 @@ export default class Regression {
         colors.push(color);
       }
     }
-
-
-    let toggle = false;
 
     let xSource = x.slice();
     let ySource = y.slice();
@@ -242,13 +350,19 @@ export default class Regression {
     self.scatterplotDataLin = [x,y,jIds, sexes, colors, xSourceJ, ySourceJ];
     self.linePointsLin = self.findLineByLeastSquares(x, y);
 
-    console.log("self.linePointsLin", self.linePointsLin);
+    console.log(self.linePointsLin);
 
   }
 
   getFamilyCorrelation() {
 
     let self = this;
+
+
+    if(self.regressionType === "Logistic"){
+      return [-1, -1];
+    }
+
     let familyCorrelation = self.pearsonCorrelation(self.scatterplotDataLin, 0, 1);
 
     //where family correlation is rho
@@ -317,19 +431,21 @@ export default class Regression {
     }
 
     return [result_values_x, result_values_y];
+
+
   }
 
   getScatterplotData(){
 
     let self = this;
 
+
     if(self.regressionType === "Linear"){
       return self.scatterplotDataLin;
     }
-    else if(self.regressionType === "Polynomial"){
+    else if(self.regressionType === "Logistic"){
       return self.scatterplotDataLog;
     }
-    return self.scatterplotData;
   }
 
   getLinePoints(){
@@ -338,7 +454,7 @@ export default class Regression {
     if(self.regressionType === "Linear"){
       return self.linePointsLin;
     }
-    else if(self.regressionType === "Continious"){
+    else if(self.regressionType === "Logistic"){
       return self.linePointsLog;
     }
 
@@ -346,15 +462,14 @@ export default class Regression {
 
   calculateProjectPVal(){
 
+    this.populateRawCoords();
+
     let rho = this.projectCorrelation;
 
     let ft = fisherTest(rho, this.xRaw.length);
 
     this.projectPVal = ft.pvalue;
 
-    console.log("fisher test", ft);
-
-    console.log("project pval", this.projectPVal);
 
 
   }

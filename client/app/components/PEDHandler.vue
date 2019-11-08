@@ -80,7 +80,7 @@
         <v-card width="400px" height="420px">
 
 
-        <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts"></vueScatter>
+        <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts" :regressionType="selectedRegression" :operand="selectedOperand" :cuttoff="affectedCuttoff"></vueScatter>
 
 
           <br>
@@ -230,6 +230,7 @@
     data() {
       return {
         affectedStatuses: ["binary", "continuous"],
+        purple: "#8629EA",
         txtLines: '',
         txtDict: {},
         pedDict: {},
@@ -281,7 +282,7 @@
         projectPColor: null,
 
 
-        regressionTypes: ["Linear", "Polynomial"],
+        regressionTypes: ["Linear", "Logistic"],
         opts: {
           "targetDiv": "pedigree",
           labels: ['alleles', 'NA']
@@ -327,12 +328,9 @@
 
 
       if (self.launchedFrom === "H") {
-        console.log("launched from hub");
         self.buildFromHub();
-        console.log("self.sample_id", self.sample_id);
       }
       if (self.launchedFrom === "D") {
-        console.log("launched from demo");
         self.buildFromDemo();
       }
       if (self.launchedFrom === "U") {
@@ -380,11 +378,6 @@
 
         self.buildDemoPhenotypes();
 
-        self.populateSampleIds();
-
-        console.log("self.sampleIds selected rlinear regression", self.sampleIds);
-
-
         self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds);
 
         self.linePoints = self.regression.getLinePoints();
@@ -421,7 +414,7 @@
         self.buildDemoPhenotypes();
 
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset);
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset, self.sampleIds);
 
         self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
         // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
@@ -434,9 +427,6 @@
 
         self.projectPVal = self.regression.projectPVal;
 
-        // console.log("self.familyPVal inside PedHandler", self.familyPVal);
-
-        // console.log("self.familyPC", self.familyCorrelation);
         self.scatterplotData = self.regression.getScatterplotData();
 
         self.linePoints = self.regression.getLinePoints();
@@ -444,7 +434,8 @@
 
         self.styleRegressionTable();
 
-        console.log("inside buildLogisticRegression");
+        self.buildPTLegend();
+
 
 
       },
@@ -478,8 +469,6 @@
       },
 
       buildGenotypes: function () {
-
-        console.log("inside build genotypes");
 
         let self = this
         $('#pedigree').remove();
@@ -548,8 +537,6 @@
         if (typeof self.opts.dataset === "undefined") {
           return;
         }
-
-        console.log("opts.dataset in populateSampleIds", self.opts.dataset);
         for (let i = 0; i < self.opts.dataset.length; i++) {
           let sampleId = parseInt(self.opts.dataset[i].name);
           self.sampleIds.push(sampleId);
@@ -595,14 +582,8 @@
         let self = this;
 
         d3.select("#legendSvg").remove();
-        d3.select("#legend").selectAll("g").remove();
-
-
-
 
         if(self.displayAffectedAs === "continuous") {
-
-          console.log("continous");
 
           var w = 200, h = 50;
 
@@ -623,7 +604,7 @@
 
           legend.append("stop")
             .attr("offset", "0%")
-            .attr("stop-color", "#5810A5")
+            .attr("stop-color", self.purple)
             .attr("stop-opacity", 1);
 
 
@@ -662,9 +643,7 @@
         }
         else if(self.displayAffectedAs === "binary"){
 
-          d3.select("#legend").selectAll("svg").remove();
-
-          console.log("display affected status as binary");
+          console.log("binary");
 
           var w = 200, h = 50;
 
@@ -687,7 +666,7 @@
           key.append("rect")
             .attr("width", 116.666)
             .attr("height", h-30)
-            .style("fill", "#5810A5")
+            .style("fill", self.purple)
             .style("stroke", "black")
             .attr("transform", "translate(5,60)");
 
@@ -723,10 +702,6 @@
 
         let self = this;
 
-        console.log("self.highlightedSampleIDs", self.highlightedSampleIDs);
-        console.log("self.sampleIds", self.sampleIds);
-
-
         for(let i = 0; i < self.cachedNulls.length; i++){
 
           let node = self.getNodeById(self.cachedNulls[i]);
@@ -734,17 +709,13 @@
 
           if(!self.highlightedSampleIDs.includes(self.cachedNulls[i].toString())) {
 
-            let rects = node.selectAll("rect")
+            node.selectAll("rect")
               .attr("opacity", 0.05);
 
-            console.log("node to highlight", node);
-            console.log("rects", rects);
           }
           else{
-            let rects = node.selectAll("rect")
+            node.selectAll("rect")
               .attr("opacity", 0.5);
-            console.log("rects", rects);
-
 
           }
           }
@@ -759,9 +730,6 @@
 
         self.familyPColor = self.getPColor(self.familyPVal);
         self.projectPColor = self.getPColor(self.projectPVal);
-
-        // console.log("familyCOrColor", self.familyCorrelationColor);
-        // console.log("projectCOrColor", self.projectCorrelationColor);
 
 
         d3.select("#projectR")
@@ -886,6 +854,7 @@
 
 
               let aff = 0;
+
               let color = "white";
 
               if(typeof sens === "undefined" || isNaN(sens)){
@@ -898,35 +867,26 @@
 
                 self.affectedCuttoff == parseInt(self.affectedCuttoff);
 
-
-
-                let col = d3.interpolateRgb("white", "#5810A5")(0.8);
-
-
-
-
-                // console.log("self.displayAffectedAs", self.displayAffectedAs);
-
                 if (self.selectedOperand === "<") {
                   if (sens < self.affectedCuttoff) {
                     aff = 2;
-                    color = col;
+                    color = self.purple;
                   }
                 } else if (self.selectedOperand === ">") {
                   if (sens > self.affectedCuttoff) {
                     aff = 2;
-                    color = col;
+                    color = self.purple;
                   }
                 } else if (self.selectedOperand === ">=") {
                   if (sens >= self.affectedCuttoff) {
                     aff = 2;
-                    color = col;
+                    color = self.purple;
 
                   }
                 } else if (self.selectedOperand === "<=") {
                   if (sens <= self.affectedCuttoff) {
                     aff = 2;
-                    color = col;
+                    color = self.purple;
 
                   }
                 }
@@ -934,8 +894,6 @@
               }
 
               else if (self.displayAffectedAs === "continuous"){
-
-                console.log("sens inside gradient", sens);
 
                 let scaledSens = -1;
 
@@ -949,23 +907,14 @@
                   scaledSens = (sens-self.minThreshold)/(self.maxThreshold - self.minThreshold)
                 }
 
-                // scaledSens = (1 - scaledSens)/1.5;
+                color = d3.interpolateRgb("white", self.purple)(1-(sens/12));
 
-                // color =  d3.interpolateGreys(sens/12);
-
-                color = d3.interpolateRgb("white", "#8629EA")(1-(sens/12));
-
-                // console.log("color, sens, id", color, sens, id);
-
-                // console.log("color in displayAsGradient", color, scaledSens);
               }
 
 
               self.opts.dataset[i].affected = aff;
               // console.log("color", color);
               self.opts.dataset[i].col = color;
-
-              console.log("dataset[i]", self.opts.dataset[i]);
 
               self.cachedPhenotypes[id] = aff;
               self.cachedColors[id] = color;
@@ -1196,8 +1145,10 @@
         let self = this;
         self.buildPhenotypes();
 
+        self.populateSampleIds();
+
         if(self.displayAffectedAs === "binary"){
-          // self.buildLogisticRegression();
+          self.buildLogisticRegression();
           self.selectedRegression = "Logistic";
         }
         else if(self.displayAffectedAs === "continuous"){
@@ -1205,7 +1156,6 @@
           self.styleNodesAsGradient();
           self.selectedRegression = "Linear";
         }
-        console.log("self.selectedRegression", self.selectedRegression);
 
       },
 
@@ -1217,7 +1167,6 @@
       },
 
       minThreshold: function(){
-        console.log("change in minThreshold");
         let self = this;
         self.buildPhenotypes();
       },
@@ -1284,19 +1233,14 @@
 
         self.populateSampleIds();
 
-        console.log("inside selectedRegression watcher", self.selectedRegression);
-
-
-        console.log("self.sampleIds selected regression", self.sampleIds);
-
         if (self.selectedRegression === "Linear") {
           self.buildLinearRegression();
 
         }
 
         else if (self.selectedRegression === "Logistic"){
-          // self.buildLogisticRegression();
-          self.buildLinearRegression();
+          self.buildLogisticRegression();
+          // self.buildLinearRegression();
         }
 
           self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
@@ -1306,9 +1250,9 @@
 
           self.familyCorrelation = self.regression.getFamilyCorrelation()[0].toFixed(4);
           self.scatterplotData = self.regression.getScatterplotData();
-          self.linePoints = self.regression.getLinePoints();
 
-          console.log("self.linePoints in ped handler", self.linePoints);
+
+          self.linePoints = self.regression.getLinePoints();
 
         self.styleRegressionTable();
 
