@@ -27,6 +27,8 @@
     data() {
       return {
         purple: "#8629EA"
+
+
       }
     },
 
@@ -43,45 +45,6 @@
     },
 
     methods: {
-
-      getColor: function (d) {
-        let self = this;
-
-        if (self.regressionType === "Linear") {
-
-          let color = d3.interpolateRgb("white", "#8629EA")(1 - (d.ySource / 12));
-          return color;
-          // console.log("typeof sens", typeof sens);
-        } else if (self.regressionType === "Logistic") {
-
-          let color = "white";
-          self.operand == parseInt(self.cuttoff);
-
-          let sens = d.ySource;
-
-          if (self.operand === "<") {
-            if (sens < self.cuttoff) {
-              color = self.purple;
-            }
-          } else if (self.operand === ">") {
-            if (sens > self.cuttoff) {
-              color = self.purple;
-            }
-          } else if (self.operand === ">=") {
-            if (sens >= self.cuttoff) {
-              color = self.purple;
-
-            }
-          } else if (self.operand === "<=") {
-            if (sens <= self.cuttoff) {
-              color = self.purple;
-
-            }
-          }
-          return color;
-        }
-        return "None";
-      },
 
       buildPlot: function () {
         let self = this;
@@ -170,9 +133,7 @@
           .attr("y", d => yScale(d.ySource) - 10)
           .attr("width", 20)
           .attr("height", 20)
-          .style("fill", d => {
-            return self.getColor(d)
-          })
+          .style("fill", d => d.color)
           .on("click", d => console.log("(x,y): ", d.x, d.y));
         let squareText = d3.select("#plot").selectAll('text.sq')
           .data(M).join("text")
@@ -188,9 +149,7 @@
           .attr("cx", d => xScale(d.xSource))
           .attr("cy", d => yScale(d.ySource))
           .attr("r", 10)
-          .style("fill", d => {
-            return self.getColor(d)
-          })
+          .style("fill", d => d.color)
           .on("click", d => console.log("(x,y): ", d.x, d.y));
         let circleText = d3.select("#plot").selectAll('text.circ')
           .data(F).join("text")

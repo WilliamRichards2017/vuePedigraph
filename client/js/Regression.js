@@ -36,8 +36,7 @@ export default class Regression {
     this.xRaw = null;
     this.yRaw = null;
 
-    this.regressionData = null;
-
+    this.logJitterMapping = [[0,0], [1,0], [-1, 0], [0,1], [-1, 1], [1,1], [0, -1], [-1, -1], [1, -1]];
 
     this.processRawData()
 
@@ -112,13 +111,25 @@ export default class Regression {
 
   logisticJitter(data){
 
+    let self = this;
+
     let coordsIdMap = {};
 
     for (const i in data) {
 
       let p = data[i];
       if (p.hasOwnProperty("x") && p.hasOwnProperty("y") && p.hasOwnProperty("id")) {
-        let key = p.x.toString() + ',' + p.y.toString();
+
+        let yi = p.y;
+
+        if(yi < 7){
+          yi = 0.2;
+        }
+        else{
+          yi = 0.8;
+        }
+
+        let key = p.x.toString() + ',' + yi.toString();
 
         if(coordsIdMap.hasOwnProperty(key)){
           coordsIdMap[key].push(p["id"]);
@@ -143,31 +154,24 @@ export default class Regression {
 
       console.log("xi, yi", xi, yi);
 
-      if(yi < 7){
-        yi = 0.2;
-      }
-      else{3
-        yi = 0.8;
-      }
 
-      if(value.length % 2 === 1){
-
-        let ls = -1*(value.length-1)/2;
         for(let i = 0; i < value.length; i++) {
-          let x = xi + ls*0.11;
 
-          jitterCoords[value[i]] = [x,yi];
-          ls +=1;
+          console.log("sanity check",i, self.logJitterMapping[i],  self.logJitterMapping[i][0],  self.logJitterMapping[i][1]);
+
+
+          let xOff = self.logJitterMapping[i][0];
+          let x = xi + xOff*0.11;
+
+          let yOff = self.logJitterMapping[i][1];
+          let y = yi + yOff*0.11;
+
+          console.log("xOff, yOff", xOff, yOff, x, y);
+
+
+          jitterCoords[value[i]] = [x,y];
         }
-      }
-      else if (value.length % 2 === 0){
-        let ls = -1*(value.length)/2;
-        for(let i = 0; i < value.length; i++) {
-          let x = xi + ls*0.1;
-          jitterCoords[value[i]] = [x,yi];
-          ls +=1;
-        }
-      }
+
     }
 
     let jDs = [];
@@ -181,6 +185,9 @@ export default class Regression {
       let jD = {id: id, x: x, y: y};
       jDs.push(jD);
       }
+
+
+    console.log("log jitter data", jDs);
 
     return jDs;
     }
@@ -321,7 +328,7 @@ export default class Regression {
 
     console.log("self.scatterplotDataLog", self.scatterplotDataLog);
 
-    self.linePointsLog = 7;
+    self.linePointsLog = 5;
 
   }
 
