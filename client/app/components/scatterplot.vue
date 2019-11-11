@@ -85,31 +85,14 @@
 
       buildPlot: function () {
         let self = this;
-        let data = [];
-        let x = self.rawData[0];
-        let y = self.rawData[1];
-        let ids = self.rawData[2];
-        let sexes = self.rawData[3];
-        let xSource = self.rawData[5];
-        let ySource = self.rawData[6];
-        for (let i = 0; i < xSource.length; i++) {
-          let d = {
-            x: x[i],
-            y: y[i],
-            id: ids[i],
-            sex: sexes[i],
-            xSource: xSource[i],
-            ySource: ySource[i],
-          };
-          data.push(d);
-        }
+
         let M = [];
         let F = [];
-        for (let i = 0; i < data.length; i++) {
-          if (data[i].sex === "M") {
-            M.push(data[i]);
-          } else if (data[i].sex === "F") {
-            F.push(data[i]);
+        for (let i = 0; i < self.rawData.length; i++) {
+          if (self.rawData[i].sex === "M") {
+            M.push(self.rawData[i]);
+          } else if (self.rawData[i].sex === "F") {
+            F.push(self.rawData[i]);
           }
         }
         let width = 300;
@@ -119,7 +102,7 @@
           .domain([-0.2, 1.2])
           .range([0, width]);
         var yScale = d3.scaleLinear()
-          .domain([0, d3.max(data, d => d.y)])
+          .domain([0, d3.max(self.rawData, d => d.y)])
           .range([height, 0]);
         let svg = d3.select("#scatterplotSvg");
         let ticks = ["hom ref (0 AF)", "hom alt (0.5 AF)", "hom alt (1 AF)"];
