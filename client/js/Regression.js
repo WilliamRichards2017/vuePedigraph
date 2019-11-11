@@ -39,6 +39,7 @@ export default class Regression {
     this.regressionData = null;
 
 
+    this.processRawData()
 
     this.populateRawCoords();
 
@@ -109,6 +110,85 @@ export default class Regression {
 
   }
 
+  logisticJitter(data){
+
+    let coordsIdMap = {};
+
+    for (const i in data) {
+
+      let p = data[i];
+      if (p.hasOwnProperty("x") && p.hasOwnProperty("y") && p.hasOwnProperty("id")) {
+        let key = p.x.toString() + ',' + p.y.toString();
+
+        if(coordsIdMap.hasOwnProperty(key)){
+          coordsIdMap[key].push(p["id"]);
+        }
+        else{
+          coordsIdMap[key] = [];
+          coordsIdMap[key].push(p["id"]);
+        }
+      }
+    }
+
+
+    let jitterCoords = {};
+
+    for(let key of Object.keys(coordsIdMap)){
+      let value = coordsIdMap[key];
+
+      let s = key.split(',');
+
+      let xi = parseFloat(s[0]);
+      let yi = parseFloat(s[1]);
+
+      console.log("xi, yi", xi, yi);
+
+      if(yi < 7){
+        yi = 0.2;
+      }
+      else{3
+        yi = 0.8;
+      }
+
+      if(value.length % 2 === 1){
+
+        let ls = -1*(value.length-1)/2;
+        for(let i = 0; i < value.length; i++) {
+          let x = xi + ls*0.11;
+
+          jitterCoords[value[i]] = [x,yi];
+          ls +=1;
+        }
+      }
+      else if (value.length % 2 === 0){
+        let ls = -1*(value.length)/2;
+        for(let i = 0; i < value.length; i++) {
+          let x = xi + ls*0.1;
+          jitterCoords[value[i]] = [x,yi];
+          ls +=1;
+        }
+      }
+    }
+
+    let jDs = [];
+
+    for(let key of Object.keys(jitterCoords)) {
+      let value = jitterCoords[key];
+      let x = value[0];
+      let y = value[1];
+      let id = key;
+
+      let jD = {id: id, x: x, y: y};
+      jDs.push(jD);
+      }
+
+    return jDs;
+    }
+
+
+
+
+
   linearJitter(data){
 
     let coordsIdMap = {};
@@ -171,10 +251,12 @@ export default class Regression {
 
       let jD = {id: id, x: x, y: y};
       jDs.push(jD);
-      }
+    }
 
     return jDs;
-    }
+  }
+
+
 
   populateScatterplotData(){
     let self = this;
@@ -228,60 +310,16 @@ export default class Regression {
   }
 
   populateLogisticScatterplotData(){
+
     let self = this;
 
-    let ds = [];
+    let jDs = self.logisticJitter(self.data);
 
+    console.log("jDs after jitter", jDs);
 
+    self.scatterplotDataLog = self.mapJitterToData(jDs, self.data);
 
-    for(let i  = 0; i < self.sampleIds.length; i++){
-
-        let af = -1;
-        let key = self.sampleIds[i];
-
-
-
-
-        if(gt === "1/1"){
-          af = 1;
-        }
-        else if(gt === "1/0" || gt === "0/1"){
-          af = 0.5;
-        }
-        else if(gt === "0/0"){
-          af = 0;
-        }
-        else{
-          // console.log("error: could not interpret GT", gt);
-          af = "not a number";
-        }
-
-
-      let pt = self.rawPhenotypes[key];
-      let sex = self.getSexFromSampleId(key);
-      let color = self.getColorFromSampleId(key);
-
-        if(typeof af === "number" && typeof parseInt(pt) === "number" && !isNaN(pt)) {
-          x.push(parseFloat(af));
-          y.push(parseInt(pt));
-          ids.push(key);
-          sexes.push(sex);
-          colors.push(color);
-        }
-      }
-
-
-    let xSource = x.slice();
-    let ySource = y.slice();
-
-
-    let source = self.logisticJitter(xSource, ySource, ids);
-
-    let jIds = source[0];
-    let xSourceJ = source[1];
-    let ySourceJ = source[2];
-
-    self.scatterplotDataLog = [x,y,jIds, sexes, colors, xSourceJ, ySourceJ];
+    console.log("self.scatterplotDataLog", self.scatterplotDataLog);
 
     self.linePointsLog = 7;
 
@@ -317,74 +355,10 @@ export default class Regression {
   populateLinearScatterplotData(){
 
     let self = this;
+    let jDs = self.linearJitter(self.data);
 
-    let ds = [];
-
-
-
-
-    for(let i  = 0; i < self.sampleIds.length; i++){
-
-      let af = -1;
-      let key = self.sampleIds[i];
-      let gt = self.rawGenotypes[key];
-
-
-      if(gt === "1/1"){
-        af = 1;
-      }
-      else if(gt === "1/0" || gt === "0/1"){
-        af = 0.5;
-      }
-      else if(gt === "0/0"){
-        af = 0;
-      }
-      else{
-        // console.log("error: could not interpret GT", gt);
-        af = "not a number";
-      }
-
-      let x = af;
-      let y = parseInt(self.rawPhenotypes[key]);
-      let sex = self.getSexFromSampleId(key);
-      let color = self.getColorFromSampleId(key);
-
-
-
-
-      if(typeof af === "number" && typeof parseInt(y) === "number" && !isNaN(y)) {
-        let d = {
-          x: x,
-          y: y,
-          id: key,
-          sex: sex,
-          color: color,
-          xSource: null,
-          ySource: null,
-        }
-        ds.push(d);
-      }
-    }
-
-
-
-
-    let x = Object.keys(ds).map(function(k){return ds[k].x});
-    let y =  Object.keys(ds).map(function(k){return ds[k].y});
-
-    let jDs = self.linearJitter(ds);
-
-    console.log("jDs after jitter", jDs);
-
-    self.scatterplotDataLin = self.mapJitterToData(jDs, ds);
-
-    console.log("self.scatterplotDataLin", self.scatterplotDataLin);
-
-
-
-    self.linePointsLin = self.findLineByLeastSquares(x, y);
-
-    console.log(self.linePointsLin);
+    self.scatterplotDataLin = self.mapJitterToData(jDs, self.data);
+    self.linePointsLin = self.findLineByLeastSquares(self.xRaw, self.yRaw);
 
   }
 
@@ -467,6 +441,61 @@ export default class Regression {
     return [result_values_x, result_values_y];
 
 
+  }
+
+  processRawData(){
+    let self = this;
+
+    self.data = [];
+
+    for(let i  = 0; i < self.sampleIds.length; i++){
+
+      let af = -1;
+      let key = self.sampleIds[i];
+      let gt = self.rawGenotypes[key];
+
+
+      if(gt === "1/1"){
+        af = 1;
+      }
+      else if(gt === "1/0" || gt === "0/1"){
+        af = 0.5;
+      }
+      else if(gt === "0/0"){
+        af = 0;
+      }
+      else{
+        // console.log("error: could not interpret GT", gt);
+        af = "not a number";
+      }
+
+      let x = af;
+      let y = parseInt(self.rawPhenotypes[key]);
+      let sex = self.getSexFromSampleId(key);
+      let color = self.getColorFromSampleId(key);
+
+
+
+
+      if(typeof af === "number" && typeof parseInt(y) === "number" && !isNaN(y)) {
+        let d = {
+          x: x,
+          y: y,
+          id: key,
+          sex: sex,
+          color: color,
+          xSource: null,
+          ySource: null,
+        }
+        self.data.push(d);
+      }
+    }
+
+    let x = Object.keys(self.data).map(function(k){return self.data[k].x});
+    let y =  Object.keys(self.data).map(function(k){return self.data[k].y});
+
+    self.xRaw = x;
+    self.yRaw = y;
   }
 
   getScatterplotData(){

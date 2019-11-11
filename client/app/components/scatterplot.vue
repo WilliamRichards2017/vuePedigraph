@@ -101,16 +101,30 @@
         var xScale = d3.scaleLinear()
           .domain([-0.2, 1.2])
           .range([0, width]);
-        var yScale = d3.scaleLinear()
-          .domain([0, d3.max(self.rawData, d => d.y)])
-          .range([height, 0]);
+
+
+        let yScale = null;
+        if(self.regressionType === "Linear"){
+          yScale = d3.scaleLinear()
+            .domain([0, d3.max(self.rawData, d => d.y)])
+            .range([height, 0]);
+        }
+        else{
+          yScale = d3.scaleLinear()
+            .domain([0, 1])
+            .range([height, 0])
+          ;
+        }
+
+
+
         let svg = d3.select("#scatterplotSvg");
         let ticks = ["hom ref (0 AF)", "hom alt (0.5 AF)", "hom alt (1 AF)"];
         let yAxis = d3.select("#y-axis");
         let xAxis = d3.select("#x-axis");
         xAxis.append("text")
           .attr("class", "axis-label")
-          .attr("id", "xlabel");
+          .attr("id", "xlabel")
         d3.select("#xlabel")
           .attr("transform", "translate(150, 37)")
           .text("Alternate Allele Frequency (GT)");
@@ -126,12 +140,27 @@
           .text("PTC Sensitivity (PT)");
 
 
-        yAxis
-          .call(d3.axisLeft(yScale));
+        let yTicks = [" ", "Affected", " ", " ", "Unaffected", " "];
+
+        if(self.regressionType== "Linear"){
+          yAxis
+            .call(d3.axisLeft(yScale));
+        }
+        else if(self.regressionType=== "Logistic"){
+
+          yAxis
+            .call(d3.axisLeft(yScale).ticks(6).tickFormat(function (d, i) {
+              return yTicks[i];
+            }));
+
+        }
+
+
+
         xAxis
           .call(d3.axisBottom(xScale).ticks(3).tickFormat(function (d, i) {
             return ticks[i];
-          }));
+          }))
 
 
         let squares = d3.select("#plot").selectAll('rect')
@@ -171,6 +200,19 @@
           .attr("x", d => xScale(d.xSource) - 10)
           .attr("y", d => yScale(d.ySource))
           .text(d => d.id);
+
+        if(self.regressionType === "Logistic"){
+
+          console.log("regression type logistic");
+          d3.select("#y-axis").selectAll(".tick")
+            .each(function (d) {
+              console.log("d", d);
+
+              if ( d !== 0.2 && d !== 0.8 ) {
+                this.remove();
+              }
+            });
+        }
       },
 
 
