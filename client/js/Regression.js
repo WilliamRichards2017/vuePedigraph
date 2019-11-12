@@ -17,8 +17,8 @@ export default class Regression {
     this.sampleIds = sampleIds;
 
 
-    this.projectCorrelation = -1;
-    this.projectPVal = -1;
+    this.projectCorrelation = null;
+    this.projectPVal = null;
 
     this.purple =  "#5810A5";
 
@@ -33,8 +33,10 @@ export default class Regression {
     this.linePointsLin = null;
     this.linePointsLog = null;
 
-    this.xRaw = null;
-    this.yRaw = null;
+    this.xRawP = null;
+    this.yRawP = null;
+    this.xRawF = null
+    this.yRawF = null;
 
     this.logJitterMapping = [[0,0], [1,0], [-1, 0], [0,1], [-1, 1], [1,1], [0, -1], [-1, -1], [1, -1]];
 
@@ -52,12 +54,11 @@ export default class Regression {
 
 
 
-
   populateRawCoords() {
     let self = this;
 
-    self.xRaw = [];
-    self.yRaw = [];
+    self.xRawP = [];
+    self.yRawP = [];
 
 
     for (let key in self.rawGenotypes) {
@@ -89,8 +90,8 @@ export default class Regression {
           pt = pt.slice(-1);
         }
         if (typeof af === "number" && typeof parseInt(pt) === "number" && !isNaN(pt)) {
-          self.xRaw.push(parseFloat(af));
-          self.yRaw.push(parseInt(pt));
+          self.xRawP.push(parseFloat(af));
+          self.yRawP.push(parseInt(pt));
         }
       }
       else{
@@ -100,13 +101,16 @@ export default class Regression {
   }
 
   calculateProjectCorrelation(){
+    let self = this;
+    self.projectCorrelation = self.pearsonCorrelation([self.xRawP, self.yRawP], 0, 1);
+    console.log("slef.projectcorrelation in calculate", self.projectCorrelation);
+  }
 
+  calculateProjectPVal(){
 
     let self = this;
-
-
-    self.projectCorrelation = self.pearsonCorrelation([self.xRaw, self.yRaw], 0, 1);
-
+    let ft = fisherTest(self.projectCorrelation, self.xRawP.length);
+    self.familyPVal = ft.pvalue;
   }
 
   logisticJitter(data){
@@ -335,24 +339,17 @@ export default class Regression {
   mapJitterToData(jDs, ds){
 
     let data = ds.slice();
-
-    console.log("jDs, ds", jDs, ds);
-
-
     for(const i in jDs){
       let j = jDs[i];
       for(const i in data){
         let d = data[i];
 
         if(d.id === parseInt(j.id)){
-          console.log("found mapping")
           d.xSource = j.x;
           d.ySource = j.y;
         }
 
       }
-
-
     }
     return data;
 
@@ -365,27 +362,74 @@ export default class Regression {
     let jDs = self.linearJitter(self.data);
 
     self.scatterplotDataLin = self.mapJitterToData(jDs, self.data);
-    self.linePointsLin = self.findLineByLeastSquares(self.xRaw, self.yRaw);
+    self.linePointsLin = self.findLineByLeastSquares(self.xRawF, self.yRawF);
 
   }
 
-  getFamilyCorrelation() {
+
+
+  //Linear regression evaluation metrics
+
+  getProjectPrecision(){
+    return this.projectPrecision;
+  }
+
+  getProjectRecall(){
+    return this.projectRecall;
+  }
+
+  getProjectF1(){
+    return this.projectF1;
+  }
+
+
+
+
+
+//Linear regression evaluation metrics
+  getProjectCorrelation(){
+    let self = this;
+
+    let pc = parseFloat(self.projectCorrelation.toFixed(4));
+
+    console.log("project correlation inside getProjectCOrrelation", pc);
+
+    return pc;
+  }
+
+  getProjectPVal(){
+    return this.projectPVal;
+  }
+
+
+  getFamilyCorrelationAndPVal(sampleIds){
 
     let self = this;
 
+    console.log("self.scatterplotDataLin", self.scatterplotDataLin)
 
-    if(self.regressionType === "Logistic"){
-      return [-1, -1];
-    }
-
-    let familyCorrelation = self.pearsonCorrelation(self.scatterplotDataLin, 0, 1);
+    let familyCorrelation = self.pearsonCorrelation([self.xRawF,self.yRawF], 0, 1);
 
     //where family correlation is rho
-    let ft = fisherTest(familyCorrelation, self.xRaw.length);
+    let ft = fisherTest(familyCorrelation, self.xRawF.length);
     let familyPVal = ft.pvalue;
 
-    return [familyCorrelation, familyPVal];
+    console.log(familyCorrelation, familyPVal)
+
+    return [familyCorrelation.toFixed(4), familyPVal]
+
   }
+
+  getFamilyPVal(sampleIds){
+
+  }
+
+
+
+
+
+
+
 
   findLineByLeastSquares(values_x, values_y) {
     var x_sum = 0;
@@ -501,8 +545,8 @@ export default class Regression {
     let x = Object.keys(self.data).map(function(k){return self.data[k].x});
     let y =  Object.keys(self.data).map(function(k){return self.data[k].y});
 
-    self.xRaw = x;
-    self.yRaw = y;
+    self.xRawF = x;
+    self.yRawF = y;
   }
 
   getScatterplotData(){
@@ -536,7 +580,7 @@ export default class Regression {
 
     let rho = this.projectCorrelation;
 
-    let ft = fisherTest(rho, this.xRaw.length);
+    let ft = fisherTest(rho, this.xRawF.length);
 
     this.projectPVal = ft.pvalue;
 

@@ -176,12 +176,15 @@
 
 
       buildRegressionLine() {
+
+        let self = this;
+
         let width = 300;
         let height = 300;
 
         let coords = [];
 
-        if (this.regressionType === "Logistic") {
+        if (self.regressionType === "Logistic") {
 
           console.log("logistic")
 
@@ -206,18 +209,18 @@
 
         } else if(this.regressionType === "Linear") {
           let coords = [];
-          for (let i = 0; i < this.linePoints[0].length; i++) {
-            coords.push({x: this.linePoints[0][i], y: this.linePoints[1][i]});
+          for (let i = 0; i < self.linePoints[0].length; i++) {
+            coords.push({x: self.linePoints[0][i], y: self.linePoints[1][i]});
           }
 
           console.log("coords lin", coords);
 
           let xScale = d3.scaleLinear()
-            .domain([0, d3.max(coords, d => d.x)])
+            .domain([0, 1])
             .range([0, width]);
 
           let yScale = d3.scaleLinear()
-            .domain([0, d3.max(coords, d => d.y)])
+            .domain([0, 10])
             .range([height, 0]);
 
           let aLineGenerator = d3
@@ -307,9 +310,9 @@
       // this.buildPlot();
       // this.buildRegressionLine();
       setTimeout(this.buildRegressionLine(), 1000);
+    },
 
-    }
-  ,
+
     rawData: function () {
 
       this.buildPlot();

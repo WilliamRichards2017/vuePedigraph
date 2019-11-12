@@ -95,24 +95,31 @@
           </div>
 
 
+        <div id="linearRegression" v-if="selectedRegression === 'Linear'">
 
             <div class="tableTitle">Regression Statistics</div>
 
-            <v-card id="regressionTable" class="col" style="margin: 10px;">
+            <v-card id="regressionTable" class="col" style="margin: 10px;" >
 
               <table>
                 <thead>
-                <th></th> <th style="text-align: left"> Project: </th> <th style="text-align: left"> Family: </th>
+                <th></th> <th style="text-align: left"> Pearsons 'r' </th> <th style="text-align: left"> r^2 </th> <th style="text-align: left"> P-val </th>
                 </thead>
                 <tbody></tbody>
                 <tr class="val">
-                <th class="val"> Pearsons 'r' </th> <td id="projectR" class="val"> {{projectCorrelation}}</td> <td id="familyR" class="val">{{familyCorrelation}}</td>
-                </tr>
+                <th class="val"> Project</th>
+                <td id="projectR" > {{projectCorrelation}}</td>
+                  <td class="val">{{(projectCorrelation**2).toFixed(4)}}</td>
+                  <td id="projectP" class="val"> {{projectPVal.toExponential(3)}}</td>
+              </tr>
+
+
                 <tr class="val">
-                  <th class="val"> r^2 </th> <td class="val"> {{(projectCorrelation**2).toFixed(4)}}</td> <td class="val">{{(familyCorrelation**2).toFixed(4)}}</td>
-                </tr>
-                <tr class="val">
-                  <th class="val"> P-Val </th> <td id="projectP" class="val"> {{projectPVal.toExponential(3)}}</td> <td id="familyP" class="val">{{familyPVal.toExponential(3)}}</td>
+                  <th class="val">Family</th>
+
+                <td id="familyR" class="val">{{familyCorrelation}}</td>
+                  <td>{{(familyCorrelation**2).toFixed(4)}}</td>
+                 <td id="familyP" class="val">{{familyPVal.toExponential(3)}}</td>
                 </tr>
               </table>
 
@@ -144,26 +151,35 @@
 
             </v-card>
 
+        </div>
 
 
-            <div style="height: 100px"></div>
 
-            <!--TODO: Make into stylish table-->
-              <!--<div class="col">-->
-              <!--<div class="title"><b>Project</b></div> <br> <div style="color: grey">Pearsons 'r': </div> <div class="title" style="color: black">{{projectCorrelation}}</div>-->
 
-                <!--<br>-->
-                <!--<div div style="color: grey"> r^2: </div>  <div class="title">{{projectCorrelation**2}} </div>-->
+          <div id="logisticRegression" v-show="selectedRegression === 'Logistic'"></div>
 
-                <!--<br>-->
+          <table>
+            <thead>
+            <th></th> <th style="text-align: left"> Project: </th> <th style="text-align: left"> Family: </th>
+            </thead>
+            <tbody></tbody>
 
-                <!--<div div style="color: grey"> P-val: </div>  <div class="title">{{projectPVal}} </div>-->
+            <tr class="val">
+              <th class="val"> Accuracy </th> <td id="accuracyP" class="val"> {{projectAccuracy}}</td> <td id="accuracyF" class="val">{{familyAccuracy}}</td>
+            </tr>
 
-              <!--</div>-->
+            <tr class="val">
+              <th class="val"> Precision </th> <td id="precisonP" class="val"> {{projectPrecision}}</td> <td id="precisionF" class="val">{{familyPrecision}}</td>
+            </tr>
+            <tr class="val">
+              <th class="val"> Recall </th> <td class="recallP"> {{projectRecall}}</td> <td class="val">{{(familyRecall).toFixed(4)}}</td>
+            </tr>
+            <tr class="val">
+              <th class="val"> F1 </th> <td id="f1P" class="val"> {{projectF1}}</td> <td id="f1F" class="val">{{familyF1}}</td>
+            </tr>
+          </table>
 
-              <!--<div class="col">-->
-              <!--<div class="title"><b>Family</b> </div> <div style="color: gray;">Pearsons 'r': </div> <div class="title" style="color: black">{{familyCorrelation}}</div>-->
-              <!--</div>-->
+          <div style="height: 300px"></div>
 
           </div>
 
@@ -254,23 +270,50 @@
         isolatedPedTxt: [],
         hubSession: null,
         sampleIds: null,
-        projectCorrelation: -1,
-        projectPVal: -1,
-        familyCorrelation: -1,
-        familyPVal: -1,
-        minThreshold: 0,
-        maxThreshold: 12,
+
+        scatterplotData: null,
+
         linePoints: null,
         regression: null,
         ccType: null,
         drawer: false,
         toggle: null,
+
+
+
+        //user unputs
         displayAffectedAs: "continuous",
         operands: [">", "<", ">=", "<="],
         selectedRegression: null,
         showPed: true,
         affectedCuttoff: "7",
-        scatterplotData: null,
+        minThreshold: 0,
+        maxThreshold: 12,
+
+
+
+        //linear Regression metrics~~~
+        projectCorrelation: -1,
+        projectPVal: -1,
+        familyCorrelation: -1,
+        familyPVal: -1,
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        ///Logistic ear Regression metrics
+        projectAccuracy: -1,
+        projectPrecision: -1,
+        projectRecall: -1,
+        projectF1 : -1,
+
+        familyAccuracy: -1,
+        familyPrecision: -1,
+        familyRecall: -1,
+        familyF1: -1,
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
 
         tableHeader: null,
         tableData: null,
@@ -383,23 +426,25 @@
         self.linePoints = self.regression.getLinePoints();
 
 
-        self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
+        self.projectCorrelation = self.regression.getProjectCorrelation();
+        console.log("projectCOrrelatin inside build", self.projectCorrelation);
+        self.projectPVal = self.regression.getProjectPVal();
+
+        let familyCandP = self.regression.getFamilyCorrelationAndPVal(self.sampleIds);
+
+
+
+        self.familyCorrelation = familyCandP[0];
+        self.familyPVal = familyCandP[1];
         // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
         // self.familyPVal= self.regression.getFamilyCorrelation(self.sampleIds)[1].toExponential(3);
-
-        let famCor = self.regression.getFamilyCorrelation();
-
-        self.familyCorrelation = famCor[0];
-        self.familyPVal = famCor[1];
-
-        self.projectPVal = self.regression.projectPVal;
 
         // console.log("self.familyPVal inside PedHandler", self.familyPVal);
 
         self.scatterplotData = self.regression.getScatterplotData();
 
 
-        self.styleRegressionTable();
+        self.buildRegressionTable();
 
         self.buildPTLegend();
 
@@ -411,6 +456,8 @@
 
         let self = this;
 
+        console.log("better noth ave triggered this");
+
         self.buildDemoPhenotypes();
 
 
@@ -420,7 +467,7 @@
         // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
         // self.familyPVal= self.regression.getFamilyCorrelation(self.sampleIds)[1].toExponential(3);
 
-        let famCor = self.regression.getFamilyCorrelation();
+        let famCor = self.regression.getFamilyCorrelationAndPVal();
 
         self.familyCorrelation = famCor[0];
         self.familyPVal = famCor[1];
@@ -432,7 +479,7 @@
         self.linePoints = self.regression.getLinePoints();
 
 
-        self.styleRegressionTable();
+        self.buildRegressionTable();
 
         self.buildPTLegend();
 
@@ -721,28 +768,38 @@
           }
         },
 
-      styleRegressionTable() {
+      buildRegressionTable() {
 
         let self = this;
 
-        self.familyCorrelationColor = self.getCorColor(self.familyCorrelation);
-        self.projectCorrelationColor = self.getCorColor(self.projectCorrelation);
+        if(self.selectedRegression === "Linear") {
 
-        self.familyPColor = self.getPColor(self.familyPVal);
-        self.projectPColor = self.getPColor(self.projectPVal);
+          self.familyCorrelationColor = self.getCorColor(self.familyCorrelation);
+          self.projectCorrelationColor = self.getCorColor(self.projectCorrelation);
+
+          self.familyPColor = self.getPColor(self.familyPVal);
+          self.projectPColor = self.getPColor(self.projectPVal);
 
 
-        d3.select("#projectR")
-          .style("background", self.projectCorrelationColor);
+          d3.select("#projectR")
+            .style("background", self.projectCorrelationColor);
 
-        d3.select("#familyR")
-          .style("background", self.familyCorrelationColor);
+          d3.select("#familyR")
+            .style("background", self.familyCorrelationColor);
 
-        d3.select("#projectP")
-          .style("background", self.projectPColor);
+          d3.select("#projectP")
+            .style("background", self.projectPColor);
 
-        d3.select("#familyP")
-          .style("background", self.familyPColor);
+          d3.select("#familyP")
+            .style("background", self.familyPColor);
+
+        }
+
+        else{
+          d3.select("#logisticRegression")
+            .attr("height", "px")
+        }
+
       },
 
       isolatePedTxt: function (ids) {
@@ -757,10 +814,12 @@
         let txt = newFam.famToTxt();
         return txt;
       },
+
       splitTxt: function () {
         let self = this;
         self.txtLines = self.pedTxt.split(/\r\n|\n/);
       },
+
       populateTxtDict: function () {
         let self = this;
         for (let i = 0; i < self.txtLines.length; i++) {
@@ -769,6 +828,7 @@
           self.txtDict[individualID] = line;
         }
       },
+
       populatePedDict: function () {
         let self = this;
         for (let i = 0; i < self.txtLines.length; i++) {
@@ -782,6 +842,7 @@
           }
         }
       },
+
       populatePTC: function () {
         let self = this;
         let PHandler = new PhenotypeHandler();
@@ -1148,13 +1209,13 @@
         self.populateSampleIds();
 
         if(self.displayAffectedAs === "binary"){
-          self.buildLogisticRegression();
           self.selectedRegression = "Logistic";
+          self.buildLogisticRegression();
         }
         else if(self.displayAffectedAs === "continuous"){
+          self.selectedRegression = "Linear";
           self.buildLinearRegression();
           self.styleNodesAsGradient();
-          self.selectedRegression = "Linear";
         }
 
       },
@@ -1240,21 +1301,26 @@
 
         else if (self.selectedRegression === "Logistic"){
           self.buildLogisticRegression();
+          self.familyAccuracy = self.regression.getFamilyAccuracy();
+          self.familyPrecision = self.regression.getFamilyPrecision();
+          self.familyRecall = self.regression.getFamilyRecall();
+          self.familyF1 = self.regression.getFamilyF1();
+
+          self.projectAccuracy = self.regression.getprojectAccuracy();
+          self.projectPrecision = self.regression.getProjectPrecision();
+          self.projectRecall = self.regression.getProjectRecall();
+          self.projectF1 = self.regression.getProjectF1();
+
           // self.buildLinearRegression();
         }
 
-          self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
-
-          self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
-          self.opts.dataset = io.readLinkage(self.pedTxt);
-
-          self.familyCorrelation = self.regression.getFamilyCorrelation()[0].toFixed(4);
-          self.scatterplotData = self.regression.getScatterplotData();
 
 
-          self.linePoints = self.regression.getLinePoints();
 
-        self.styleRegressionTable();
+
+        self.linePoints = self.regression.getLinePoints();
+
+        self.buildRegressionTable();
 
       }
     }
