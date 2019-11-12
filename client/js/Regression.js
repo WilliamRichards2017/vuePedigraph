@@ -23,6 +23,7 @@ export default class Regression {
     this.purple =  "#5810A5";
 
 
+    this.projectAccuracy = -1;
     this.projectPrecision = -1;
     this.projectRecall = -1;
     this.projectF1 = -1
@@ -35,8 +36,24 @@ export default class Regression {
 
     this.xRawP = null;
     this.yRawP = null;
-    this.xRawF = null
+    this.xRawF = null;
     this.yRawF = null;
+
+    this.familyAccuracy = -1;
+    this.familyPrecision = -1;
+    this.familyRecall = -1;
+    this.familyF1 = -1;
+
+
+    this.familyFP = null;
+    this.familyFN = null;
+    this.familyTP = null
+    this.familyTN = null;
+
+    this.projectFP = null;
+    this.projectFN = null;
+    this.projectTP = null;
+    this.projectFP = null;
 
     this.logJitterMapping = [[0,0], [1,0], [-1, 0], [0,1], [-1, 1], [1,1], [0, -1], [-1, -1], [1, -1]];
 
@@ -49,6 +66,67 @@ export default class Regression {
 
     this.calculateProjectCorrelation();
     this.calculateProjectPVal();
+
+  }
+
+  populateFamilyClassificationMetrics(y, yPred){
+
+    let self = this;
+
+    self.familyFN = 0;
+    self.familyFP = 0;
+    self.familyTN = 0;
+    self.familyTP = 0;
+
+    console.log("y, yPred", y, yPred);
+
+    //Make sure order of y and yPred is preserved in populate log
+    for(let i = 0; i < y.length; i++){
+      if(y[i] === 1 && yPred[i] === 1 ){
+        self.familyTP += 1;
+      }
+      else if(y[i] === 0 && yPred[i] === 0){
+        self.familyTN +=1;
+      }
+      else if(y[i] === 0 && yPred[i] === 1){
+        self.familyFP +=1;
+      }
+      else if(y[i] === 1 && yPred[i] === 0){
+        self.familyFN +=1;
+      }
+    }
+
+
+    self.familyFN.toFixed(4);
+    self.familyFP.toFixed(4);
+    self.familyTN.toFixed(4);
+    self.familyTP.toFixed(4);
+
+    self.familyAccuracy = (self.familyTP + self.familyTN) / y.length;
+
+    // Precision = tp / (tp+fp)
+    self.familyPrecision = self.familyTP / (self.familyTP + self.familyFP);
+
+
+    //Recall tp/tp+fn
+
+    self.familyRecall = self.familyTP / (self.familyTP / self.familyFN);
+
+
+    //F1
+    self.familyF1 = 2* ((self.familyPrecision*self.familyRecall)/(self.familyPrecision+self.familyRecall))
+
+
+    console.log("family log cliassification metrics");
+
+    console.log("accuracy", self.familyAccuracy);
+    console.log("precision", self.familyPrecision);
+    console.log("recall", self.familyRecall);
+    console.log("F1", self.familyF1);
+
+  }
+
+  populateProjectClassificationMetrics(y, yPred){
 
   }
 
@@ -156,22 +234,13 @@ export default class Regression {
       let xi = parseFloat(s[0]);
       let yi = parseFloat(s[1]);
 
-      console.log("xi, yi", xi, yi);
-
-
-        for(let i = 0; i < value.length; i++) {
-
-          console.log("sanity check",i, self.logJitterMapping[i],  self.logJitterMapping[i][0],  self.logJitterMapping[i][1]);
-
+      for(let i = 0; i < value.length; i++) {
 
           let xOff = self.logJitterMapping[i][0];
           let x = xi + xOff*0.11;
 
           let yOff = self.logJitterMapping[i][1];
-          let y = yi + yOff*0.11;
-
-          console.log("xOff, yOff", xOff, yOff, x, y);
-
+          let y = yi + yOff*0.11
 
           jitterCoords[value[i]] = [x,y];
         }
@@ -189,9 +258,6 @@ export default class Regression {
       let jD = {id: id, x: x, y: y};
       jDs.push(jD);
       }
-
-
-    console.log("log jitter data", jDs);
 
     return jDs;
     }
@@ -279,6 +345,23 @@ export default class Regression {
     }
   }
 
+  translateYtoLogCategories(y){
+    console.log(y);
+    let yB = [];
+    for(let i = 0; i < y.length; i++) {
+      if (y[i] < 7) {
+        yB.push(0);
+      }
+      else{
+        yB.push(1);
+      }
+    }
+    return yB;
+  }
+
+
+
+  //changed to test logreg predict, need to change back to scaled y
   translateYtoBinary(y){
     console.log(y);
     let yB = [];
@@ -287,7 +370,7 @@ export default class Regression {
         yB.push(0.3);
       }
       else{
-       yB.push(2);
+       B.push(2);
       }
     }
     return yB;
@@ -298,23 +381,25 @@ export default class Regression {
     let self = this;
 
 
-    let yB = self.translateYtoBinary(y);
+    let yB = self.translateYtoLogCategories(y);
 
-    console.log(yB);
+    console.log("yB", yB);
 
     let xM = Matrix.columnVector(x);
     let yM = Matrix.columnVector(yB);
 
 
 
-    console.log(x,yB);
-
     let logreg = new LogisticRegression({numSteps: 1000, learningRate: 5e-3});
     logreg.train(xM,yM);
+
+    console.log("x, yB", x, yB);
 
     let yPred= logreg.predict(xM);
 
     let finalResults = [x,yPred];
+
+    self.populateFamilyClassificationMetrics(yB, yPred);
 
     return finalResults;
 
@@ -332,7 +417,7 @@ export default class Regression {
 
     console.log("self.scatterplotDataLog", self.scatterplotDataLog);
 
-    self.linePointsLog = 5;
+    self.linePointsLog = self.findLogRegressionLine(self.xRawF, self.yRawF);
 
   }
 
@@ -402,7 +487,7 @@ export default class Regression {
   }
 
 
-  getFamilyCorrelationAndPVal(sampleIds){
+  getFamilyCorrelationAndPVal(){
 
     let self = this;
 
@@ -412,16 +497,33 @@ export default class Regression {
 
     //where family correlation is rho
     let ft = fisherTest(familyCorrelation, self.xRawF.length);
-    let familyPVal = ft.pvalue;
+    self.familyPVal = ft.pvalue;
 
-    console.log(familyCorrelation, familyPVal)
+    console.log(familyCorrelation, self.familyPVal);
 
-    return [familyCorrelation.toFixed(4), familyPVal]
+    return [familyCorrelation.toFixed(4), self.familyPVal];
 
   }
 
-  getFamilyPVal(sampleIds){
 
+  getFamilyAccuracy(){
+    return this.familyAccuracy;
+  }
+
+  getFamilyPrecision(){
+    return this.familyPrecision;
+  }
+
+  getFamilyRecall(){
+    return this.familyRecall;
+  }
+
+  getFamilyF1(){
+    return this.familyF1;
+  }
+
+  getProjectAccuracy(){
+    return this.projectAccuracy;
   }
 
 

@@ -430,7 +430,7 @@
         console.log("projectCOrrelatin inside build", self.projectCorrelation);
         self.projectPVal = self.regression.getProjectPVal();
 
-        let familyCandP = self.regression.getFamilyCorrelationAndPVal(self.sampleIds);
+        let familyCandP = self.regression.getFamilyCorrelationAndPVal();
 
 
 
@@ -456,31 +456,13 @@
 
         let self = this;
 
-        console.log("better noth ave triggered this");
-
         self.buildDemoPhenotypes();
 
-
         self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset, self.sampleIds);
-
-        self.projectCorrelation = self.regression.projectCorrelation.toFixed(4);
-        // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
-        // self.familyPVal= self.regression.getFamilyCorrelation(self.sampleIds)[1].toExponential(3);
-
-        let famCor = self.regression.getFamilyCorrelationAndPVal();
-
-        self.familyCorrelation = famCor[0];
-        self.familyPVal = famCor[1];
-
-        self.projectPVal = self.regression.projectPVal;
-
         self.scatterplotData = self.regression.getScatterplotData();
-
         self.linePoints = self.regression.getLinePoints();
 
-
         self.buildRegressionTable();
-
         self.buildPTLegend();
 
 
@@ -1306,7 +1288,7 @@
           self.familyRecall = self.regression.getFamilyRecall();
           self.familyF1 = self.regression.getFamilyF1();
 
-          self.projectAccuracy = self.regression.getprojectAccuracy();
+          self.projectAccuracy = self.regression.getProjectAccuracy();
           self.projectPrecision = self.regression.getProjectPrecision();
           self.projectRecall = self.regression.getProjectRecall();
           self.projectF1 = self.regression.getProjectF1();
