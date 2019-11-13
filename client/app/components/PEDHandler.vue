@@ -395,6 +395,8 @@
 
         // self.selectedGenotype = "7:141972755_C/T";
         self.selectedFamily = "1463";
+        // self.selectedFamily = "1408";
+
         self.selectedPhenotype = "PTC Sensitivity";
         self.selectedGenotype = "7:141972755_C/T";
 

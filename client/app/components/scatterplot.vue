@@ -26,9 +26,9 @@
     name: 'vueScatter',
     data() {
       return {
-        purple: "#8629EA"
-
-
+        purple: "#8629EA",
+        xScale: null,
+        yScale: null,
       }
     },
 
@@ -61,14 +61,14 @@
         let width = 300;
         let height = 300;
         // Set up the scales
-        var xScale = d3.scaleLinear()
+        self.xScale = d3.scaleLinear()
           .domain([-0.2, 1.2])
           .range([0, width]);
 
 
         let yScale = null;
         if(self.regressionType === "Linear"){
-          yScale = d3.scaleLinear()
+          self.yScale = d3.scaleLinear()
             .domain([0, d3.max(self.rawData, d => d.y)])
             .range([height, 0]);
         }
@@ -103,16 +103,16 @@
           .text("PTC Sensitivity (PT)");
 
 
-        let yTicks = [" ", "Affected", " ", " ", "Unaffected", " "];
+        let yTicks = [" ", "Affected (< 7)", " ", " ", "Unaffected (>= 7)", " "];
 
         if(self.regressionType== "Linear"){
           yAxis
-            .call(d3.axisLeft(yScale));
+            .call(d3.axisLeft(self.yScale));
         }
         else if(self.regressionType=== "Logistic"){
 
           yAxis
-            .call(d3.axisLeft(yScale).ticks(6).tickFormat(function (d, i) {
+            .call(d3.axisLeft(self.yScale).ticks(6).tickFormat(function (d, i) {
               return yTicks[i];
             }));
 
@@ -121,7 +121,7 @@
 
 
         xAxis
-          .call(d3.axisBottom(xScale).ticks(3).tickFormat(function (d, i) {
+          .call(d3.axisBottom(self.xScale).ticks(3).tickFormat(function (d, i) {
             return ticks[i];
           }))
 
@@ -129,8 +129,8 @@
         let squares = d3.select("#plot").selectAll('rect')
           .data(M).join("rect");
         squares
-          .attr("x", d => xScale(d.xSource) - 10)
-          .attr("y", d => yScale(d.ySource) - 10)
+          .attr("x", d => self.xScale(d.xSource) - 10)
+          .attr("y", d => self.yScale(d.ySource) - 10)
           .attr("width", 20)
           .attr("height", 20)
           .style("fill", d => d.color)
@@ -140,14 +140,14 @@
           .style("text-shadow", "2px 2px 11px white")
           .classed("sq", true);
         squareText
-          .attr("x", d => xScale(d.xSource) - 10)
-          .attr("y", d => yScale(d.ySource))
+          .attr("x", d => self.xScale(d.xSource) - 10)
+          .attr("y", d => self.yScale(d.ySource))
           .text(d => d.id);
         let circles = d3.select("#plot").selectAll('circle')
           .data(F).join("circle");
         circles
-          .attr("cx", d => xScale(d.xSource))
-          .attr("cy", d => yScale(d.ySource))
+          .attr("cx", d => self.xScale(d.xSource))
+          .attr("cy", d => self.yScale(d.ySource))
           .attr("r", 10)
           .style("fill", d => d.color)
           .on("click", d => console.log("(x,y): ", d.x, d.y));
@@ -156,8 +156,8 @@
           .style("text-shadow", "2px 2px 11px white")
           .classed("circ", true);
         circleText
-          .attr("x", d => xScale(d.xSource) - 10)
-          .attr("y", d => yScale(d.ySource))
+          .attr("x", d => self.xScale(d.xSource) - 10)
+          .attr("y", d => self.yScale(d.ySource))
           .text(d => d.id);
 
         if(self.regressionType === "Logistic"){
@@ -190,18 +190,11 @@
 
           coords = [{x: 0, y: 6.5}, {x: 0, y: 6.5}, {x: 0, y: 6.5}, {x: 0.5, y: 6.5}, {x: 0.5, y: 6.5}, {x: 0.5, y: 6.5}, {x: 0.5, y: 6.5}, {x: 0.5, y: 6.5}, {x: 0.5, y: 6.5}, {x: 0.5, y: 6.5}];
 
-          let xScale = d3.scaleLinear()
-            .domain([0, 0.5])
-            .range([0, width]);
-
-          let yScale = d3.scaleLinear()
-            .domain([0, 10])
-            .range([height, 0]);
 
           let aLineGenerator = d3
             .line()
-            .x(d => xScale(d.x))
-            .y(d => yScale(d.y));
+            .x(d => self.xScale(d.x))
+            .y(d => self.yScale(d.y));
 
           d3.select("#regression-line")
             .attr("d", aLineGenerator(coords))
@@ -215,18 +208,10 @@
 
           console.log("coords lin", coords);
 
-          let xScale = d3.scaleLinear()
-            .domain([0, 1])
-            .range([0, width]);
-
-          let yScale = d3.scaleLinear()
-            .domain([0, 10])
-            .range([height, 0]);
-
           let aLineGenerator = d3
             .line()
-            .x(d => xScale(d.x))
-            .y(d => yScale(d.y));
+            .x(d => self.xScale(d.x))
+            .y(d => self.yScale(d.y));
 
           d3.select("#regression-line")
             .attr("d", aLineGenerator(coords))
