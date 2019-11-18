@@ -26,7 +26,7 @@ export default class Regression {
     this.projectAccuracy = -1;
     this.projectPrecision = -1;
     this.projectRecall = -1;
-    this.projectF1 = -1
+    this.projectF1 = -1;
 
 
     this.scatterplotDataLin = null;
@@ -47,13 +47,13 @@ export default class Regression {
 
     this.familyFP = null;
     this.familyFN = null;
-    this.familyTP = null
+    this.familyTP = null;
     this.familyTN = null;
 
     this.projectFP = null;
     this.projectFN = null;
     this.projectTP = null;
-    this.projectFP = null;
+    this.projectTN = null;
 
     this.logJitterMapping = [[0,0], [1,0], [-1, 0], [0,1], [-1, 1], [1,1], [0, -1], [-1, -1], [1, -1]];
 
@@ -110,7 +110,7 @@ export default class Regression {
 
     //Recall tp/tp+fn
 
-    self.familyRecall = self.familyTP / (self.familyTP / self.familyFN);
+    self.familyRecall = self.familyTP / (self.familyTP + self.familyFN);
 
 
     //F1
@@ -127,6 +127,59 @@ export default class Regression {
   }
 
   populateProjectClassificationMetrics(y, yPred){
+
+    let self = this;
+
+    self.projectFN = 0;
+    self.projectFP = 0;
+    self.projectTN = 0;
+    self.projectTP = 0;
+
+    console.log("y, yPred", y, yPred);
+
+    //Make sure order of y and yPred is preserved in populate log
+    for(let i = 0; i < y.length; i++){
+      if(y[i] === 1 && yPred[i] === 1 ){
+        self.projectTP += 1;
+      }
+      else if(y[i] === 0 && yPred[i] === 0){
+        self.projectTP +=1;
+      }
+      else if(y[i] === 0 && yPred[i] === 1){
+        self.projectFP +=1;
+      }
+      else if(y[i] === 1 && yPred[i] === 0){
+        self.projectFN +=1;
+      }
+    }
+
+
+    self.projectFN.toFixed(4);
+    self.projectFP.toFixed(4);
+    self.projectTN.toFixed(4);
+    self.projectTP.toFixed(4);
+
+    self.projectAccuracy = (self.projectTP + self.projectTN) / y.length;
+
+    // Precision = tp / (tp+fp)
+    self.projectPrecision = self.projectTP / (self.projectTP + self.projectFP);
+
+
+    //Recall tp/tp+fn
+
+    self.projectRecall = self.projectTP / (self.projectTP + self.projectFN);
+
+
+    //F1
+    self.projectF1 = 2* ((self.projectPrecision*self.projectRecall)/(self.projectPrecision+self.projectRecall));
+
+
+    // console.log("family log cliassification metrics");
+
+    console.log("accuracy", self.projectAccuracy);
+    console.log("precision", self.projectPrecision);
+    console.log("recall", self.projectRecall);
+    console.log("F1", self.projectF1);
 
   }
 
@@ -376,34 +429,38 @@ export default class Regression {
     return yB;
   }
 
-  findLogRegressionLine(x, y){
+  populateLogisticMetrics(xF, yF, xP, yP){
 
     let self = this;
 
+    let yBF = self.translateYtoLogCategories(yF);
 
-    let yB = self.translateYtoLogCategories(y);
+    let xMF = Matrix.columnVector(xF);
+    let yMF = Matrix.columnVector(yBF);
 
-    console.log("yB", yB);
+    let logregF = new LogisticRegression({numSteps: 1000, learningRate: 5e-3});
+    logregF.train(xMF,yMF);
 
-    let xM = Matrix.columnVector(x);
-    let yM = Matrix.columnVector(yB);
+    let yPredF= logregF.predict(xMF);
+    self.populateFamilyClassificationMetrics(yBF, yPredF);
+
+    ///////////////////////////////////////////////////////
+
+    let yBP = self.translateYtoLogCategories(yP);
+
+    let xMP = Matrix.columnVector(xP);
+    let yMP = Matrix.columnVector(yBP);
 
 
 
-    let logreg = new LogisticRegression({numSteps: 1000, learningRate: 5e-3});
-    logreg.train(xM,yM);
+    let logregP = new LogisticRegression({numSteps: 1000, learningRate: 5e-3});
+    logregP.train(xMP,yMP);
 
-    console.log("x, yB", x, yB);
-
-    let yPred= logreg.predict(xM);
-
-    let finalResults = [x,yPred];
-
-    self.populateFamilyClassificationMetrics(yB, yPred);
-
-    return finalResults;
-
+    let yPredP= logregP.predict(xMP);
+    self.populateProjectClassificationMetrics(yBP, yPredP);
   }
+
+
 
   populateLogisticScatterplotData(){
 
@@ -417,7 +474,7 @@ export default class Regression {
 
     console.log("self.scatterplotDataLog", self.scatterplotDataLog);
 
-    self.linePointsLog = self.findLogRegressionLine(self.xRawF, self.yRawF);
+    self.populateLogisticMetrics(self.xRawF, self.yRawF, self.xRawP, self.yRawP);
 
   }
 

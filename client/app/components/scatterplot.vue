@@ -49,6 +49,8 @@
       buildPlot: function () {
         let self = this;
 
+        console.log("change in raw data, inside buildPlot");
+
         let M = [];
         let F = [];
         for (let i = 0; i < self.rawData.length; i++) {
@@ -73,7 +75,7 @@
             .range([height, 0]);
         }
         else{
-          yScale = d3.scaleLinear()
+          self.yScale = d3.scaleLinear()
             .domain([0, 1])
             .range([height, 0])
           ;
@@ -172,6 +174,8 @@
               }
             });
         }
+
+        self.buildRegressionLine();
       },
 
 
@@ -293,8 +297,7 @@
   watch : {
     linePoints: function () {
       // this.buildPlot();
-      // this.buildRegressionLine();
-      setTimeout(this.buildRegressionLine(), 1000);
+      // setTimeout(this.buildRegressionLine(), 2000);
     },
 
 
@@ -302,7 +305,7 @@
 
       this.buildPlot();
       // this.buildPTLegend();
-      setTimeout(this.buildRegressionLine(), 1000);
+      setTimeout(this.buildRegressionLine(), 2000);
     }
   }
   }

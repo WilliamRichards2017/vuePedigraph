@@ -1227,9 +1227,10 @@
         self.selectedPhenotype = "PTC Sensitivity";
         self.selectedGenotype = "7:141972755_C/T";
 
+        self.populateSampleIds();
         self.buildPhenotypes();
         self.buildGenotypes();
-
+        self.buildLinearRegression();
         // console.log("self.sampleIds in watcher", self.sampleIds);
         $('#pedigree').on('nodeClick', self.onNodeClick)
 
