@@ -16,6 +16,8 @@ export default class Regression {
     this.dataset = dataset;
     this.sampleIds = sampleIds;
 
+    this.data = null;
+
 
     this.projectCorrelation = null;
     this.projectPVal = null;
@@ -78,8 +80,6 @@ export default class Regression {
     self.familyTN = 0;
     self.familyTP = 0;
 
-    console.log("y, yPred", y, yPred);
-
     //Make sure order of y and yPred is preserved in populate log
     for(let i = 0; i < y.length; i++){
       if(y[i] === 1 && yPred[i] === 1 ){
@@ -117,12 +117,6 @@ export default class Regression {
     self.familyF1 = 2* ((self.familyPrecision*self.familyRecall)/(self.familyPrecision+self.familyRecall))
 
 
-    console.log("family log cliassification metrics");
-
-    console.log("accuracy", self.familyAccuracy);
-    console.log("precision", self.familyPrecision);
-    console.log("recall", self.familyRecall);
-    console.log("F1", self.familyF1);
 
   }
 
@@ -134,8 +128,6 @@ export default class Regression {
     self.projectFP = 0;
     self.projectTN = 0;
     self.projectTP = 0;
-
-    console.log("y, yPred", y, yPred);
 
     //Make sure order of y and yPred is preserved in populate log
     for(let i = 0; i < y.length; i++){
@@ -171,10 +163,6 @@ export default class Regression {
 
     // console.log("family log cliassification metrics");
 
-    console.log("accuracy", self.projectAccuracy);
-    console.log("precision", self.projectPrecision);
-    console.log("recall", self.projectRecall);
-    console.log("F1", self.projectF1);
 
   }
 
@@ -650,6 +638,8 @@ export default class Regression {
 
     self.data = [];
 
+    console.log("sampleIds in regression", self.sampleIds);
+
     for(let i  = 0; i < self.sampleIds.length; i++){
 
       let af = -1;
@@ -667,12 +657,24 @@ export default class Regression {
         af = 0;
       }
       else{
-        // console.log("error: could not interpret GT", gt);
+        console.log("error: could not interpret GT", gt);
         af = "not a number";
       }
 
+      let pt = self.rawPhenotypes[key];
+
+      if(typeof pt === "undefined"){
+        pt = "";
+      }
+
+      console.log("typeof pt", typeof pt);
+
+      if (pt.includes('>') || pt.includes('<')) {
+        pt = pt.slice(-1);
+      }
+
       let x = af;
-      let y = parseInt(self.rawPhenotypes[key]);
+      let y = parseInt(pt);
       let sex = self.getSexFromSampleId(key);
       let color = self.getColorFromSampleId(key);
 
@@ -690,6 +692,9 @@ export default class Regression {
           ySource: null,
         }
         self.data.push(d);
+      }
+      else{
+        console.log("did not make data for key, sex, color, x, y",key, sex, color, x, self.rawPhenotypes[key]);
       }
     }
 

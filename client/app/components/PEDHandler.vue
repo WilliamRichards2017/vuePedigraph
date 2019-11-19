@@ -437,7 +437,6 @@
 
 
         self.projectCorrelation = self.regression.getProjectCorrelation();
-        console.log("projectCOrrelatin inside build", self.projectCorrelation);
         self.projectPVal = self.regression.getProjectPVal();
 
         let familyCandP = self.regression.getFamilyCorrelationAndPVal();
@@ -699,8 +698,6 @@
         }
         else if(self.displayAffectedAs === "binary"){
 
-          console.log("binary");
-
           var w = 200, h = 50;
 
           let ticks = ["0", "6", "7", "12"]
@@ -871,11 +868,6 @@
         }
       },
 
-      styleNodesAsGradient(){
-
-      },
-
-
       populateFamilies: function () {
         let self = this;
         for (let key in self.pedDict) {
@@ -922,12 +914,11 @@
 
               self.opts.dataset[i].sens = sens;
 
-
               let aff = 0;
 
               let color = "white";
 
-              if(typeof sens === "undefined" || isNaN(sens)){
+              if(typeof sens === "undefined" || isNaN(parseInt(sens))){
                 color = "none";
               }
 
@@ -994,12 +985,6 @@
             self.opts = ptree.build(self.opts);
             self.drawGenotypeBars();
           }
-
-
-        else{
-           self.styleNodesAsGradient();
-        }
-        // return opts.dataset;
       },
 
 
@@ -1135,7 +1120,6 @@
 
           let gt = self.cachedGenotypes[key];
 
-
           let opacity = 1.0;
 
           if(self.cachedNulls.includes(parseInt(key))){
@@ -1206,24 +1190,14 @@
       affectedCuttoff: function(){
 
         let self = this;
+        self.populateSampleIds();
         self.buildPhenotypes();
 
-        self.populateSampleIds();
-
-        if(self.displayAffectedAs === "binary"){
-          self.selectedRegression = "Logistic";
-          self.buildLogisticRegression();
-        }
-        else if(self.displayAffectedAs === "continuous"){
-          self.selectedRegression = "Linear";
-          self.buildLinearRegression();
-          self.styleNodesAsGradient();
-        }
+        self.buildLogisticRegression();
 
       },
 
       sliderVal: function(){
-        console.log("this.sliderVal");
       },
 
       displayAffectedAs: function(){
@@ -1239,7 +1213,6 @@
         else if(self.displayAffectedAs === "continuous"){
           self.selectedRegression = "Linear";
           self.buildLinearRegression();
-          self.styleNodesAsGradient();
         }
 
       },
@@ -1322,9 +1295,7 @@
         if (self.selectedRegression === "Linear") {
           self.buildLinearRegression();
 
-        }
-
-        else if (self.selectedRegression === "Logistic"){
+        } else if (self.selectedRegression === "Logistic") {
           self.buildLogisticRegression();
           self.familyAccuracy = self.regression.getFamilyAccuracy();
           self.familyPrecision = self.regression.getFamilyPrecision();
@@ -1340,14 +1311,11 @@
         }
 
 
-
-
-
         self.linePoints = self.regression.getLinePoints();
 
         self.buildRegressionTable();
-
       }
+
     }
   }
 </script>
