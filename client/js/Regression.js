@@ -7,7 +7,7 @@ import {Matrix} from "ml-matrix";
 
 
 export default class Regression {
-  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds) {
+  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds, affectedStatus) {
     this.rawGenotypes = rawGenotypes;
     this.rawPhenotypes = rawPhenotypes;
 

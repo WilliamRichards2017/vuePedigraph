@@ -91,7 +91,7 @@
         <div width="400px" height="40%">
           <!--<v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression" style="width: 75%; height: 100px"></v-select>-->
 
-          <div  id="affectedCuttoff" v-show="displayAffectedAs === 'binary'">
+          <div  id="affectedCuttoff" v-show="selectedRegression === 'Logistic'">
           Affected Cuttoff : {{affectedCuttoff}} {{displayAffectedAs}}
           </div>
           <div id="legend">
@@ -99,7 +99,7 @@
           </div>
 
 
-        <div id="linearRegression" v-show="displayAffectedAs === 'continuous'">
+        <div id="linearRegression" v-show="selectedRegression === 'Linear'">
 
             <div class="tableTitle">Regression Statistics</div>
 
@@ -160,7 +160,7 @@
 
 
 
-          <div id="logisticRegression" v-show="displayAffectedAs === 'binary'">
+          <div id="logisticRegression" v-show="selectedRegression === 'Logistic'">
 
           <table>
             <thead>
@@ -276,6 +276,8 @@
         isolatedPedTxt: [],
         hubSession: null,
         sampleIds: null,
+
+        sliderVal: null,
 
         scatterplotData: null,
 
@@ -429,7 +431,7 @@
 
         self.buildDemoPhenotypes();
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds);
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.affectedCuttoff);
 
         self.linePoints = self.regression.getLinePoints();
 
@@ -466,7 +468,7 @@
 
         self.buildDemoPhenotypes();
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset, self.sampleIds);
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset, self.sampleIds, self.affectedCuttoff);
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
 
@@ -478,16 +480,15 @@
           .min(0)
           .max(10)
           .ticks(0)
-          .height(height)
-          .displayValue(true)
+          .height(300)
           .on('onchange', val => {
 
-            self.affectedCuttoff === val;
-            d3.select('#value').text(val);
-          });
+            self.affectedCuttoff = val;
 
-        d3.select("#scatterplot").append('g')
-          .attr("id", "slider-axis")
+          })
+          .displayValue(true);
+
+        d3.select("#slider-axis")
           .attr("transform", "translate(-10,0)")
           .call(slider);
 
@@ -1205,9 +1206,24 @@
       affectedCuttoff: function(){
 
         let self = this;
-
         self.buildPhenotypes();
 
+        self.populateSampleIds();
+
+        if(self.displayAffectedAs === "binary"){
+          self.selectedRegression = "Logistic";
+          self.buildLogisticRegression();
+        }
+        else if(self.displayAffectedAs === "continuous"){
+          self.selectedRegression = "Linear";
+          self.buildLinearRegression();
+          self.styleNodesAsGradient();
+        }
+
+      },
+
+      sliderVal: function(){
+        console.log("this.sliderVal");
       },
 
       displayAffectedAs: function(){

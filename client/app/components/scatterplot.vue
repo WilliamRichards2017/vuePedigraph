@@ -8,6 +8,7 @@
 
         <!--<rect width="300" height="300"/>-->
         <g transform="translate(50, 50) " id="scatterplot">
+          <g id="slider-axis"></g>
           <g id="plot"></g>
           <path id="regression-line"/>
           <g id="x-axis" transform="translate(0, 300)"></g>
@@ -97,41 +98,8 @@
           .text("PTC Sensitivity (PT)");
 
 
-        if(self.regressionType== "Linear"){
           yAxis
             .call(d3.axisLeft(self.yScale));
-        }
-        else if(self.regressionType=== "Logistic"){
-
-          yAxis
-            .call(d3.axisLeft(self.yScale));
-
-
-
-          var slider = d3
-            .sliderVertical()
-            .min(0)
-            .max(10)
-            .ticks(0)
-            .height(height)
-            .displayValue(true)
-            .on('onchange', val => {
-              d3.select('#value').text(val);
-            });
-
-        d3.select("#scatterplot").append('g')
-          .attr("id", "slider-axis")
-          .attr("transform", "translate(-10,0)")
-        .call(slider);
-
-
-
-
-
-
-        }
-
-
 
         xAxis
           .call(d3.axisBottom(self.xScale).ticks(3).tickFormat(function (d, i) {
@@ -192,7 +160,7 @@
 
               if ( d !== 2 && d !== 8 ) {
                 this.remove();
-              } 
+              }
             });
 
 
