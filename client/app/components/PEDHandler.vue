@@ -91,11 +91,15 @@
         <div width="400px" height="40%">
           <!--<v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression" style="width: 75%; height: 100px"></v-select>-->
 
+          <div  id="affectedCuttoff" v-show="displayAffectedAs === 'binary'">
+          Affected Cuttoff : {{affectedCuttoff}} {{displayAffectedAs}}
+          </div>
           <div id="legend">
+
           </div>
 
 
-        <div id="linearRegression" v-if="selectedRegression === 'Linear'">
+        <div id="linearRegression" v-show="displayAffectedAs === 'continuous'">
 
             <div class="tableTitle">Regression Statistics</div>
 
@@ -156,7 +160,7 @@
 
 
 
-          <div id="logisticRegression" v-show="selectedRegression === 'Logistic'"></div>
+          <div id="logisticRegression" v-show="displayAffectedAs === 'binary'">
 
           <table>
             <thead>
@@ -179,7 +183,9 @@
             </tr>
           </table>
 
-          <div style="height: 300px"></div>
+          </div>
+
+          <!--<div style="height: 300px"></div>-->
 
           </div>
 
@@ -466,6 +472,24 @@
 
         self.buildRegressionTable();
         self.buildPTLegend();
+
+        var slider = d3
+          .sliderVertical()
+          .min(0)
+          .max(10)
+          .ticks(0)
+          .height(height)
+          .displayValue(true)
+          .on('onchange', val => {
+
+            self.affectedCuttoff === val;
+            d3.select('#value').text(val);
+          });
+
+        d3.select("#scatterplot").append('g')
+          .attr("id", "slider-axis")
+          .attr("transform", "translate(-10,0)")
+          .call(slider);
 
 
 

@@ -29,6 +29,8 @@
         purple: "#8629EA",
         xScale: null,
         yScale: null,
+
+        affectedCuttof: null,
       }
     },
 
@@ -39,7 +41,6 @@
       opts: null,
       regressionType: null,
       operand: null,
-      cuttoff: null,
 
 
     },
@@ -67,19 +68,10 @@
           .domain([-0.2, 1.2])
           .range([0, width]);
 
+        self.yScale = d3.scaleLinear()
+          .domain([0, d3.max(self.rawData, d => d.y)])
+          .range([height, 0]);
 
-        let yScale = null;
-        if(self.regressionType === "Linear"){
-          self.yScale = d3.scaleLinear()
-            .domain([0, d3.max(self.rawData, d => d.y)])
-            .range([height, 0]);
-        }
-        else{
-          self.yScale = d3.scaleLinear()
-            .domain([0, 1])
-            .range([height, 0])
-          ;
-        }
 
 
 
@@ -105,8 +97,6 @@
           .text("PTC Sensitivity (PT)");
 
 
-        let yTicks = [" ", "Affected (< 7)", " ", " ", "Unaffected (>= 7)", " "];
-
         if(self.regressionType== "Linear"){
           yAxis
             .call(d3.axisLeft(self.yScale));
@@ -114,9 +104,30 @@
         else if(self.regressionType=== "Logistic"){
 
           yAxis
-            .call(d3.axisLeft(self.yScale).ticks(6).tickFormat(function (d, i) {
-              return yTicks[i];
-            }));
+            .call(d3.axisLeft(self.yScale));
+
+
+
+          var slider = d3
+            .sliderVertical()
+            .min(0)
+            .max(10)
+            .ticks(0)
+            .height(height)
+            .displayValue(true)
+            .on('onchange', val => {
+              d3.select('#value').text(val);
+            });
+
+        d3.select("#scatterplot").append('g')
+          .attr("id", "slider-axis")
+          .attr("transform", "translate(-10,0)")
+        .call(slider);
+
+
+
+
+
 
         }
 
@@ -165,64 +176,28 @@
         if(self.regressionType === "Logistic"){
 
           console.log("regression type logistic");
+
+          let yTicks = [" ", "Affected", " ", " ", "Unaffected", " "];
+
+
+
+          yAxis
+            .call(d3.axisLeft(self.yScale).ticks(6).tickFormat(function (d, i) {
+              return yTicks[i];
+            }));
+
           d3.select("#y-axis").selectAll(".tick")
             .each(function (d) {
               console.log("d", d);
 
-              if ( d !== 0.2 && d !== 0.8 ) {
+              if ( d !== 2 && d !== 8 ) {
                 this.remove();
-              }
+              } 
             });
+
+
+
         }
-
-        self.buildRegressionLine();
-      },
-
-
-      buildRegressionLine() {
-
-        let self = this;
-
-        let width = 300;
-        let height = 300;
-
-        let coords = [];
-
-        if (self.regressionType === "Logistic") {
-
-          console.log("logistic")
-
-          coords = [{x: 0, y: 6.5}, {x: 0, y: 6.5}, {x: 0, y: 6.5}, {x: 0.5, y: 6.5}, {x: 0.5, y: 6.5}, {x: 0.5, y: 6.5}, {x: 0.5, y: 6.5}, {x: 0.5, y: 6.5}, {x: 0.5, y: 6.5}, {x: 0.5, y: 6.5}];
-
-
-          let aLineGenerator = d3
-            .line()
-            .x(d => self.xScale(d.x))
-            .y(d => self.yScale(d.y));
-
-          d3.select("#regression-line")
-            .attr("d", aLineGenerator(coords))
-            .attr("transform");
-
-        } else if(this.regressionType === "Linear") {
-          let coords = [];
-          for (let i = 0; i < self.linePoints[0].length; i++) {
-            coords.push({x: self.linePoints[0][i], y: self.linePoints[1][i]});
-          }
-
-          console.log("coords lin", coords);
-
-          let aLineGenerator = d3
-            .line()
-            .x(d => self.xScale(d.x))
-            .y(d => self.yScale(d.y));
-
-          d3.select("#regression-line")
-            .attr("d", aLineGenerator(coords))
-            .attr("transform");
-        }
-
-
     },
 
     buildPTLegend() {
@@ -263,7 +238,7 @@
 
       let yScale = d3.scaleLinear()
         .range([w, 0])
-        .domain([12, 0]);
+        .domain([0, 12]);
 
       var yAxis = d3.axisBottom()
         .scale(yScale)
@@ -290,14 +265,12 @@
   mounted()
   {
     // this.buildPlot();
-    // this.buildRegressionLine();
   }
   ,
 
   watch : {
     linePoints: function () {
       // this.buildPlot();
-      // setTimeout(this.buildRegressionLine(), 2000);
     },
 
 
@@ -305,7 +278,6 @@
 
       this.buildPlot();
       // this.buildPTLegend();
-      setTimeout(this.buildRegressionLine(), 2000);
     }
   }
   }

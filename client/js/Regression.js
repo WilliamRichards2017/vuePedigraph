@@ -154,11 +154,6 @@ export default class Regression {
     }
 
 
-    self.projectFN.toFixed(4);
-    self.projectFP.toFixed(4);
-    self.projectTN.toFixed(4);
-    self.projectTP.toFixed(4);
-
     self.projectAccuracy = (self.projectTP + self.projectTN) / y.length;
 
     // Precision = tp / (tp+fp)
@@ -258,10 +253,10 @@ export default class Regression {
         let yi = p.y;
 
         if(yi < 7){
-          yi = 0.2;
+         yi = 3;
         }
         else{
-          yi = 0.8;
+          yi = 7;
         }
 
         let key = p.x.toString() + ',' + yi.toString();
@@ -293,7 +288,7 @@ export default class Regression {
           let x = xi + xOff*0.11;
 
           let yOff = self.logJitterMapping[i][1];
-          let y = yi + yOff*0.11
+          let y = yi + yOff*1
 
           jitterCoords[value[i]] = [x,y];
         }
@@ -513,31 +508,30 @@ export default class Regression {
   //Linear regression evaluation metrics
 
   getProjectPrecision(){
-    return this.projectPrecision;
+    return this.projectPrecision.toFixed(4);
   }
 
   getProjectRecall(){
-    return this.projectRecall;
+    return this.projectRecall.toFixed(4);
   }
 
   getProjectF1(){
-    return this.projectF1;
+    return this.projectF1.toFixed(4);
   }
 
-
-
-
+  getProjectAccuracy(){
+    return this.projectAccuracy.toFixed(4);
+  }
 
 //Linear regression evaluation metrics
   getProjectCorrelation(){
-    let self = this;
-
-    let pc = parseFloat(self.projectCorrelation.toFixed(4));
-
-    console.log("project correlation inside getProjectCOrrelation", pc);
-
-    return pc;
+    return this.projectCorrelation.toFixed(4);
   }
+
+  getProjectPVal(){
+    return this.projectPVal;
+  }
+
 
   getProjectPVal(){
     return this.projectPVal;
@@ -579,9 +573,7 @@ export default class Regression {
     return this.familyF1;
   }
 
-  getProjectAccuracy(){
-    return this.projectAccuracy;
-  }
+
 
 
 
