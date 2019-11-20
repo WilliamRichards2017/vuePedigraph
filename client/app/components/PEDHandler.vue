@@ -1,6 +1,6 @@
 <template>
 
-  <div align="center" id='container'>
+  <div align="center">
 
     <v-toolbar style="padding-top: 10px" color="#123d53" dark>
 
@@ -66,44 +66,70 @@
 
 
 
-    <div class="pedWrapper" style="height: 96vh;">
+    <div class="pedWrapper">
 
-    <div class="flex" style="height: 96vh;">
+    <div class="flex">
 
-      <div id="pedigrees" v-show="showPed" style="width: 85%; height: 96vh"></div>
+      <div id="pedigrees" v-show="showPed" style="width: 80%;"></div>
 
-      <div class="flexCol" width="450px" style="overflow-y: auto; overflow-x: hidden">
-
-        <v-card height="100%" width="450px" justify-content="space-evenly"></v-card>
+      <!--<div class="flexCol" width="450px" >-->
 
 
-        <v-card width="400px" height="420px">
+      <div id="container">
+
+      <div  class="col">
 
 
+
+        <v-card>
         <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts" :regressionType="selectedRegression" :operand="selectedOperand" :cuttoff="affectedCuttoff"></vueScatter>
 
-
-          <br>
-
-
         </v-card>
-
-        <div width="400px" height="40%">
           <!--<v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression" style="width: 75%; height: 100px"></v-select>-->
 
+
+        <v-card>
           <div  id="affectedCuttoff" v-show="selectedRegression === 'Logistic'">
           Affected Cuttoff : {{affectedCuttoff}} {{displayAffectedAs}}
           </div>
+
+
           <div id="legend">
 
           </div>
+
+          <div id="logisticRegression" v-show="selectedRegression === 'Logistic'">
+
+            <table>
+              <thead>
+              <th></th> <th style="text-align: left"> Project: </th> <th style="text-align: left"> Family: </th>
+              </thead>
+              <tbody></tbody>
+
+              <tr class="val">
+                <th class="val"> Accuracy </th> <td id="accuracyP" class="val"> {{projectAccuracy}}</td> <td id="accuracyF" class="val">{{familyAccuracy}}</td>
+              </tr>
+
+              <tr class="val">
+                <th class="val"> Precision </th> <td id="precisonP" class="val"> {{projectPrecision}}</td> <td id="precisionF" class="val">{{familyPrecision}}</td>
+              </tr>
+              <tr class="val">
+                <th class="val"> Recall </th> <td class="recallP"> {{projectRecall}}</td> <td class="val">{{(familyRecall).toFixed(4)}}</td>
+              </tr>
+              <tr class="val">
+                <th class="val"> F1 </th> <td id="f1P" class="val"> {{projectF1}}</td> <td id="f1F" class="val">{{familyF1}}</td>
+              </tr>
+            </table>
+
+
+          </div>
+
 
 
         <div id="linearRegression" v-show="selectedRegression === 'Linear'">
 
             <div class="tableTitle">Regression Statistics</div>
 
-            <v-card id="regressionTable" class="col" style="margin: 10px;" >
 
               <table>
                 <thead>
@@ -127,69 +153,49 @@
                 </tr>
               </table>
 
-            </v-card>
-
-            <v-spacer></v-spacer>
-
-
-
-            <div class="tableTitle">Stats Legend</div>
-
-            <v-card id="regressionLegend" class="col" style="margin-left: 10px; margin-right: 10px;">
-
-
-              <table>
-                <thead>
-                <th></th> <th style="background: limegreen; height: 20px;"></th> <th style="background: yellow"> </th> <th style="background: orange"></th> <th style="background: red"> </th>
-                </thead>
-                <tbody>
-                <tr>
-                  <th> Pearsons 'r' </th> <td> r > 0.7 </td> <td> r > 0.5 </td> <td> r > 0.3 </td> <td> r <= 0.3 </td>
-                </tr>
-                <tr>
-                  <th> P-val </th> <td> p < 0.05 </td> <td> p < 0.1 </td> <td> p < 0.25 </td> <td> p >= 0.25 </td>
-                </tr>
-                </tbody>
-
-              </table>
-
-            </v-card>
 
         </div>
 
+          <div style="height: 100px"></div>
 
+        </v-card>
 
-
-          <div id="logisticRegression" v-show="selectedRegression === 'Logistic'">
-
-          <table>
-            <thead>
-            <th></th> <th style="text-align: left"> Project: </th> <th style="text-align: left"> Family: </th>
-            </thead>
-            <tbody></tbody>
-
-            <tr class="val">
-              <th class="val"> Accuracy </th> <td id="accuracyP" class="val"> {{projectAccuracy}}</td> <td id="accuracyF" class="val">{{familyAccuracy}}</td>
-            </tr>
-
-            <tr class="val">
-              <th class="val"> Precision </th> <td id="precisonP" class="val"> {{projectPrecision}}</td> <td id="precisionF" class="val">{{familyPrecision}}</td>
-            </tr>
-            <tr class="val">
-              <th class="val"> Recall </th> <td class="recallP"> {{projectRecall}}</td> <td class="val">{{(familyRecall).toFixed(4)}}</td>
-            </tr>
-            <tr class="val">
-              <th class="val"> F1 </th> <td id="f1P" class="val"> {{projectF1}}</td> <td id="f1F" class="val">{{familyF1}}</td>
-            </tr>
-          </table>
-
-          </div>
-
-          <!--<div style="height: 300px"></div>-->
-
-          </div>
 
       </div>
+
+
+
+            <!--<div class="tableTitle">Stats Legend</div>-->
+
+            <!--<v-card id="regressionLegend" class="col" style="margin-left: 10px; margin-right: 10px;">-->
+
+
+              <!--<table>-->
+                <!--<thead>-->
+                <!--<th></th> <th style="background: limegreen; height: 20px;"></th> <th style="background: yellow"> </th> <th style="background: orange"></th> <th style="background: red"> </th>-->
+                <!--</thead>-->
+                <!--<tbody>-->
+                <!--<tr>-->
+                  <!--<th> Pearsons 'r' </th> <td> r > 0.7 </td> <td> r > 0.5 </td> <td> r > 0.3 </td> <td> r <= 0.3 </td>-->
+                <!--</tr>-->
+                <!--<tr>-->
+                  <!--<th> P-val </th> <td> p < 0.05 </td> <td> p < 0.1 </td> <td> p < 0.25 </td> <td> p >= 0.25 </td>-->
+                <!--</tr>-->
+                <!--</tbody>-->
+
+              <!--</table>-->
+
+            <!--</v-card>-->
+
+      </div>
+
+
+
+
+      <!--<div style="height: 300px"></div>-->
+
+
+      <!--</div>-->
 
 
     </div>
@@ -479,6 +485,7 @@
           .min(0)
           .max(10)
           .ticks(0)
+          .step(1)
           .height(300)
           .on('onchange', val => {
 
@@ -487,9 +494,12 @@
           })
           .displayValue(true);
 
-        d3.select("#slider-axis")
-          .attr("transform", "translate(-10,0)")
+        let sliderAxis = d3.select("#slider-axis")
           .call(slider);
+
+        sliderAxis.append("text").text(self.selectedPhenotype);
+
+        self.populateLogisticEvaluationMetrics();
 
 
 
@@ -638,9 +648,11 @@
 
         d3.select("#legendSvg").remove();
 
+        let w = 200, h = 50;
+
+
         if(self.displayAffectedAs === "continuous") {
 
-          var w = 200, h = 50;
 
           let key = d3.select("#legend")
             .append("svg")
@@ -698,7 +710,6 @@
         }
         else if(self.displayAffectedAs === "binary"){
 
-          var w = 200, h = 50;
 
           let ticks = ["0", "6", "7", "12"]
 
@@ -1106,6 +1117,19 @@
         return p1;
       },
 
+      populateLogisticEvaluationMetrics(){
+        let self = this;
+        self.familyAccuracy = self.regression.getFamilyAccuracy();
+        self.familyPrecision = self.regression.getFamilyPrecision();
+        self.familyRecall = self.regression.getFamilyRecall();
+        self.familyF1 = self.regression.getFamilyF1();
+
+        self.projectAccuracy = self.regression.getProjectAccuracy();
+        self.projectPrecision = self.regression.getProjectPrecision();
+        self.projectRecall = self.regression.getProjectRecall();
+        self.projectF1 = self.regression.getProjectF1();
+      },
+
       drawGenotypeBars: function(){
         let self = this;
 
@@ -1192,7 +1216,6 @@
         let self = this;
         self.populateSampleIds();
         self.buildPhenotypes();
-
         self.buildLogisticRegression();
 
       },
@@ -1297,15 +1320,6 @@
 
         } else if (self.selectedRegression === "Logistic") {
           self.buildLogisticRegression();
-          self.familyAccuracy = self.regression.getFamilyAccuracy();
-          self.familyPrecision = self.regression.getFamilyPrecision();
-          self.familyRecall = self.regression.getFamilyRecall();
-          self.familyF1 = self.regression.getFamilyF1();
-
-          self.projectAccuracy = self.regression.getProjectAccuracy();
-          self.projectPrecision = self.regression.getProjectPrecision();
-          self.projectRecall = self.regression.getProjectRecall();
-          self.projectF1 = self.regression.getProjectF1();
 
           // self.buildLinearRegression();
         }
@@ -1330,6 +1344,12 @@
     /*height: fill-available;*/
   }
 
+  #legend{
+    height: 100px;
+    width: 220px;
+    justify-content: center;
+  }
+
   .phenotypeNA{
   stroke-dasharray: 5,5;
   }
@@ -1342,16 +1362,27 @@
     width: 100px;
   }
 
-  .flex{
+  .flex {
     display: flex; /* or inline-flex */
+    align-content: flex-start;
+    height: 100%;
+  }
 
+
+
+  #container{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 
 
 
   .col{
-    display: flex;
-    flex-direction: column;
+
+    flex-grow: 1;
+    overflow: auto;
+    height: 96vh;
   }
 
   .flexCol{
@@ -1424,6 +1455,11 @@
     /*color: white;*/
     fill: black;
     text-shadow: 2px 2px 11px white;
+
+  }
+
+  .pedWrapper{
+    height: 96vh;
 
   }
 

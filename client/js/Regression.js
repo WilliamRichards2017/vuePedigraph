@@ -7,9 +7,10 @@ import {Matrix} from "ml-matrix";
 
 
 export default class Regression {
-  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds, affectedStatus) {
+  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds, affectedCuttoff) {
     this.rawGenotypes = rawGenotypes;
     this.rawPhenotypes = rawPhenotypes;
+    this.affectedCuttoff = affectedCuttoff;
 
     this.regressionType = regressionType;
 
@@ -240,7 +241,7 @@ export default class Regression {
 
         let yi = p.y;
 
-        if(yi < 7){
+        if(yi < this.affectedCuttoff){
          yi = 3;
         }
         else{
@@ -385,7 +386,7 @@ export default class Regression {
     console.log(y);
     let yB = [];
     for(let i = 0; i < y.length; i++) {
-      if (y[i] < 7) {
+      if (y[i] < this.affectedCuttoff) {
         yB.push(0);
       }
       else{

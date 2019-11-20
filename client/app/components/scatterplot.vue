@@ -1,5 +1,5 @@
 <template>
-  <div id='vueScatter'>
+  <div id='vueScatter' width="400px" height="400px">
     <div class="chartTitle"> GT/PT regression for selected Family</div>
 
     <div class="svg-container">
@@ -30,6 +30,7 @@
         purple: "#8629EA",
         xScale: null,
         yScale: null,
+        width: 300,
 
         affectedCuttof: null,
       }
@@ -88,18 +89,25 @@
           .text("Alternate Allele Frequency (GT)");
 
 
-        yAxis.append("text")
-          .attr("class", "axis-label")
-          .attr("id", "ylabel");
         d3.select("#ylabel")
           .attr("transform", "rotate(-90)")
-          .attr("y", -27)
-          .attr("x", -100)
+          .attr("y", -50)
+          .attr("x", -30)
           .text("PTC Sensitivity (PT)");
 
+        if(self.regressionType === "Logistic") {
+
+          yAxis
+            .attr("transform", "translate( " + self.width + ", 0 )")
+            .call(d3.axisRight(self.yScale));
+        }
+        else if (self.regressionType === "Linear"){
 
           yAxis
             .call(d3.axisLeft(self.yScale));
+        }
+
+
 
         xAxis
           .call(d3.axisBottom(self.xScale).ticks(3).tickFormat(function (d, i) {
@@ -283,7 +291,6 @@
   .svg-container {
     display: inline-block;
     position: relative;
-    padding-bottom: 100%; /* aspect ratio */
     vertical-align: top;
     overflow: hidden;
   }
