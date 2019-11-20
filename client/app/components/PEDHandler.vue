@@ -294,6 +294,9 @@
         drawer: false,
         toggle: null,
 
+        minPt: 0,
+        maxPt: 12,
+
 
 
         //user unputs
@@ -696,8 +699,6 @@
         else if(self.displayAffectedAs === "binary"){
 
 
-          let ticks = ["0", "6", "7", "12"]
-
           let key = d3.select("#legend")
             .append('svg')
             .attr("id", "legendSvg")
@@ -706,18 +707,43 @@
             .attr("height", 100);
 
           key.append("rect")
-            .attr("width", 83.333)
+            .attr("width", w)
             .attr("height", h-30)
             .style("fill", "white")
             .style("stroke", "black")
-            .attr("transform", "translate(122,60)");
-
-          key.append("rect")
-            .attr("width", 116.666)
-            .attr("height", h-30)
-            .style("fill", self.purple)
-            .style("stroke", "black")
             .attr("transform", "translate(5,60)");
+
+          if(self.selectedOperand === "<" || self.selectedOperand === "<=") {
+
+            let yScale = d3.scaleLinear()
+              .range([w, 0])
+              .domain([12, 0]);
+
+            key.append("rect")
+              .attr("width", yScale(self.affectedCuttoff))
+              .attr("height", h - 30)
+              .style("fill", self.purple)
+              .style("stroke", "black")
+              .attr("transform", "translate(5,60)");
+          }
+
+
+
+          //todo: rename yscale to legend scale
+          else if(self.selectedOperand === ">" || self.selectedOperand === ">=") {
+
+            let yScale = d3.scaleLinear()
+              .range([w, 0])
+              .domain([12, 0]);
+
+            key.append("rect")
+              .attr("width", yScale(self.maxPt - self.affectedCuttoff))
+              .attr("height", h - 30)
+              .style("fill", self.purple)
+              .style("stroke", "black")
+              .attr("transform", "translate(" + (5 + yScale(self.affectedCuttoff)).toString() + ",60)");
+
+          }
 
 
           // let ticks = ["7"];
@@ -737,10 +763,17 @@
             .style("text-anchor", "end")
 
 
-          key.append("text")
-            .attr("transform", "translate(20,50)")
-            .text("Affected <----> Un-affected");
+          if(self.selectedOperand === "<" || self.selectedOperand === "<="){
 
+            key.append("text")
+              .attr("transform", "translate(20,50)")
+              .text("Affected <----> Un-affected");
+          }
+          else if(self.selectedOperand === ">" || self.selectedOperand === ">="){
+            key.append("text")
+              .attr("transform", "translate(20,50)")
+              .text("Un-affected <----> Affected");
+          }
 
         }
 

@@ -101,7 +101,9 @@
         else if (self.regressionType === "Linear"){
 
           yAxis
-            .call(d3.axisLeft(self.yScale));
+            .call(d3.axisLeft(self.yScale))
+            .attr("transform", "translate(0, 0 )");
+
         }
 
 
