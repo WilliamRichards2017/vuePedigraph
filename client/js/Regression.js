@@ -247,34 +247,34 @@ export default class Regression {
         if(this.selectedOperand === "<") {
 
           if (yi < this.affectedCuttoff) {
-            yi = 3;
-          } else {
             yi = 7;
+          } else {
+            yi = 3;
           }
         }
 
         else if(this.selectedOperand === ">") {
 
           if (yi > this.affectedCuttoff) {
-            yi = 3;
-          } else {
             yi = 7;
+          } else {
+            yi = 3;
           }
         }
 
         else if(this.selectedOperand === "<="){
           if (yi <= this.affectedCuttoff) {
-            yi = 3;
-          } else {
             yi = 7;
+          } else {
+            yi = 3;
           }
         }
 
         else if(this.selectedOperand === ">="){
           if (yi >= this.affectedCuttoff) {
-            yi = 3;
-          } else {
             yi = 7;
+          } else {
+            yi = 3;
           }
         }
 

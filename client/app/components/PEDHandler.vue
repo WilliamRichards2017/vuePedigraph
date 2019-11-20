@@ -393,6 +393,26 @@
       }
       if (self.launchedFrom === "D") {
         self.buildFromDemo();
+
+
+
+
+        var sliderRange = d3
+          .sliderVertical()
+          .min(0)
+          .max(12)
+          .height(300)
+          .ticks(0)
+          .default([0, 12])
+          .fill('#2196f3')
+          .on('onchange', val => {
+            d3.select('p#value-range').text(val.map(d3.format('.2%')).join('-'));
+          });
+
+        d3.select("#scatterplot").append("g").attr("id", "slider-axisMin")
+          .call(sliderRange)
+          .append("text").text(self.selectedPhenotype);
+
       }
       if (self.launchedFrom === "U") {
         self.buildFromUpload();
@@ -1284,7 +1304,6 @@
         else if(self.displayAffectedAs === "continuous"){
 
           d3.select("#slider-axis").remove();
-
 
           self.selectedRegression = "Linear";
           self.buildLinearRegression();

@@ -75,7 +75,7 @@
 
 
         let svg = d3.select("#scatterplotSvg");
-        let ticks = ["hom ref (0 AF)", "hom alt (0.5 AF)", "hom alt (1 AF)"];
+        let ticks = ["hom ref (0 AF)", "het(0.5 AF)", "hom alt (1 AF)"];
         let yAxis = d3.select("#y-axis");
         let xAxis = d3.select("#x-axis");
         xAxis.append("text")
@@ -151,7 +151,7 @@
         if(self.regressionType === "Logistic"){
           console.log("regression type logistic");
 
-          let yTicks = [" ", "Affected", " ", " ", "Unaffected", " "];
+          let yTicks = [" ", "Un-affected", " ", " ", "Affected", " "];
 
 
 
