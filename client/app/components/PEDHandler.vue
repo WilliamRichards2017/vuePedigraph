@@ -85,12 +85,13 @@
         <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts" :regressionType="selectedRegression" :operand="selectedOperand" :cuttoff="affectedCuttoff"></vueScatter>
 
         </v-card>
-          <!--<v-select :items="regressionTypes" label="Select regression" v-model="selectedRegression" style="width: 75%; height: 100px"></v-select>-->
 
 
         <v-card>
           <div  id="affectedCuttoff" v-show="selectedRegression === 'Logistic'">
-          Affected Cuttoff : {{affectedCuttoff}} {{displayAffectedAs}}
+          <div style="display: inline-flex">  <div style="margin-top: 10px"> Affected Cuttoff</div>
+            <v-select :items="operands" style="width: 50px; margin-top: 0; padding-left:10px; padding-top: 0" outlined dense v-model="selectedOperand"></v-select>
+            <strong style="margin-top: 10px; margin-left: 10px">{{affectedCuttoff}} </strong> </div>
           </div>
 
 
@@ -433,11 +434,13 @@
 
       buildLinearRegression() {
 
+
+
         let self = this;
 
         self.buildDemoPhenotypes();
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.affectedCuttoff);
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.affectedCuttoff, self.selectedOperand);
 
         self.linePoints = self.regression.getLinePoints();
 
@@ -469,35 +472,17 @@
 
       buildLogisticRegression() {
 
+
         let self = this;
 
-        self.buildDemoPhenotypes();
+        // self.buildDemoPhenotypes();
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset, self.sampleIds, self.affectedCuttoff);
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset, self.sampleIds, self.affectedCuttoff, self.selectedOperand);
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
 
         self.buildRegressionTable();
         self.buildPTLegend();
-
-        var slider = d3
-          .sliderVertical()
-          .min(0)
-          .max(10)
-          .ticks(0)
-          .step(1)
-          .height(300)
-          .on('onchange', val => {
-
-            self.affectedCuttoff = val;
-
-          })
-          .displayValue(true);
-
-        let sliderAxis = d3.select("#slider-axis")
-          .call(slider);
-
-        sliderAxis.append("text").text(self.selectedPhenotype);
 
         self.populateLogisticEvaluationMetrics();
 
@@ -1220,6 +1205,13 @@
 
       },
 
+      selectedOperand: function(){
+        let self = this;
+        self.populateSampleIds();
+        self.buildPhenotypes();
+        self.buildLogisticRegression();
+      },
+
       sliderVal: function(){
       },
 
@@ -1231,19 +1223,39 @@
 
         if(self.displayAffectedAs === "binary"){
           self.selectedRegression = "Logistic";
+
+
+          var slider = d3
+            .sliderVertical()
+            .min(0)
+            .max(11)
+            .ticks(0)
+            .default(self.affectedCuttoff)
+            .step(1)
+            .height(300)
+            .on('onchange', val => {
+
+              self.affectedCuttoff = val;
+
+            })
+            .displayValue(true);
+
+          d3.select("#scatterplot").append("g").attr("id", "slider-axis")
+            .call(slider)
+            .append("text").text(self.selectedPhenotype);
+
+
           self.buildLogisticRegression();
+
         }
         else if(self.displayAffectedAs === "continuous"){
+
+          d3.select("#slider-axis").remove();
+
+
           self.selectedRegression = "Linear";
           self.buildLinearRegression();
         }
-
-      },
-
-      selectedOperand: function(){
-
-        let self = this;
-        self.buildPhenotypes();
 
       },
 
@@ -1436,18 +1448,13 @@
 
   tr:nth-child(odd).val {background-color: #f2f2f2;}
 
-  .tableTitle{
+  .tableTitle {
     /*text-decoration: underline;*/
     text-align: left;
     font-size: 16px;
     font-style: normal;
     font-weight: bold;
-    margin:5px;
-    text-shadow:
-      0.07em 0 black,
-      0 0.07em black,
-      -0.07em 0 black,
-      0 -0.07em black;
+    margin: 5px;
   }
 
 

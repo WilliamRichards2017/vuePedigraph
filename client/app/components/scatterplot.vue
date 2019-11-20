@@ -8,7 +8,6 @@
 
         <!--<rect width="300" height="300"/>-->
         <g transform="translate(50, 50) " id="scatterplot">
-          <g id="slider-axis"></g>
           <g id="plot"></g>
           <path id="regression-line"/>
           <g id="x-axis" transform="translate(0, 300)"></g>
@@ -31,8 +30,6 @@
         xScale: null,
         yScale: null,
         width: 300,
-
-        affectedCuttof: null,
       }
     },
 
@@ -150,7 +147,6 @@
           .text(d => d.id);
 
         if(self.regressionType === "Logistic"){
-
           console.log("regression type logistic");
 
           let yTicks = [" ", "Affected", " ", " ", "Unaffected", " "];
