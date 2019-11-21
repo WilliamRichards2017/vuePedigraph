@@ -7,11 +7,13 @@ import {Matrix} from "ml-matrix";
 
 
 export default class Regression {
-  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds, affectedCuttoff, selectedOperand) {
+  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds, affectedCuttoff, selectedOperand, minThreshold, maxThreshold) {
     this.rawGenotypes = rawGenotypes;
     this.rawPhenotypes = rawPhenotypes;
     this.affectedCuttoff = affectedCuttoff;
     this.selectedOperand = selectedOperand;
+    this.minThreshold = minThreshold;
+    this.maxThreshold = maxThreshold;
 
     this.regressionType = regressionType;
 

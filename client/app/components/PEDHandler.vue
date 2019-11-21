@@ -445,7 +445,7 @@
 
         self.buildDemoPhenotypes();
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.affectedCuttoff, self.selectedOperand);
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.affectedCuttoff, self.selectedOperand, self.minThreshold, self.maxThreshold);
 
         self.linePoints = self.regression.getLinePoints();
 
@@ -1349,11 +1349,15 @@
         self.selectedPhenotype = "PTC Sensitivity";
         self.selectedGenotype = "7:141972755_C/T";
 
-        self.populateSampleIds();
         self.buildPhenotypes();
+        self.populateSampleIds();
+
         self.buildGenotypes();
+
+
+
         self.buildLinearRegression();
-        // console.log("self.sampleIds in watcher", self.sampleIds);
+        console.log("self.sampleIds in watcher", self.sampleIds);
         $('#pedigree').on('nodeClick', self.onNodeClick)
 
 
