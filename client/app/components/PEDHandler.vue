@@ -88,18 +88,15 @@
 
 
         <v-card>
-          <div  id="affectedCuttoff" v-show="selectedRegression === 'Logistic'">
-          <div style="display: inline-flex">  <div style="margin-top: 10px"> Affected Cuttoff</div>
-            <v-select :items="operands" style="width: 50px; margin-top: 0; padding-left:10px; padding-top: 0" outlined dense v-model="selectedOperand"></v-select>
-            <strong style="margin-top: 10px; margin-left: 10px">{{affectedCuttoff}} </strong> </div>
-          </div>
 
 
-          <div id="legend">
-
-          </div>
 
           <div id="logisticRegression" v-show="selectedRegression === 'Logistic'">
+
+
+            <div style="display: inline-flex">  <div style="margin-top: 10px"> Affected Cuttoff</div>
+              <v-select :items="operands" style="width: 50px; margin-top: 0; padding-left:10px; padding-top: 0" outlined dense v-model="selectedOperand"></v-select>
+              <strong style="margin-top: 10px; margin-left: 10px">{{affectedCuttoff}} </strong> </div>
 
             <table>
               <thead>
@@ -129,6 +126,17 @@
 
         <div id="linearRegression" v-show="selectedRegression === 'Linear'">
 
+          <div style="display: inline-flex">
+
+
+            <v-btn v-on:click="invertRange()" small>Invert range</v-btn>
+
+
+            <div style="margin-top: 10px"> Selected PT Range:</div>
+            <strong style="margin-top: 10px; margin-left: 10px">[ {{minThreshold.toFixed(4)}}, {{maxThreshold.toFixed(4)}} ]</strong>
+          </div>
+
+
             <div class="tableTitle">Regression Statistics</div>
 
 
@@ -156,6 +164,9 @@
 
 
         </div>
+
+          <div id="legend"></div>
+
 
           <div style="height: 100px"></div>
 
@@ -297,6 +308,8 @@
         minPt: 0,
         maxPt: 12,
 
+        inverted: false,
+
 
 
         //user unputs
@@ -402,6 +415,20 @@
     }
     ,
     methods: {
+
+
+
+
+      invertRange(){
+        // let min = this.minThreshold;
+        // let max = this.maxThreshold;
+
+        this.inverted = ! this.inverted;
+
+        // this.minThreshold = max;
+        // this.maxThreshold = min;
+      },
+
       buildFromDemo() {
         let self = this;
         self.pedTxt = self.txt;
@@ -719,13 +746,13 @@
 
           legend.append("stop")
             .attr("offset", "0%")
-            .attr("stop-color", self.purple)
+            .attr("stop-color", "#F9F9F9")
             .attr("stop-opacity", 1);
 
 
           legend.append("stop")
             .attr("offset", "100%")
-            .attr("stop-color", "#F9F9F9")
+            .attr("stop-color", self.purple)
             .attr("stop-opacity", 1);
 
           key.append("rect")
@@ -753,7 +780,7 @@
 
           key.append("text")
             .attr("transform", "translate(0,50)")
-            .text("More affected <----> Less affected");
+            .text("Less affected <----> More affected");
 
         }
         else if(self.displayAffectedAs === "binary"){
@@ -988,6 +1015,8 @@
             for (let i = 0; i < self.opts.dataset.length; i++) {
               let id = self.opts.dataset[i].name;
               let sens = self.PTCPhenotypes[id];
+              let scaledSens = -1;
+
 
               if (typeof sens === 'undefined' || sens === 'nan') {
                 self.opts.dataset[i].NA = true;
@@ -1043,23 +1072,41 @@
 
               }
 
-              else if (self.displayAffectedAs === "continuous"){
 
-                let scaledSens = -1;
+            else if (self.displayAffectedAs === "continuous") {
 
-                if(sens < self.minThreshold){
-                  scaledSens = 0;
-                }
-                else if(sens > self.maxThreshold){
-                  scaledSens= 1;
-                }
-                else{
-                  scaledSens = (sens-self.minThreshold)/(self.maxThreshold - self.minThreshold)
-                }
 
-                color = d3.interpolateRgb("white", self.purple)(scaledSens);
+                if (!this.inverted) {
+
+                  if (sens < self.minThreshold) {
+                    scaledSens = 0;
+                  } else if (sens > self.maxThreshold) {
+                    scaledSens = 1;
+                  } else {
+                    scaledSens = (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
+                  }
+
+                  color = d3.interpolateRgb("white", self.purple)(scaledSens);
+
+                } else if (this.inverted) {
+
+                  console.log("range", this.minThreshold, this.maxThreshold);
+
+
+                  if (sens < self.minThreshold) {
+                    scaledSens = 1;
+                  } else if (sens > self.maxThreshold) {
+                    scaledSens = 0;
+                  } else {
+                    scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
+                  }
+
+                  color = d3.interpolateRgb("white", self.purple)(scaledSens);
+
+                }
 
               }
+
 
 
               self.opts.dataset[i].affected = aff;
@@ -1371,6 +1418,14 @@
         self.showPed = !self.showPed;
       },
 
+      inverted: function(){
+
+        console.log("watcher in inverted", this.inverted);
+
+        this.buildLinearRegression();
+
+      },
+
       isolateFamily: function () {
         let self = this;
         $('#pedigree').remove();
@@ -1381,12 +1436,15 @@
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
           self.drawGenotypeBars();
+          self.populateSampleIds();
+          self.buildLinearRegression();
         } else {
           self.opts.dataset = io.readLinkage(self.pedTxt);
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
           ptree.build(self.opts)
           self.drawGenotypeBars();
+
 
         }
         $('#pedigree').on('nodeClick', self.onNodeClick);

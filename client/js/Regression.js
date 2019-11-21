@@ -411,6 +411,8 @@ export default class Regression {
     }
     else if(self.regressionType === "Logistic"){
       self.populateLogisticScatterplotData();
+      // self.populateLinearScatterplotData();
+
     }
   }
 
@@ -482,7 +484,7 @@ export default class Regression {
 
     let self = this;
 
-    let jDs = self.logisticJitter(self.data);
+    let jDs = self.linearJitter(self.data);
 
     console.log("jDs after jitter", jDs);
 
