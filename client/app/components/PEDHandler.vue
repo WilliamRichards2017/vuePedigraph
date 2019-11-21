@@ -393,25 +393,7 @@
       }
       if (self.launchedFrom === "D") {
         self.buildFromDemo();
-
-
-
-
-        var sliderRange = d3
-          .sliderVertical()
-          .min(0)
-          .max(12)
-          .height(300)
-          .ticks(0)
-          .default([0, 12])
-          .fill('#2196f3')
-          .on('onchange', val => {
-            d3.select('p#value-range').text(val.map(d3.format('.2%')).join('-'));
-          });
-
-        d3.select("#scatterplot").append("g").attr("id", "slider-axisMin")
-          .call(sliderRange)
-          .append("text").text(self.selectedPhenotype);
+        self.buildSlider();
 
       }
       if (self.launchedFrom === "U") {
@@ -491,6 +473,64 @@
 
 
 
+      },
+
+      buildSlider(){
+
+
+        let self = this;
+
+        if(self.displayAffectedAs === "continuous") {
+
+          d3.select("#slider-axisCuttoff").remove();
+
+
+          let sliderRange = d3
+            .sliderVertical()
+            .min(0)
+            .max(12)
+            .height(300)
+            .ticks(0)
+            .default([0, 12])
+            .fill('#2196f3')
+            .on('onchange', val => {
+
+              self.minThreshold = val[0];
+              self.maxThreshold = val[1];
+
+            });
+
+          d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
+            .call(sliderRange)
+            .append("text").text(self.selectedPhenotype);
+
+        }
+
+        else if(self.displayAffectedAs === "binary") {
+
+          d3.select("#slider-axisRange").remove();
+
+
+
+          let slider = d3
+            .sliderVertical()
+            .min(0)
+            .max(11)
+            .ticks(0)
+            .default(self.affectedCuttoff)
+            .step(1)
+            .height(300)
+            .on('onchange', val => {
+
+              self.affectedCuttoff = val;
+
+            })
+            .displayValue(true);
+
+          d3.select("#scatterplot").append("g").attr("id", "slider-axisCuttoff")
+            .call(slider)
+            .append("text").text(self.selectedPhenotype);
+        }
       },
 
       buildLogisticRegression() {
@@ -1265,8 +1305,6 @@
         self.buildLogisticRegression();
       },
 
-      sliderVal: function(){
-      },
 
       displayAffectedAs: function(){
         let self = this;
@@ -1274,36 +1312,16 @@
 
         self.populateSampleIds();
 
+        self.buildSlider();
+
+
         if(self.displayAffectedAs === "binary"){
           self.selectedRegression = "Logistic";
-
-
-          var slider = d3
-            .sliderVertical()
-            .min(0)
-            .max(11)
-            .ticks(0)
-            .default(self.affectedCuttoff)
-            .step(1)
-            .height(300)
-            .on('onchange', val => {
-
-              self.affectedCuttoff = val;
-
-            })
-            .displayValue(true);
-
-          d3.select("#scatterplot").append("g").attr("id", "slider-axis")
-            .call(slider)
-            .append("text").text(self.selectedPhenotype);
-
 
           self.buildLogisticRegression();
 
         }
         else if(self.displayAffectedAs === "continuous"){
-
-          d3.select("#slider-axis").remove();
 
           self.selectedRegression = "Linear";
           self.buildLinearRegression();

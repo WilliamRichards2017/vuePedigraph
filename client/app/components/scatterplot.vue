@@ -11,7 +11,9 @@
           <g id="plot"></g>
           <path id="regression-line"/>
           <g id="x-axis" transform="translate(0, 300)"></g>
-          <g id="y-axis" transform="translate(0, 0)"></g>
+          <g id="yLeft-axis" transform="translate(0, 0)"></g>
+          <g id="yRight-axis" transform="translate(0, 0)"></g>
+
         </g>
       </svg>
     </div>
@@ -76,7 +78,8 @@
 
         let svg = d3.select("#scatterplotSvg");
         let ticks = ["hom ref (0 AF)", "het(0.5 AF)", "hom alt (1 AF)"];
-        let yAxis = d3.select("#y-axis");
+        let yLeftAxis = d3.select("#yLeft-axis");
+        let yRightAxis = d3.select("#yRight-axis")
         let xAxis = d3.select("#x-axis");
         xAxis.append("text")
           .attr("class", "axis-label")
@@ -92,17 +95,45 @@
           .attr("x", -30)
           .text("PTC Sensitivity (PT)");
 
+        yLeftAxis
+          .call(d3.axisLeft(self.yScale))
+          .attr("transform", "translate(0, 0 )");
+
         if(self.regressionType === "Logistic") {
 
-          yAxis
+
+
+          yRightAxis
+            .append("g")
+            .attr("id", "rightAxisG")
             .attr("transform", "translate( " + self.width + ", 0 )")
             .call(d3.axisRight(self.yScale));
+
+          let yTicks = [" ", "Un-affected", " ", " ", "Affected", " "];
+
+
+
+          yRightAxis
+            .call(d3.axisLeft(self.yScale).ticks(6).tickFormat(function (d, i) {
+              return yTicks[i];
+            }));
+
+          d3.select("#y-axis").selectAll(".tick")
+            .each(function (d) {
+              console.log("d", d);
+
+              if ( d !== 2 && d !== 8 ) {
+                this.remove();
+              }
+            });
+
+
         }
         else if (self.regressionType === "Linear"){
 
-          yAxis
-            .call(d3.axisLeft(self.yScale))
-            .attr("transform", "translate(0, 0 )");
+          d3.select("#rightAxisG").remove();
+
+
 
         }
 
@@ -148,30 +179,6 @@
           .attr("y", d => self.yScale(d.ySource))
           .text(d => d.id);
 
-        if(self.regressionType === "Logistic"){
-          console.log("regression type logistic");
-
-          let yTicks = [" ", "Un-affected", " ", " ", "Affected", " "];
-
-
-
-          yAxis
-            .call(d3.axisLeft(self.yScale).ticks(6).tickFormat(function (d, i) {
-              return yTicks[i];
-            }));
-
-          d3.select("#y-axis").selectAll(".tick")
-            .each(function (d) {
-              console.log("d", d);
-
-              if ( d !== 2 && d !== 8 ) {
-                this.remove();
-              }
-            });
-
-
-
-        }
     },
 
     buildPTLegend() {
