@@ -736,7 +736,7 @@
 
           let yScale = d3.scaleLinear()
             .range([w, 0])
-            .domain([12, 0]);
+            .domain([self.maxThreshold, self.minThreshold]);
 
           var yAxis = d3.axisBottom()
             .scale(yScale)
@@ -777,7 +777,7 @@
 
             let yScale = d3.scaleLinear()
               .range([w, 0])
-              .domain([12, 0]);
+              .domain([self.maxThreshold, self.minThreshold]);
 
             key.append("rect")
               .attr("width", yScale(self.affectedCuttoff))
@@ -1057,7 +1057,7 @@
                   scaledSens = (sens-self.minThreshold)/(self.maxThreshold - self.minThreshold)
                 }
 
-                color = d3.interpolateRgb("white", self.purple)(1-(sens/12));
+                color = d3.interpolateRgb("white", self.purple)(scaledSens);
 
               }
 
@@ -1332,11 +1332,15 @@
       minThreshold: function(){
         let self = this;
         self.buildPhenotypes();
+
+        self.buildLinearRegression();
       },
 
       maxThreshold: function(){
         let self = this;
         self.buildPhenotypes();
+        self.buildLinearRegression();
+
       },
 
       selectedFamily: function () {
