@@ -840,7 +840,7 @@
 
           var yAxis = d3.axisBottom()
             .scale(yScale)
-            .ticks(10);
+            .ticks(12);
 
           key.append("g")
             .attr("class", "y axis")
@@ -1081,7 +1081,7 @@
                   if (sens < self.minThreshold) {
                     scaledSens = 0;
                   } else if (sens > self.maxThreshold) {
-                    scaledSens = 1;
+                    scaledSens = 0;
                   } else {
                     scaledSens = (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
                   }
@@ -1094,15 +1094,19 @@
 
 
                   if (sens < self.minThreshold) {
-                    scaledSens = 1;
+                    scaledSens = 0;
                   } else if (sens > self.maxThreshold) {
                     scaledSens = 0;
                   } else {
                     scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
                   }
+                }
 
+                if(scaledSens === 0){
+                  color = "gray";
+                }
+                else {
                   color = d3.interpolateRgb("white", self.purple)(scaledSens);
-
                 }
 
               }

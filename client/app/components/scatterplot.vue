@@ -70,7 +70,7 @@
           .range([0, width]);
 
         self.yScale = d3.scaleLinear()
-          .domain([0, d3.max(self.rawData, d => d.y)])
+          .domain([0, 12])
           .range([height, 0]);
 
 
