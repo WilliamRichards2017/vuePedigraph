@@ -129,36 +129,41 @@
           <div style="display: inline-flex">
 
 
-            <v-btn v-on:click="invertRange()" small>Invert range</v-btn>
+            <v-btn v-on:click="invertRange()" small>Invert affect status</v-btn>
 
 
-            <div style="margin-top: 10px"> Selected PT Range:</div>
-            <strong style="margin-top: 10px; margin-left: 10px">[ {{minThreshold.toFixed(4)}}, {{maxThreshold.toFixed(4)}} ]</strong>
+            <div style="margin-top: 10px" v-show="inverted"> Affected Range:
+            <strong style="margin-top: 10px; margin-left: 10px">[ {{minThreshold.toFixed(2)}}, {{maxThreshold.toFixed(2)}} ]</strong>
+          </div>
+
+          <div style="margin-top: 10px" v-show="!inverted"> Affected Range:
+          <strong style="margin-top: 10px; margin-left: 10px"  v-show="!inverted">[{{maxThreshold.toFixed(2)}}, {{minThreshold.toFixed(2)}}]</strong>
+        </div>
+
           </div>
 
 
             <div class="tableTitle">Regression Statistics</div>
-
-
               <table>
                 <thead>
                 <th></th> <th style="text-align: left"> Pearsons 'r' </th> <th style="text-align: left"> r^2 </th> <th style="text-align: left"> P-val </th>
                 </thead>
                 <tbody></tbody>
-                <tr class="val">
-                <th class="val"> Project</th>
-                <td id="projectR" > {{projectCorrelation}}</td>
-                  <td class="val">{{(projectCorrelation**2).toFixed(4)}}</td>
-                  <td id="projectP" class="val"> {{projectPVal.toExponential(3)}}</td>
-              </tr>
-
-
-                <tr class="val">
+                <tr class="val" id="familyRow">
                   <th class="val">Family</th>
 
                 <td id="familyR" class="val">{{familyCorrelation}}</td>
                   <td>{{(familyCorrelation**2).toFixed(4)}}</td>
                  <td id="familyP" class="val">{{familyPVal.toExponential(3)}}</td>
+                </tr>
+
+                <tr></tr>
+
+                <tr class="val" id="projectRow">
+                  <th class="val"> Project</th>
+                  <td id="projectR" > {{projectCorrelation}}</td>
+                  <td class="val">{{(projectCorrelation**2).toFixed(4)}}</td>
+                  <td id="projectP" class="val"> {{projectPVal.toExponential(3)}}</td>
                 </tr>
               </table>
 
@@ -279,6 +284,7 @@
         cachedPhenotypes: {},
         cachedColors: {},
         cachedGenotypes: {},
+        cachedOpacity: {},
         cachedNulls: [],
         familyIDs: [],
         families: {},
@@ -656,13 +662,15 @@
           let id = parseInt(opts.dataset[i].name);
           if (self.cachedGenotypes.hasOwnProperty(id)) {
             let all = self.cachedGenotypes[id].toString();
-            // opts.dataset[i].alleles = all;
+            opts.dataset[i].alleles = all;
           }
           if (self.cachedPhenotypes.hasOwnProperty(id)) {
             let aff = self.cachedPhenotypes[id];
             let col = self.cachedColors[id];
+            let opacity = self.cachedOpacity[id];
             opts.dataset[i].affected = aff;
             opts.dataset[i].col = col;
+            opts.dataset[i].opacity = opacity;
           }
           if (self.cachedNulls.includes(id)) {
             opts.dataset[i].NA = true;
@@ -744,16 +752,33 @@
             .attr("y2", "100%")
             .attr("spreadMethod", "pad");
 
-          legend.append("stop")
-            .attr("offset", "0%")
-            .attr("stop-color", "#F9F9F9")
-            .attr("stop-opacity", 1);
+          if(self.inverted) {
+
+            legend.append("stop")
+              .attr("offset", "0%")
+              .attr("stop-color", self.purple)
+              .attr("stop-opacity", 1);
 
 
-          legend.append("stop")
-            .attr("offset", "100%")
-            .attr("stop-color", self.purple)
-            .attr("stop-opacity", 1);
+            legend.append("stop")
+              .attr("offset", "100%")
+              .attr("stop-color", "#F9F9F9")
+              .attr("stop-opacity", 1);
+          }
+
+          else if (!self.inverted) {
+            legend.append("stop")
+              .attr("offset", "0%")
+              .attr("stop-color", "#F9F9F9")
+              .attr("stop-opacity", 1);
+
+
+            legend.append("stop")
+              .attr("offset", "100%")
+              .attr("stop-color", self.purple)
+              .attr("stop-opacity", 1);
+
+          }
 
           key.append("rect")
             .attr("width", w + 1)
@@ -890,37 +915,34 @@
           }
         },
 
+      //refactor name to styleLinearTableMetrics
       buildRegressionTable() {
 
         let self = this;
 
-        if(self.selectedRegression === "Linear") {
+          if(self.familyPVal > 0.05){
+            self.familyPColor = "none";
+          }
+          else{
+            let normFamP = 1 - self.familyPVal;
+            self.familyPColor  = d3.interpolateRgb("white", "#50c878")(normFamP);
+          }
 
-          self.familyCorrelationColor = self.getCorColor(self.familyCorrelation);
-          self.projectCorrelationColor = self.getCorColor(self.projectCorrelation);
-
-          self.familyPColor = self.getPColor(self.familyPVal);
-          self.projectPColor = self.getPColor(self.projectPVal);
-
-
-          d3.select("#projectR")
-            .style("background", self.projectCorrelationColor);
-
-          d3.select("#familyR")
-            .style("background", self.familyCorrelationColor);
-
-          d3.select("#projectP")
-            .style("background", self.projectPColor);
-
-          d3.select("#familyP")
+          d3.select("#familyRow")
             .style("background", self.familyPColor);
 
+        if(self.projectPVal > 0.05){
+          self.projectPColor = "none";
+        }
+        else{
+          let normProjP = 1 - self.projectPVal;
+          self.projectPColor  = d3.interpolateRgb("white", "#50c878")(normProjP);
         }
 
-        else{
-          d3.select("#logisticRegression")
-            .attr("height", "px")
-        }
+        d3.select("#projectRow")
+          .style("background", self.projectPColor);
+
+
 
       },
 
@@ -1016,6 +1038,8 @@
               let id = self.opts.dataset[i].name;
               let sens = self.PTCPhenotypes[id];
               let scaledSens = -1;
+              let opacity = 1;
+
 
 
               if (typeof sens === 'undefined' || sens === 'nan') {
@@ -1075,38 +1099,48 @@
 
             else if (self.displayAffectedAs === "continuous") {
 
-
                 if (!this.inverted) {
 
                   if (sens < self.minThreshold) {
-                    scaledSens = 0;
+                    scaledSens = -1;
+                    opacity = 0.4;
                   } else if (sens > self.maxThreshold) {
-                    scaledSens = 0;
+                    scaledSens = -1;
+                    opacity = 0.4;
                   } else {
                     scaledSens = (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
                   }
 
-                  color = d3.interpolateRgb("white", self.purple)(scaledSens);
-
+                  if(scaledSens === -1){
+                    color = "gray";
+                  }
+                  else {
+                    color = d3.interpolateRgb("white", self.purple)(scaledSens);
+                  }
                 } else if (this.inverted) {
 
                   console.log("range", this.minThreshold, this.maxThreshold);
 
 
                   if (sens < self.minThreshold) {
-                    scaledSens = 0;
+                    scaledSens = -1;
+                    opacity = 0.4;
+
                   } else if (sens > self.maxThreshold) {
-                    scaledSens = 0;
+                    scaledSens = -1;
+                    opacity = 0.4;
+
                   } else {
                     scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
-                  }
-                }
+                    opacity = 0.4;
 
-                if(scaledSens === 0){
-                  color = "gray";
-                }
-                else {
-                  color = d3.interpolateRgb("white", self.purple)(scaledSens);
+                  }
+                  if(scaledSens === -1){
+                    color = "gray";
+                  }
+                  else {
+                    color = d3.interpolateRgb("white", self.purple)(scaledSens);
+                  }
                 }
 
               }
@@ -1116,9 +1150,12 @@
               self.opts.dataset[i].affected = aff;
               // console.log("color", color);
               self.opts.dataset[i].col = color;
+              self.opts.dataset[i].opac = opacity;
+
 
               self.cachedPhenotypes[id] = aff;
               self.cachedColors[id] = color;
+              self.cachedOpacity[id] = opacity;
               // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
             }
             self.opts = self.addCachedValuesToOpts(self.opts);
@@ -1193,47 +1230,9 @@
           self.opts = self.addCachedValuesToOpts(opts);
         }
         return opts.dataset;
-      },
-
-      getCorColor: function(val){
-
-
-
-        val = parseFloat(val);
-
-        // console.log("val inside getCorColor", val);
-
-        if(val > 0.7){
-          return "limegreen"
-        } else if(val > 0.5){
-          return "yellow"
-        }
-        else if (val > .3){
-          return "orange"
-        }
-        else{
-          return "red";
-        }
-      },
-
-      getPColor: function(val){
-
-        val = parseFloat(val);
-
-        if(val < 0.05){
-          return "limegreen"
-        }
-        else if(val < 0.1){
-          return "yellow"
-        }
-        else if(val < 0.25){
-          return "orange"
-        }
-        else{
-          return "red";
-        }
 
       },
+
 
       getNodeById: function(id){
         let node = d3.select('[id="'+ id +'"]');
@@ -1427,6 +1426,8 @@
         console.log("watcher in inverted", this.inverted);
 
         this.buildLinearRegression();
+
+        this.buildPhenotypes();
 
       },
 

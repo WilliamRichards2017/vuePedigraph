@@ -1159,6 +1159,7 @@ function mouseout() {
             'affected': d.data.affected,
             'col': d.data.col,
             'NA' : d.data.NA,
+            'opac': d.data.opac,
             'exclude': d.data.exclude};})];
       })
       .enter()
@@ -1172,16 +1173,17 @@ function mouseout() {
       .attr("d", d3.arc().innerRadius(0).outerRadius(opts.symbol_size))
       .style("fill", function(d) {
         return d.data.col;
+      })
+      .style("opacity", d => d.data.opac)
+      .style("stroke-dasharray", function (d) {
+        if(d.data.NA){
+          console.log("dash array for d", d);
+          return "5,5"
+        }
+        else{
+          return "0,0"
+        }
       });
-      // .style("stroke-dasharray", function (d) {
-      //   if(d.data.NA){
-      //     console.log("dash array for d", d);
-      //     return "5,5"
-      //   }
-      //   else{
-      //     return "0,0"
-      //   }
-      // });
 
     // adopted in/out brackets
     node.append("path")

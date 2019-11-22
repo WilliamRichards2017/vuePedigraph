@@ -101,33 +101,6 @@
 
         if(self.regressionType === "Logistic") {
 
-
-
-          // yRightAxis
-          //   .append("g")
-          //   .attr("id", "rightAxisG")
-          //   .attr("transform", "translate( " + self.width + ", 0 )")
-          //   .call(d3.axisRight(self.yScale));
-          //
-          // let yTicks = [" ", "Un-affected", " ", " ", "Affected", " "];
-          //
-          //
-          //
-          // yRightAxis
-          //   .call(d3.axisLeft(self.yScale).ticks(6).tickFormat(function (d, i) {
-          //     return yTicks[i];
-          //   }));
-          //
-          // d3.select("#y-axis").selectAll(".tick")
-          //   .each(function (d) {
-          //     console.log("d", d);
-          //
-          //     if ( d !== 2 && d !== 8 ) {
-          //       this.remove();
-          //     }
-          //   });
-
-
         }
         else if (self.regressionType === "Linear"){
 
@@ -153,6 +126,7 @@
           .attr("width", 20)
           .attr("height", 20)
           .style("fill", d => d.color)
+          .style("opacity", d => d.opacity)
           .on("click", d => console.log("(x,y): ", d.x, d.y));
         let squareText = d3.select("#plot").selectAll('text.sq')
           .data(M).join("text")
@@ -169,6 +143,7 @@
           .attr("cy", d => self.yScale(d.ySource))
           .attr("r", 10)
           .style("fill", d => d.color)
+          .style("opacity", d => d.opacity)
           .on("click", d => console.log("(x,y): ", d.x, d.y));
         let circleText = d3.select("#plot").selectAll('text.circ')
           .data(F).join("text")

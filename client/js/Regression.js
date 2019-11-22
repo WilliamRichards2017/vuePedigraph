@@ -712,6 +712,7 @@ export default class Regression {
       let y = parseInt(pt);
       let sex = self.getSexFromSampleId(key);
       let color = self.getColorFromSampleId(key);
+      let opacity = self.getOpacityFromSampleId(key);
 
 
 
@@ -723,6 +724,7 @@ export default class Regression {
           id: key,
           sex: sex,
           color: color,
+          opacity: opacity,
           xSource: null,
           ySource: null,
         }
@@ -733,8 +735,16 @@ export default class Regression {
       }
     }
 
-    let x = Object.keys(self.data).map(function(k){return self.data[k].x});
-    let y =  Object.keys(self.data).map(function(k){return self.data[k].y});
+
+    // let selectedNodes = d3.filter(self.data, d => {return d.color !== "gray"})
+
+
+    let selectedNodes = self.data.filter(d => d.color !== "gray");
+
+    console.log("selectedNodes", selectedNodes);
+
+    let x = Object.keys(selectedNodes).map(function(k){return selectedNodes[k].x});
+    let y =  Object.keys(selectedNodes).map(function(k){return selectedNodes[k].y});
 
     self.xRawF = x;
     self.yRawF = y;
@@ -796,6 +806,18 @@ export default class Regression {
     for(let i = 0; i < this.dataset.length; i++){
       if(this.dataset[i].name === id.toString()){
         return this.dataset[i].col;
+      }
+    }
+
+    return "none";
+
+  }
+
+  getOpacityFromSampleId(id){
+
+    for(let i = 0; i < this.dataset.length; i++){
+      if(this.dataset[i].name === id.toString()){
+        return this.dataset[i].opac;
       }
     }
 
