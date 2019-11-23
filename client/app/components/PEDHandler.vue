@@ -91,12 +91,28 @@
 
 
 
-          <div id="logisticRegression" v-show="selectedRegression === 'Logistic'">
+          <div id="logisticRegression" v-show="displayAffectedAs === 'binary'">
+
+            <div style="display: inline-flex">
 
 
-            <div style="display: inline-flex">  <div style="margin-top: 10px"> Affected Cuttoff</div>
-              <v-select :items="operands" style="width: 50px; margin-top: 0; padding-left:10px; padding-top: 0" outlined dense v-model="selectedOperand"></v-select>
-              <strong style="margin-top: 10px; margin-left: 10px">{{affectedCuttoff}} </strong> </div>
+              <v-btn v-on:click="invertRange()" small>Invert affect status</v-btn>
+
+
+              <div style="margin-top: 10px" v-show="inverted"> Affected Threshold:
+                <strong style="margin-top: 10px; margin-left: 10px">[ {{minThreshold.toFixed(2)}}, {{maxThreshold.toFixed(2)}} ]</strong>
+              </div>
+
+              <div style="margin-top: 10px" v-show="!inverted"> Affected Range:
+                <strong style="margin-top: 10px; margin-left: 10px"  v-show="!inverted">[{{maxThreshold.toFixed(2)}}, {{minThreshold.toFixed(2)}}]</strong>
+              </div>
+
+            </div>
+
+
+            <!--<div style="display: inline-flex">  <div style="margin-top: 10px"> Affected Cuttoff</div>-->
+              <!--<v-select :items="operands" style="width: 50px; margin-top: 0; padding-left:10px; padding-top: 0" outlined dense v-model="selectedOperand"></v-select>-->
+              <!--<strong style="margin-top: 10px; margin-left: 10px">{{affectedCuttoff}} </strong> </div>-->
 
             <table>
               <thead>
@@ -124,7 +140,7 @@
 
 
 
-        <div id="linearRegression" v-show="selectedRegression === 'Linear'">
+        <div id="linearRegression" v-show="displayAffectedAs === 'continuous'">
 
           <div style="display: inline-flex">
 
@@ -478,7 +494,7 @@
 
         self.buildDemoPhenotypes();
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.affectedCuttoff, self.selectedOperand, self.minThreshold, self.maxThreshold);
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds,  self.minThreshold, self.maxThreshold, self.inverted);
 
         self.linePoints = self.regression.getLinePoints();
 
@@ -513,12 +529,15 @@
 
         let self = this;
 
-        if(self.displayAffectedAs === "continuous") {
+        // if(self.displayAffectedAs === "continuous") {
+        //
+        //   d3.select("#slider-axisCuttoff").remove();
 
-          d3.select("#slider-axisCuttoff").remove();
+          d3.select("#slider-axisRange").remove();
 
 
-          let sliderRange = d3
+
+        let sliderRange = d3
             .sliderVertical()
             .min(0)
             .max(12)
@@ -537,33 +556,33 @@
             .call(sliderRange)
             .append("text").text(self.selectedPhenotype);
 
-        }
+        // }
 
-        else if(self.displayAffectedAs === "binary") {
-
-          d3.select("#slider-axisRange").remove();
-
-
-
-          let slider = d3
-            .sliderVertical()
-            .min(0)
-            .max(11)
-            .ticks(0)
-            .default(self.affectedCuttoff)
-            .step(1)
-            .height(300)
-            .on('onchange', val => {
-
-              self.affectedCuttoff = val;
-
-            })
-            .displayValue(true);
-
-          d3.select("#scatterplot").append("g").attr("id", "slider-axisCuttoff")
-            .call(slider)
-            .append("text").text(self.selectedPhenotype);
-        }
+        // else if(self.displayAffectedAs === "binary") {
+        //
+        //   d3.select("#slider-axisRange").remove();
+        //
+        //
+        //
+        //   let slider = d3
+        //     .sliderVertical()
+        //     .min(0)
+        //     .max(11)
+        //     .ticks(0)
+        //     .default(self.affectedCuttoff)
+        //     .step(1)
+        //     .height(300)
+        //     .on('onchange', val => {
+        //
+        //       self.affectedCuttoff = val;
+        //
+        //     })
+        //     .displayValue(true);
+        //
+        //   d3.select("#scatterplot").append("g").attr("id", "slider-axisCuttoff")
+        //     .call(slider)
+        //     .append("text").text(self.selectedPhenotype);
+        // }
       },
 
       buildLogisticRegression() {
@@ -573,7 +592,7 @@
 
         // self.buildDemoPhenotypes();
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset, self.sampleIds, self.affectedCuttoff, self.selectedOperand);
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset, self.sampleIds, self.selectedOperand,self.minThreshold, self.maxThreshold);
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
 
@@ -825,7 +844,7 @@
             .style("stroke", "black")
             .attr("transform", "translate(5,60)");
 
-          if(self.selectedOperand === "<" || self.selectedOperand === "<=") {
+          if(!self.inverted) {
 
             let yScale = d3.scaleLinear()
               .range([w, 0])
@@ -1066,31 +1085,15 @@
 
               else if (self.displayAffectedAs === "binary") {
 
-                // console.log("typeof sens", typeof sens);
-
-                self.affectedCuttoff == parseInt(self.affectedCuttoff);
-
-                if (self.selectedOperand === "<") {
-                  if (sens < self.affectedCuttoff) {
+                if (!self.inverted) {
+                  if (sens  > self.minThreshold && sens < self.maxThreshold) {
                     aff = 2;
                     color = self.purple;
                   }
-                } else if (self.selectedOperand === ">") {
-                  if (sens > self.affectedCuttoff) {
+                } else if (self.inverted) {
+                  if (sens < self.minThreshold || sens > self.maxThreshold) {
                     aff = 2;
                     color = self.purple;
-                  }
-                } else if (self.selectedOperand === ">=") {
-                  if (sens >= self.affectedCuttoff) {
-                    aff = 2;
-                    color = self.purple;
-
-                  }
-                } else if (self.selectedOperand === "<=") {
-                  if (sens <= self.affectedCuttoff) {
-                    aff = 2;
-                    color = self.purple;
-
                   }
                 }
 
@@ -1162,6 +1165,15 @@
             self.opts = ptree.build(self.opts);
             self.drawGenotypeBars();
           }
+      },
+
+      buildRegression: function(){
+        if(this.displayAffectedAs === "continuous"){
+          this.buildLinearRegression();
+        }
+        else if(this.displayAffectedAs=== "binary"){
+          this.buildLogisticRegression()
+        }
       },
 
 
@@ -1358,24 +1370,19 @@
 
       displayAffectedAs: function(){
         let self = this;
+
+        if(self.displayAffectedAs === "continuous"){
+          self.selectedRegression = "Linear";
+        }
+        else if(self.displayAffectedAs === "binary"){
+          self.selectedRegression === "Logistic";
+        }
         self.buildPhenotypes();
 
         self.populateSampleIds();
 
         self.buildSlider();
-
-
-        if(self.displayAffectedAs === "binary"){
-          self.selectedRegression = "Logistic";
-
-          self.buildLogisticRegression();
-
-        }
-        else if(self.displayAffectedAs === "continuous"){
-
-          self.selectedRegression = "Linear";
-          self.buildLinearRegression();
-        }
+        self.buildRegression();
 
       },
 
@@ -1383,14 +1390,13 @@
         let self = this;
         self.buildPhenotypes();
 
-        self.buildLinearRegression();
+        // self.buildLinearRegression();
+        self.buildRegression();
       },
 
       maxThreshold: function(){
-        let self = this;
-        self.buildPhenotypes();
-        self.buildLinearRegression();
-
+        this.buildPhenotypes();
+        this.buildRegression();
       },
 
       selectedFamily: function () {

@@ -1177,7 +1177,6 @@ function mouseout() {
       .style("opacity", d => d.data.opac)
       .style("stroke-dasharray", function (d) {
         if(d.data.NA){
-          console.log("dash array for d", d);
           return "5,5"
         }
         else{

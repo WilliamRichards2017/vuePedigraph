@@ -104,9 +104,7 @@
         }
         else if (self.regressionType === "Linear"){
 
-          d3.select("#rightAxisG").remove();
-
-
+          console.log("self.linePoints", self.linePoints);
 
         }
 
@@ -155,6 +153,34 @@
           .text(d => d.id);
 
     },
+
+      buildRegressionLine(){
+
+
+        if(this.selectedRegression === "Linear") {
+          let width = 300;
+          let height = 300;
+          let coords = [];
+          for (let i = 0; i < this.linePoints[0].length; i++) {
+            coords.push({x: this.linePoints[0][i], y: this.linePoints[1][i]})
+          }
+          var xScale = d3.scaleLinear()
+            .domain([0, 1])
+            .range([0, width]);
+          var yScale = d3.scaleLinear()
+            .domain([0, 12])
+            .range([height, 0]);
+          let aLineGenerator = d3
+            .line()
+            .x(d => xScale(d.x))
+            .y(d => yScale(d.y));
+          d3.select("#regression-line")
+            .data(this.linePoints)
+            .attr("d", aLineGenerator(coords))
+            .attr("transform");
+
+        }
+      },
 
     buildPTLegend() {
 
@@ -226,7 +252,7 @@
 
   watch : {
     linePoints: function () {
-      // this.buildPlot();
+      this.buildRegressionLine();
     },
 
 

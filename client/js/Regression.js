@@ -7,13 +7,13 @@ import {Matrix} from "ml-matrix";
 
 
 export default class Regression {
-  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds, affectedCuttoff, selectedOperand, minThreshold, maxThreshold) {
+  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds, selectedOperand, minThreshold, maxThreshold, inverted) {
     this.rawGenotypes = rawGenotypes;
     this.rawPhenotypes = rawPhenotypes;
-    this.affectedCuttoff = affectedCuttoff;
     this.selectedOperand = selectedOperand;
     this.minThreshold = minThreshold;
     this.maxThreshold = maxThreshold;
+    this.inverted = inverted;
 
     this.regressionType = regressionType;
 
@@ -84,6 +84,8 @@ export default class Regression {
     self.familyTN = 0;
     self.familyTP = 0;
 
+    console.log("y, yPred", y, yPred);
+
     //Make sure order of y and yPred is preserved in populate log
     for(let i = 0; i < y.length; i++){
       if(y[i] === 1 && yPred[i] === 1 ){
@@ -105,6 +107,9 @@ export default class Regression {
     self.familyFP.toFixed(4);
     self.familyTN.toFixed(4);
     self.familyTP.toFixed(4);
+
+    console.log("TPS", self.familyFN, self.familyTN, self.familyFP, self.familyTP);
+
 
     self.familyAccuracy = (self.familyTP + self.familyTN) / y.length;
 
@@ -231,109 +236,6 @@ export default class Regression {
     self.familyPVal = ft.pvalue;
   }
 
-  logisticJitter(data){
-
-    let self = this;
-
-    let coordsIdMap = {};
-
-    for (const i in data) {
-
-      let p = data[i];
-      if (p.hasOwnProperty("x") && p.hasOwnProperty("y") && p.hasOwnProperty("id")) {
-
-        let yi = p.y;
-
-        console.log("self.selectedOperand", self.selectedOperand);
-
-        if(this.selectedOperand === "<") {
-
-          if (yi < this.affectedCuttoff) {
-            yi = 7;
-          } else {
-            yi = 3;
-          }
-        }
-
-        else if(this.selectedOperand === ">") {
-
-          if (yi > this.affectedCuttoff) {
-            yi = 7;
-          } else {
-            yi = 3;
-          }
-        }
-
-        else if(this.selectedOperand === "<="){
-          if (yi <= this.affectedCuttoff) {
-            yi = 7;
-          } else {
-            yi = 3;
-          }
-        }
-
-        else if(this.selectedOperand === ">="){
-          if (yi >= this.affectedCuttoff) {
-            yi = 7;
-          } else {
-            yi = 3;
-          }
-        }
-
-        let key = p.x.toString() + ',' + yi.toString();
-
-        if(coordsIdMap.hasOwnProperty(key)){
-          coordsIdMap[key].push(p["id"]);
-        }
-        else{
-          coordsIdMap[key] = [];
-          coordsIdMap[key].push(p["id"]);
-        }
-      }
-    }
-
-
-    let jitterCoords = {};
-
-    for(let key of Object.keys(coordsIdMap)){
-      let value = coordsIdMap[key];
-
-      let s = key.split(',');
-
-      let xi = parseFloat(s[0]);
-      let yi = parseFloat(s[1]);
-
-      for(let i = 0; i < value.length; i++) {
-
-          let xOff = self.logJitterMapping[i][0];
-          let x = xi + xOff*0.11;
-
-          let yOff = self.logJitterMapping[i][1];
-          let y = yi + yOff*1
-
-          jitterCoords[value[i]] = [x,y];
-        }
-
-    }
-
-    let jDs = [];
-
-    for(let key of Object.keys(jitterCoords)) {
-      let value = jitterCoords[key];
-      let x = value[0];
-      let y = value[1];
-      let id = key;
-
-      let jD = {id: id, x: x, y: y};
-      jDs.push(jD);
-      }
-
-    return jDs;
-    }
-
-
-
-
 
   linearJitter(data){
 
@@ -417,10 +319,12 @@ export default class Regression {
   }
 
   translateYtoLogCategories(y){
+
+    console.log("this.min-maxThreshold", this.minThreshold, this.maxThreshold);
     console.log(y);
     let yB = [];
     for(let i = 0; i < y.length; i++) {
-      if (y[i] < this.affectedCuttoff) {
+      if (y[i] < this.minThreshold || y[i] > this.maxThreshold) {
         yB.push(0);
       }
       else{
@@ -431,21 +335,6 @@ export default class Regression {
   }
 
 
-
-  //changed to test logreg predict, need to change back to scaled y
-  translateYtoBinary(y){
-    console.log(y);
-    let yB = [];
-    for(let i = 0; i < y.length; i++) {
-      if (y[i] <= 7) {
-        yB.push(0.3);
-      }
-      else{
-       B.push(2);
-      }
-    }
-    return yB;
-  }
 
   populateLogisticMetrics(xF, yF, xP, yP){
 
@@ -673,8 +562,6 @@ export default class Regression {
 
     self.data = [];
 
-    console.log("sampleIds in regression", self.sampleIds);
-
     for(let i  = 0; i < self.sampleIds.length; i++){
 
       let af = -1;
@@ -701,8 +588,6 @@ export default class Regression {
       if(typeof pt === "undefined"){
         pt = "";
       }
-
-      console.log("typeof pt", typeof pt);
 
       if (pt.includes('>') || pt.includes('<')) {
         pt = pt.slice(-1);
@@ -740,8 +625,6 @@ export default class Regression {
 
 
     let selectedNodes = self.data.filter(d => d.color !== "gray");
-
-    console.log("selectedNodes", selectedNodes);
 
     let x = Object.keys(selectedNodes).map(function(k){return selectedNodes[k].x});
     let y =  Object.keys(selectedNodes).map(function(k){return selectedNodes[k].y});
