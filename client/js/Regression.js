@@ -350,11 +350,107 @@ export default class Regression {
   }
 
 
+  populateLogisticProjectMetrics(xF,yF){
+    //
 
-  populateLogisticMetrics(xF, yF, xP, yP){
     let self = this;
 
-//
+    var testingDataF = [];
+
+    let yBF = self.translateYtoLogCategories(yF);
+
+    console.log("yf, yBF", yF, yBF);
+
+    for(let i = 0; i < xF.length; i++){
+      testingDataF.push([xF[i], yBF[i]])
+    }
+
+    // === Create the linear regression === //
+    var logistic = new jsregression.LogisticRegression();
+// can also use default configuration: var logistic = new jsregression.LogisticRegression();
+
+// === Create training data and testing data ===//
+    var modelF = logistic.fit(testingDataF);
+
+// === Print the trained model === //
+    console.log(modelF);
+
+    let yPredF = [];
+
+    let probs = [];
+
+    let counts =  {};
+
+    for(let i=0; i < testingDataF.length; ++i) {
+
+      let prob = logistic.transform(testingDataF[i]);
+
+      if(!probs.includes(prob)){
+        probs.push(prob);
+      }
+
+        if(testingDataF[i][1] === 1){
+
+          if(counts.hasOwnProperty(prob)){
+            counts[prob] += 1
+          }
+          else{
+            counts[prob] = 0;
+            counts[prob] +=1;
+        }
+      }
+
+    }
+
+
+    probs = probs.sort();
+    console.log("counts", counts, probs);
+
+
+    for(let i=0; i < testingDataF.length; ++i) {
+
+
+
+      var prob = logistic.transform(testingDataF[i]);
+
+      let predicted = 0;
+
+      let maxProb = 0;
+
+      let maxCount = 0;
+
+      for(let k in counts){
+        if(counts[k] > maxCount){
+          maxCount = counts[k]
+          maxProb = parseFloat(k);
+        }
+      }
+
+      console.log("maxCount, maxProb", maxCount, maxProb);
+
+      if(prob === maxProb){
+        predicted = 1;
+      }
+      else{
+        predicted = 0;
+      }
+
+
+
+      // console.log("actual: " + testingDataF[i][1] + " probability of being Iris-virginica: " + prob);
+      // console.log("actual: " + testingDataF[i][1] + " predicted: " + predicted);
+      yPredF.push(predicted);
+    }
+
+
+
+    this.populateProjectClassificationMetrics(yBF, yPredF);
+  }
+
+  populateLogisticFamilyMetrics(xF,yF){
+    //
+
+    let self = this;
 
     var testingDataF = [];
 
@@ -384,7 +480,9 @@ export default class Regression {
     for(let i=0; i < testingDataF.length; ++i) {
       var prob = logistic.transform(testingDataF[i]);
       if (!probs.includes(prob)) {
-        probs.push(prob);
+        if(testingDataF[i][1] === 1){
+          probs.push(prob);
+        }
       }
 
     }
@@ -397,15 +495,13 @@ export default class Regression {
 
       var prob = logistic.transform(testingDataF[i]);
 
-      console.log("prob, probs", prob, probs);
-
       let predicted = 0;
 
-      if(probs[0] === prob){
-        predicted = 0;
+      if(probs.includes(prob)){
+        predicted = 1;
       }
       else{
-        predicted = 1;
+        predicted = 0;
       }
 
 
@@ -418,49 +514,15 @@ export default class Regression {
 
 
     this.populateFamilyClassificationMetrics(yBF, yPredF);
-
-//
-//     let testingDataP = [];
-//
-//     let yBP = self.translateYtoLogCategories(yP);
-//
-//     console.log("yf, yBF", yP, yBP);
-//
-//     for(let i = 0; i < xF.length; i++){
-//       testingDataP.push([xP[i], yBP[i]])
-//     }
-//
-//
-//     console.log("testingData", testingDataP);
-//
-//     // === Create the linear regression === //
-//     var logisticP = new jsregression.LogisticRegression();
-// // can also use default configuration: var logistic = new jsregression.LogisticRegression();
-//
-// // === Create training data and testing data ===//
-//     var modelP = logisticP.fit(testingDataP);
-//
-// // === Print the trained model === //
-//     console.log(modelP);
-//
-//     let yPredP = [];
-//
-// // === Testing the trained logistic regression === //
-//     for(var i=0; i < testingDataP.length; ++i){
-//       var probabilityOfSpeciesBeingIrisVirginica = logisticP.transform(testingDataP[i]);
-//       var predicted = logisticP.transform(testingDataP[i]) >= logistic.threshold ? 1 : 0;
-//       // console.log("actual: " + testingDataP[i][1] + " probability of being Iris-virginica: " + probabilityOfSpeciesBeingIrisVirginica);
-//       // console.log("actual: " + testingDataP[i][1] + " predicted: " + predicted);
-//       yPredP.push(predicted);
-//     }
-//
-//     this.populateProjectClassificationMetrics(yBP, yPredP);
+  }
 
 
 
+  populateLogisticMetrics(xF, yF, xP, yP) {
+    let self = this;
 
-
-
+    self.populateLogisticFamilyMetrics(xF, yF);
+    self.populateLogisticProjectMetrics(xP, yP);
 
   }
 
