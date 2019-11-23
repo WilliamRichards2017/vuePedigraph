@@ -3,6 +3,7 @@ import Correlation from "js-polynomial-regression/src/Correlation";
 import {fisherTest} from "fisher-transform";
 import LogisticRegression from "ml-logistic-regression";
 import {Matrix} from "ml-matrix";
+import jsregression from 'js-regression'
 
 
 
@@ -320,51 +321,147 @@ export default class Regression {
 
   translateYtoLogCategories(y){
 
-    console.log("this.min-maxThreshold", this.minThreshold, this.maxThreshold);
-    console.log(y);
     let yB = [];
-    for(let i = 0; i < y.length; i++) {
-      if (y[i] < this.minThreshold || y[i] > this.maxThreshold) {
-        yB.push(0);
-      }
-      else{
-        yB.push(1);
+
+    if(!this.inverted) {
+      for (let i = 0; i < y.length; i++) {
+        if (y[i] < this.minThreshold || y[i] > this.maxThreshold) {
+          yB.push(0);
+        } else {
+          yB.push(1);
+        }
       }
     }
+    else if(this.inverted){
+      for (let i = 0; i < y.length; i++) {
+        if (y[i] > this.maxThreshold || y[i] < this.minThreshold) {
+          yB.push(0);
+        } else {
+          yB.push(1);
+        }
+      }
+
+
+    }
+
+    console.log("inverted, yb", this.inverted, yB)
+
     return yB;
   }
 
 
 
   populateLogisticMetrics(xF, yF, xP, yP){
-
     let self = this;
+
+//
+
+    var testingDataF = [];
 
     let yBF = self.translateYtoLogCategories(yF);
 
-    let xMF = Matrix.columnVector(xF);
-    let yMF = Matrix.columnVector(yBF);
+    console.log("yf, yBF", yF, yBF);
 
-    let logregF = new LogisticRegression({numSteps: 1000, learningRate: 5e-3});
-    logregF.train(xMF,yMF);
+    for(let i = 0; i < xF.length; i++){
+      testingDataF.push([xF[i], yBF[i]])
+    }
 
-    let yPredF= logregF.predict(xMF);
-    self.populateFamilyClassificationMetrics(yBF, yPredF);
+    // === Create the linear regression === //
+    var logistic = new jsregression.LogisticRegression();
+// can also use default configuration: var logistic = new jsregression.LogisticRegression();
 
-    ///////////////////////////////////////////////////////
+// === Create training data and testing data ===//
+    var modelF = logistic.fit(testingDataF);
 
-    let yBP = self.translateYtoLogCategories(yP);
+// === Print the trained model === //
+    console.log(modelF);
 
-    let xMP = Matrix.columnVector(xP);
-    let yMP = Matrix.columnVector(yBP);
+    let yPredF = [];
+
+    let probs = [];
+
+// === Testing the trained logistic regression === //
+    for(let i=0; i < testingDataF.length; ++i) {
+      var prob = logistic.transform(testingDataF[i]);
+      if (!probs.includes(prob)) {
+        probs.push(prob);
+      }
+
+    }
+
+    probs = probs.sort();
+
+    for(let i=0; i < testingDataF.length; ++i) {
 
 
 
-    let logregP = new LogisticRegression({numSteps: 1000, learningRate: 5e-3});
-    logregP.train(xMP,yMP);
+      var prob = logistic.transform(testingDataF[i]);
 
-    let yPredP= logregP.predict(xMP);
-    self.populateProjectClassificationMetrics(yBP, yPredP);
+      console.log("prob, probs", prob, probs);
+
+      let predicted = 0;
+
+      if(probs[0] === prob){
+        predicted = 0;
+      }
+      else{
+        predicted = 1;
+      }
+
+
+
+      console.log("actual: " + testingDataF[i][1] + " probability of being Iris-virginica: " + prob);
+      console.log("actual: " + testingDataF[i][1] + " predicted: " + predicted);
+      yPredF.push(predicted);
+    }
+
+
+
+    this.populateFamilyClassificationMetrics(yBF, yPredF);
+
+//
+//     let testingDataP = [];
+//
+//     let yBP = self.translateYtoLogCategories(yP);
+//
+//     console.log("yf, yBF", yP, yBP);
+//
+//     for(let i = 0; i < xF.length; i++){
+//       testingDataP.push([xP[i], yBP[i]])
+//     }
+//
+//
+//     console.log("testingData", testingDataP);
+//
+//     // === Create the linear regression === //
+//     var logisticP = new jsregression.LogisticRegression();
+// // can also use default configuration: var logistic = new jsregression.LogisticRegression();
+//
+// // === Create training data and testing data ===//
+//     var modelP = logisticP.fit(testingDataP);
+//
+// // === Print the trained model === //
+//     console.log(modelP);
+//
+//     let yPredP = [];
+//
+// // === Testing the trained logistic regression === //
+//     for(var i=0; i < testingDataP.length; ++i){
+//       var probabilityOfSpeciesBeingIrisVirginica = logisticP.transform(testingDataP[i]);
+//       var predicted = logisticP.transform(testingDataP[i]) >= logistic.threshold ? 1 : 0;
+//       // console.log("actual: " + testingDataP[i][1] + " probability of being Iris-virginica: " + probabilityOfSpeciesBeingIrisVirginica);
+//       // console.log("actual: " + testingDataP[i][1] + " predicted: " + predicted);
+//       yPredP.push(predicted);
+//     }
+//
+//     this.populateProjectClassificationMetrics(yBP, yPredP);
+
+
+
+
+
+
+
   }
 
 

@@ -556,33 +556,6 @@
             .call(sliderRange)
             .append("text").text(self.selectedPhenotype);
 
-        // }
-
-        // else if(self.displayAffectedAs === "binary") {
-        //
-        //   d3.select("#slider-axisRange").remove();
-        //
-        //
-        //
-        //   let slider = d3
-        //     .sliderVertical()
-        //     .min(0)
-        //     .max(11)
-        //     .ticks(0)
-        //     .default(self.affectedCuttoff)
-        //     .step(1)
-        //     .height(300)
-        //     .on('onchange', val => {
-        //
-        //       self.affectedCuttoff = val;
-        //
-        //     })
-        //     .displayValue(true);
-        //
-        //   d3.select("#scatterplot").append("g").attr("id", "slider-axisCuttoff")
-        //     .call(slider)
-        //     .append("text").text(self.selectedPhenotype);
-        // }
       },
 
       buildLogisticRegression() {
@@ -592,7 +565,7 @@
 
         // self.buildDemoPhenotypes();
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset, self.sampleIds, self.selectedOperand,self.minThreshold, self.maxThreshold);
+        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset, self.sampleIds, self.selectedOperand,self.minThreshold, self.maxThreshold, self.inverted);
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
 
@@ -744,167 +717,187 @@
         self.highlightGTs();
       },
 
+      buildLinearRegressionLegend(){
+
+        let self = this;
+
+        let w = 200, h = 50;
+
+
+        let key = d3.select("#legend")
+          .append("svg")
+          .attr("id", "legendSvg")
+          .attr("width", 220)
+          .attr("height", 100);
+
+        let legend = key.append("defs")
+          .append("svg:linearGradient")
+          .attr("id", "gradient")
+          .attr("x1", "0%")
+          .attr("y1", "100%")
+          .attr("x2", "100%")
+          .attr("y2", "100%")
+          .attr("spreadMethod", "pad");
+
+        if(self.inverted) {
+
+          legend.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", self.purple)
+            .attr("stop-opacity", 1);
+
+
+          legend.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "#F9F9F9")
+            .attr("stop-opacity", 1);
+        }
+
+        else if (!self.inverted) {
+          legend.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "#F9F9F9")
+            .attr("stop-oepacity", 1);
+
+
+          legend.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", self.purple)
+            .attr("stop-opacity", 1);
+
+        }
+
+        key.append("rect")
+          .attr("width", w + 1)
+          .attr("height", h - 30)
+          .style("fill", "url(#gradient)")
+          .attr("transform", "translate(5,60)");
+
+        let lScale = d3.scaleLinear()
+          .range([w, 0])
+          .domain([self.maxThreshold, self.minThreshold]);
+
+        let lAxis = d3.axisBottom()
+          .scale(lScale)
+          .ticks(5);
+
+        key.append("g")
+          .attr("class", "y axis")
+          .attr("transform", "translate(5,80)")
+          .call(lAxis)
+          .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+
+        key.append("text")
+          .attr("transform", "translate(0,50)")
+          .text("Less affected <----> More affected");
+      },
+
+      buildLogisticRegressionLegend(){
+
+        let self = this;
+
+
+        let w = 200, h = 50;
+
+        let lScale = d3.scaleLinear()
+          .range([0, w])
+          .domain([0, 12]);
+
+        let key = d3.select("#legend")
+          .append('svg')
+          .attr("id", "legendSvg")
+          .append("svg")
+          .attr("width", 220)
+          .attr("height", 100);
+
+        key.append("rect")
+          .attr("width", w)
+          .attr("height", h-30)
+          .style("fill", "white")
+          .style("stroke", "black")
+          .attr("transform", "translate(5,60)");
+
+        if(!self.inverted) {
+
+
+          key.append("rect")
+            .attr("width", lScale(self.maxThreshold-self.minThreshold))
+            .attr("x", lScale(self.minThreshold))
+            .attr("height", h - 30)
+            .style("fill", self.purple)
+            .style("stroke", "black")
+            .attr("transform", "translate(5,60)");
+        }
+
+
+
+        else if(self.inverted) {
+
+
+          key.append("rect")
+            .attr("width", lScale(12-self.maxThreshold))
+            .attr("x", lScale(self.maxThreshold))
+            .attr("height", h - 30)
+            .style("fill", self.purple)
+            .style("stroke", "black")
+            .attr("transform", "translate(5,60)");
+
+
+          key.append("rect")
+            .attr("width", lScale(self.minThreshold))
+            .attr("height", h - 30)
+            .style("fill", self.purple)
+            .style("stroke", "black")
+            .attr("transform", "translate(5,60)");
+
+        }
+
+
+        let lAxis = d3.axisBottom()
+          .scale(lScale)
+          .ticks(12);
+
+        key.append("g")
+          .attr("class", "y axis")
+          .attr("transform", "translate(5,80)")
+          .call(lAxis)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+
+
+        if(!self.inverted){
+
+          key.append("text")
+            .attr("transform", "translate(20,50)")
+            .text("Affected <----> Un-affected");
+        }
+        else if(self.inverted){
+          key.append("text")
+            .attr("transform", "translate(20,50)")
+            .text("Un-affected <----> Affected");
+        }
+
+      },
+
       buildPTLegend() {
 
         let self = this;
 
         d3.select("#legendSvg").remove();
 
-        let w = 200, h = 50;
-
 
         if(self.displayAffectedAs === "continuous") {
 
 
-          let key = d3.select("#legend")
-            .append("svg")
-            .attr("id", "legendSvg")
-            .attr("width", 220)
-            .attr("height", 100);
-
-          let legend = key.append("defs")
-            .append("svg:linearGradient")
-            .attr("id", "gradient")
-            .attr("x1", "0%")
-            .attr("y1", "100%")
-            .attr("x2", "100%")
-            .attr("y2", "100%")
-            .attr("spreadMethod", "pad");
-
-          if(self.inverted) {
-
-            legend.append("stop")
-              .attr("offset", "0%")
-              .attr("stop-color", self.purple)
-              .attr("stop-opacity", 1);
-
-
-            legend.append("stop")
-              .attr("offset", "100%")
-              .attr("stop-color", "#F9F9F9")
-              .attr("stop-opacity", 1);
-          }
-
-          else if (!self.inverted) {
-            legend.append("stop")
-              .attr("offset", "0%")
-              .attr("stop-color", "#F9F9F9")
-              .attr("stop-opacity", 1);
-
-
-            legend.append("stop")
-              .attr("offset", "100%")
-              .attr("stop-color", self.purple)
-              .attr("stop-opacity", 1);
-
-          }
-
-          key.append("rect")
-            .attr("width", w + 1)
-            .attr("height", h - 30)
-            .style("fill", "url(#gradient)")
-            .attr("transform", "translate(5,60)");
-
-          let yScale = d3.scaleLinear()
-            .range([w, 0])
-            .domain([self.maxThreshold, self.minThreshold]);
-
-          var yAxis = d3.axisBottom()
-            .scale(yScale)
-            .ticks(5);
-
-          key.append("g")
-            .attr("class", "y axis")
-            .attr("transform", "translate(5,80)")
-            .call(yAxis)
-            .append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("dy", ".71em")
-            .style("text-anchor", "end")
-
-          key.append("text")
-            .attr("transform", "translate(0,50)")
-            .text("Less affected <----> More affected");
+       this.buildLinearRegressionLegend();
 
         }
-        else if(self.displayAffectedAs === "binary"){
+        else if(self.displayAffectedAs === "binary") {
 
-
-          let key = d3.select("#legend")
-            .append('svg')
-            .attr("id", "legendSvg")
-            .append("svg")
-            .attr("width", 220)
-            .attr("height", 100);
-
-          key.append("rect")
-            .attr("width", w)
-            .attr("height", h-30)
-            .style("fill", "white")
-            .style("stroke", "black")
-            .attr("transform", "translate(5,60)");
-
-          if(!self.inverted) {
-
-            let yScale = d3.scaleLinear()
-              .range([w, 0])
-              .domain([self.maxThreshold, self.minThreshold]);
-
-            key.append("rect")
-              .attr("width", yScale(self.affectedCuttoff))
-              .attr("height", h - 30)
-              .style("fill", self.purple)
-              .style("stroke", "black")
-              .attr("transform", "translate(5,60)");
-          }
-
-
-
-          //todo: rename yscale to legend scale
-          else if(self.selectedOperand === ">" || self.selectedOperand === ">=") {
-
-            let yScale = d3.scaleLinear()
-              .range([w, 0])
-              .domain([12, 0]);
-
-            key.append("rect")
-              .attr("width", yScale(self.maxPt - self.affectedCuttoff))
-              .attr("height", h - 30)
-              .style("fill", self.purple)
-              .style("stroke", "black")
-              .attr("transform", "translate(" + (5 + yScale(self.affectedCuttoff)).toString() + ",60)");
-
-          }
-
-
-          // let ticks = ["7"];
-          let yScale = d3.scaleLinear()
-            .range([w, 0])
-            .domain([12, 0]);
-
-          var yAxis = d3.axisBottom()
-            .scale(yScale)
-            .ticks(12);
-
-          key.append("g")
-            .attr("class", "y axis")
-            .attr("transform", "translate(5,80)")
-            .call(yAxis)
-            .attr("dy", ".71em")
-            .style("text-anchor", "end")
-
-
-          if(self.selectedOperand === "<" || self.selectedOperand === "<="){
-
-            key.append("text")
-              .attr("transform", "translate(20,50)")
-              .text("Affected <----> Un-affected");
-          }
-          else if(self.selectedOperand === ">" || self.selectedOperand === ">="){
-            key.append("text")
-              .attr("transform", "translate(20,50)")
-              .text("Un-affected <----> Affected");
-          }
+          this.buildLogisticRegressionLegend();
 
         }
 

@@ -155,9 +155,7 @@
     },
 
       buildRegressionLine(){
-
-
-        if(this.selectedRegression === "Linear") {
+        if(this.regressionType === "Linear") {
           let width = 300;
           let height = 300;
           let coords = [];
@@ -174,6 +172,8 @@
             .line()
             .x(d => xScale(d.x))
             .y(d => yScale(d.y));
+
+
           d3.select("#regression-line")
             .data(this.linePoints)
             .attr("d", aLineGenerator(coords))
