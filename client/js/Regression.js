@@ -323,28 +323,19 @@ export default class Regression {
 
     let yB = [];
 
-    if(!this.inverted) {
-      for (let i = 0; i < y.length; i++) {
+    console.log("this.inverted", this.inverted);
+
+    console.log("y", y);
+
+    console.log("threshold", this.minThreshold, this.maxThreshold);
+
+     for (let i = 0; i < y.length; i++) {
         if (y[i] < this.minThreshold || y[i] > this.maxThreshold) {
           yB.push(0);
         } else {
           yB.push(1);
         }
       }
-    }
-    else if(this.inverted){
-      for (let i = 0; i < y.length; i++) {
-        if (y[i] > this.maxThreshold || y[i] < this.minThreshold) {
-          yB.push(0);
-        } else {
-          yB.push(1);
-        }
-      }
-
-
-    }
-
-    console.log("inverted, yb", this.inverted, yB)
 
     return yB;
   }
@@ -358,6 +349,10 @@ export default class Regression {
     var testingDataF = [];
 
     let yBF = self.translateYtoLogCategories(yF);
+
+    if(self.inverted){
+      yBF = self.invertArr(yBF);
+    }
 
     console.log("yf, yBF", yF, yBF);
 
@@ -447,6 +442,21 @@ export default class Regression {
     this.populateProjectClassificationMetrics(yBF, yPredF);
   }
 
+  invertArr(arr){
+
+    let invArr = [];
+    for(let i = 0; i < arr.length; i++){
+      if(arr[i] === 1){
+        invArr.push(0)
+      }
+      else{
+        invArr.push(1)
+      }
+    }
+    return invArr;
+
+  }
+
   populateLogisticFamilyMetrics(xF,yF){
     //
 
@@ -454,7 +464,12 @@ export default class Regression {
 
     var testingDataF = [];
 
+
     let yBF = self.translateYtoLogCategories(yF);
+
+    if(self.inverted){
+      yBF = self.invertArr(yBF);
+    }
 
     console.log("yf, yBF", yF, yBF);
 

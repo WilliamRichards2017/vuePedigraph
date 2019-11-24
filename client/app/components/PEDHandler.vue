@@ -1424,9 +1424,10 @@
 
         console.log("watcher in inverted", this.inverted);
 
-        this.buildLinearRegression();
-
         this.buildPhenotypes();
+
+        this.buildRegression();
+
 
       },
 
