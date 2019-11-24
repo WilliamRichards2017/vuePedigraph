@@ -155,13 +155,19 @@
     },
 
       buildRegressionLine(){
-        if(this.regressionType === "Linear") {
           let width = 300;
           let height = 300;
           let coords = [];
-          for (let i = 0; i < this.linePoints[0].length; i++) {
-            coords.push({x: this.linePoints[0][i], y: this.linePoints[1][i]})
+
+          if(this.linePoints === null) {
+            this.linePoints = [[0,0], [0,0]];
           }
+          else {
+            for (let i = 0; i < this.linePoints[0].length; i++) {
+              coords.push({x: this.linePoints[0][i], y: this.linePoints[1][i]})
+            }
+          }
+
           var xScale = d3.scaleLinear()
             .domain([0, 1])
             .range([0, width]);
@@ -179,7 +185,6 @@
             .attr("d", aLineGenerator(coords))
             .attr("transform");
 
-        }
       },
 
     buildPTLegend() {

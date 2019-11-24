@@ -1097,10 +1097,10 @@
 
                 if (!this.inverted) {
 
-                  if (sens < self.minThreshold) {
+                  if (sens <= self.minThreshold) {
                     scaledSens = -1;
                     opacity = 0.4;
-                  } else if (sens > self.maxThreshold) {
+                  } else if (sens >= self.maxThreshold) {
                     scaledSens = -1;
                     opacity = 0.4;
                   } else {
@@ -1118,18 +1118,16 @@
                   console.log("range", this.minThreshold, this.maxThreshold);
 
 
-                  if (sens < self.minThreshold) {
+                  if (sens <= self.minThreshold) {
                     scaledSens = -1;
                     opacity = 0.4;
 
-                  } else if (sens > self.maxThreshold) {
+                  } else if (sens >= self.maxThreshold) {
                     scaledSens = -1;
                     opacity = 0.4;
 
                   } else {
                     scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
-                    opacity = 0.4;
-
                   }
                   if(scaledSens === -1){
                     color = "gray";
@@ -1374,7 +1372,6 @@
 
         self.populateSampleIds();
 
-        self.buildSlider();
         self.buildRegression();
 
       },

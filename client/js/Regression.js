@@ -330,7 +330,7 @@ export default class Regression {
     console.log("threshold", this.minThreshold, this.maxThreshold);
 
      for (let i = 0; i < y.length; i++) {
-        if (y[i] < this.minThreshold || y[i] > this.maxThreshold) {
+        if (y[i] <= this.minThreshold || y[i] >= this.maxThreshold) {
           yB.push(0);
         } else {
           yB.push(1);
