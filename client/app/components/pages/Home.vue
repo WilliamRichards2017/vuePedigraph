@@ -18,8 +18,35 @@
       <div class="flex-grid" style="justify:center; text-align: center">
 
         <div class="column">
-          <FileReader class="uploader" @load="uploadedPedTxt = $event; launchedFrom='U'" ></FileReader>
+
+          <div class="flex-grid" style="justify:center; text-align: center">
+
+            <div class="column">
+
+
+          <label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Upload Ped</label>
+          <FileReader class="uploader" @load="uploadedPedTxt = $event;" ></FileReader>
+
+            </div>
+
+
+            <div class="column">
+          <label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Upload VCF</label>
+          <VCFReader class="uploader" @load="uploadedVCF = $event;" ></VCFReader>
+            </div>
+
+          <div class="column">
+
+          <label>Upload Phenotypes</label>
+          <FileReader class="uploader" @load="uploadedPTS = $event;" ></FileReader>
+
           <p>Upload a pedigree file from local storage.  Make sure the file is a valid <a href="https://gatkforums.broadinstitute.org/gatk/discussion/7696/pedigree-ped-files">.ped</a> file</p>
+
+          </div>
+            <v-btn v-on:click="launchedFrom = 'U'"> Submit Files</v-btn>
+
+          </div>
+
         </div>
 
         <div class="column">
@@ -48,7 +75,7 @@
 
     <PEDHandler
       v-if="launchedFrom === 'U'"
-      :launchedFrom="launchedFrom" :txt="uploadedPedTxt"
+      :launchedFrom="launchedFrom" :txt="uploadedPedTxt" :vcfTxt="uploadedVCF" :PhenotypeText="uploadedPTS"
     />
 
   </div>
@@ -73,10 +100,13 @@
 
   import PEDHandler from "./../PEDHandler.vue";
   import FileReader from "./../FileReader.vue";
+  import VCFReader from "./../VCFReader.vue";
+  import PTReader from './../PTReader.vue';
+
 
   export default {
   name: 'home',
-  components: {PEDHandler, FileReader},
+  components: {PEDHandler, FileReader, VCFReader},
   props: {
     sample_id: null,
     project_id: null,
@@ -103,6 +133,8 @@
 
       file: '',
       uploadedPedTxt: null,
+      uploadedPTS: null,
+      uploadedVCF: null,
     }
   },
 
@@ -134,7 +166,10 @@
 
     },
     uploadedPedTxt : function() {
-      let self = this;
+    },
+
+    uploadedVCF: function(){
+      console.log("uploaded vcf", this.uploadedVCF);
     }
   },
 
@@ -273,7 +308,7 @@
     margin-top: 25px;
     margin-bottom: 25px;
     text-align: center;
-    width: 335px;
+    width: 200px;
     height: 80px;
 
     padding: 20px;

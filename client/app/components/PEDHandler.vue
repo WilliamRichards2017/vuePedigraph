@@ -278,7 +278,9 @@
       launchedFrom: null,
       variants: null,
       family_id: null,
-      phenotypes: null
+      phenotypes: null,
+      vcfTxt: null,
+      PhenotypeText: null,
     },
     components: {
       navigation,
@@ -332,6 +334,7 @@
 
         inverted: false,
 
+        genotypeMap: null,
 
 
         //user unputs
@@ -392,6 +395,7 @@
     },
     mounted() {
 
+
       let self = this;
 
       self.tableHeader = [
@@ -438,6 +442,78 @@
     ,
     methods: {
 
+      buildGTMapFromVcf(){
+
+        let self = this;
+
+        let gtMap = {};
+
+        let sampleIDs = [];
+
+        console.log("vcfText", self.vcfTxt);
+
+
+        let vcfLines = self.vcfTxt.split('\n');
+
+        console.log("vcfTxt", self.vcfTxt);
+        console.log("vcfLines", vcfLines);
+
+        let filteredTxt = "";
+
+        for(let i = 0; i < vcfLines.length; i++){
+
+          let firstTwo = vcfLines[i].substr(0,2)
+
+          console.log("firstTwo", firstTwo);
+
+          if(firstTwo === "##"){
+
+          }
+          else{
+
+            let lineCols = vcfLines[i].split(" ");
+
+            let filteredCols = [];
+
+            for(let j = 0; j < lineCols.length; j++){
+              if(lineCols[j] === ""){
+
+              }
+              else{
+                filteredCols.push(lineCols[j]);
+              }
+            }
+
+            let variant = filteredCols.slice(0,2);
+
+            let varText = variant[0] + ':' + variant[1];
+
+            let gts = filteredCols.slice(9);
+
+            if(firstTwo === "#C" || firstTwo === "#c"){
+              sampleIDs = gts;
+              console.log("found header line");
+            }
+
+            else{
+              gtMap[varText] = gts;
+            }
+
+            filteredTxt = filteredTxt + vcfLines[i] + "\n";
+          }
+        }
+
+        console.log("filteredVcf txt", filteredTxt);
+
+
+        console.log("sampleIds", sampleIDs);
+
+        console.log("gtMap", gtMap);
+
+        return gtMap;
+
+      },
+
 
 
 
@@ -455,6 +531,7 @@
         let self = this;
         self.pedTxt = self.txt;
         self.parsedVariants = self.variants;
+
         self.populateModel();
         self.populatePTC();
         // self.selectedPhenotype = "PTC Sensitivity";
@@ -484,6 +561,9 @@
         self.pedTxt = self.txt;
         self.populateModel();
         self.selectedFamily = self.txt.split(" ")[0];
+
+        self.genotypeMap = self.buildGTMapFromVcf();
+
       },
 
       buildLinearRegression() {
@@ -1079,12 +1159,12 @@
               else if (self.displayAffectedAs === "binary") {
 
                 if (!self.inverted) {
-                  if (sens  > self.minThreshold && sens < self.maxThreshold) {
+                  if (sens  >= self.minThreshold && sens <= self.maxThreshold) {
                     aff = 2;
                     color = self.purple;
                   }
                 } else if (self.inverted) {
-                  if (sens < self.minThreshold || sens > self.maxThreshold) {
+                  if (sens <= self.minThreshold || sens >= self.maxThreshold) {
                     aff = 2;
                     color = self.purple;
                   }
@@ -1097,10 +1177,10 @@
 
                 if (!this.inverted) {
 
-                  if (sens <= self.minThreshold) {
+                  if (sens < self.minThreshold) {
                     scaledSens = -1;
                     opacity = 0.4;
-                  } else if (sens >= self.maxThreshold) {
+                  } else if (sens > self.maxThreshold) {
                     scaledSens = -1;
                     opacity = 0.4;
                   } else {
@@ -1118,11 +1198,11 @@
                   console.log("range", this.minThreshold, this.maxThreshold);
 
 
-                  if (sens <= self.minThreshold) {
+                  if (sens < self.minThreshold) {
                     scaledSens = -1;
                     opacity = 0.4;
 
-                  } else if (sens >= self.maxThreshold) {
+                  } else if (sens > self.maxThreshold) {
                     scaledSens = -1;
                     opacity = 0.4;
 

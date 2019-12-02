@@ -314,7 +314,6 @@ export default class Regression {
     }
     else if(self.regressionType === "Logistic"){
       self.populateLogisticScatterplotData();
-      // self.populateLinearScatterplotData();
 
     }
   }

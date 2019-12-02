@@ -77,7 +77,7 @@
 
 
         let svg = d3.select("#scatterplotSvg");
-        let ticks = ["hom ref (0 AF)", "het(0.5 AF)", "hom alt (1 AF)"];
+        let ticks = ["0 AF", "0.5 AF", "1 AF"];
         let yLeftAxis = d3.select("#yLeft-axis");
         // let yRightAxis = d3.select("#yRight-axis")
         let xAxis = d3.select("#x-axis");
@@ -114,6 +114,42 @@
           .call(d3.axisBottom(self.xScale).ticks(3).tickFormat(function (d, i) {
             return ticks[i];
           }))
+
+          xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
+          .attr("x", 70)
+          .attr("y", 5)
+          .attr("fill", "blue");
+
+        xAxis.append("rect").attr("width", "5px").attr('height', "13px")
+          .attr("x", 80)
+          .attr("y", 5)
+          .attr("fill", "blue");
+
+
+
+
+        xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
+          .attr("x", 169)
+          .attr("y", 5)
+          .attr("fill", "blue");
+
+        xAxis.append("rect").attr("width", "5px").attr('height', "13px")
+          .attr("x", 179)
+          .attr("y", 5)
+          .attr("fill", "red");
+
+
+
+        xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
+          .attr("x", 270)
+          .attr("y", 5)
+          .attr("fill", "red");
+
+        xAxis.append("rect").attr("width", "5px").attr('height', "13px")
+          .attr("x", 280)
+          .attr("y", 5)
+          .attr("fill", "red");
+
 
 
         let squares = d3.select("#plot").selectAll('rect')

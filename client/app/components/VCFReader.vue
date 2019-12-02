@@ -1,11 +1,11 @@
 <template>
-  <label class="text-reader">
-    <input type="file" @change="loadTextFromFile" accept=".txt, .ped" style="color:transparent;" onchange="this.style.color = 'black';"  size="35">
+  <label class="VCFReader">
+    <input type="file" @change="loadTextFromFile" accept=".txt, .vcf" style="color:transparent;" onchange="this.style.color = 'black';">
   </label>
 </template>
 <script>
   export default {
-    name: 'text-reader',
+    name: 'VCFReader',
     methods: {
       loadTextFromFile(ev) {
         const file = ev.target.files[0];
