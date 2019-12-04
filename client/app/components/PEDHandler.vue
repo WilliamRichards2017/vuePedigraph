@@ -318,6 +318,8 @@
         isolatedPedTxt: [],
         hubSession: null,
         sampleIds: null,
+        idList: null,
+
 
         sliderVal: null,
 
@@ -450,13 +452,9 @@
 
         let sampleIDs = [];
 
-        console.log("vcfText", self.vcfTxt);
-
 
         let vcfLines = self.vcfTxt.split('\n');
 
-        console.log("vcfTxt", self.vcfTxt);
-        console.log("vcfLines", vcfLines);
 
         let filteredTxt = "";
 
@@ -464,14 +462,12 @@
 
           let firstTwo = vcfLines[i].substr(0,2)
 
-          console.log("firstTwo", firstTwo);
-
           if(firstTwo === "##"){
 
           }
           else{
 
-            let lineCols = vcfLines[i].split(" ");
+            let lineCols = vcfLines[i].split('\t');
 
             let filteredCols = [];
 
@@ -488,11 +484,12 @@
 
             let varText = variant[0] + ':' + variant[1];
 
+            varText = varText.replace(/\s/g, '');
+
             let gts = filteredCols.slice(9);
 
             if(firstTwo === "#C" || firstTwo === "#c"){
               sampleIDs = gts;
-              console.log("found header line");
             }
 
             else{
@@ -503,12 +500,10 @@
           }
         }
 
-        console.log("filteredVcf txt", filteredTxt);
-
-
         console.log("sampleIds", sampleIDs);
 
-        console.log("gtMap", gtMap);
+        self.idList = sampleIDs;
+
 
         return gtMap;
 
@@ -563,8 +558,15 @@
         self.selectedFamily = self.txt.split(" ")[0];
 
         self.genotypeMap = self.buildGTMapFromVcf();
+        self.parsedVariants = Object.keys(self.genotypeMap);
+
+        self.populateModel();
+
+        console.log("variants from gtMap");
 
       },
+
+
 
       buildLinearRegression() {
 
@@ -1303,15 +1305,77 @@
       },
       addNewGenotypesToOpts: function (opts) {
         let self = this;
-        if (self.selectedGenotype === '7:141972755_C/T') {
-          for (let i = 0; i < opts.dataset.length; i++) {
-            let id = parseInt(opts.dataset[i].name);
-            let allele = self.TASGenotypes[id].split(";")[0];
-            // opts.dataset[i].alleles = allele;
-            self.cachedGenotypes[id] = allele;
-          }
-          self.opts = self.addCachedValuesToOpts(opts);
+
+
+        if(self.selectedGenotype === null){
+
         }
+        else {
+
+          if (self.selectedGenotype === '7:141972755_C/T') {
+            for (let i = 0; i < opts.dataset.length; i++) {
+              let id = parseInt(opts.dataset[i].name);
+              let allele = self.TASGenotypes[id].split(";")[0];
+              // opts.dataset[i].alleles = allele;
+              self.cachedGenotypes[id] = allele;
+            }
+            self.opts = self.addCachedValuesToOpts(opts);
+          } else {
+
+
+            let keys = Object.keys(self.genotypeMap);
+
+            console.log("keys", keys);
+            console.log("self.selectedGenotype", self.selectedGenotype, '.');
+
+            let gts = self.genotypeMap[self.selectedGenotype];
+
+            console.log("gts", gts);
+
+
+            for (let i = 0; i < opts.dataset.length; i++) {
+              let id = parseInt(opts.dataset[i].name)
+
+              console.log("id", id);
+
+              if (self.idList.includes(id.toString())) {
+                console.log("found id for gt", id);
+
+
+                console.log("gt.length", gts.length);
+
+                let index = self.idList.indexOf(id.toString());
+
+
+                console.log("index", index);
+
+                let gtForID = gts[index];
+
+
+                console.log("gtFroId", gtForID);
+
+                let allele = " ";
+
+                if(typeof  gtForID === "undefined"){
+
+                }
+                else {
+
+                  allele = gtForID.substr(0, 3);
+
+                }
+
+                console.log("allele for id", id, allele)
+
+                self.cachedGenotypes[id] = allele;
+
+              }
+            }
+
+          }
+        }
+        opts = self.addCachedValuesToOpts(opts);
+
         return opts.dataset;
 
       },
@@ -1471,9 +1535,6 @@
 
       selectedFamily: function () {
         let self = this;
-
-        self.selectedPhenotype = "PTC Sensitivity";
-        self.selectedGenotype = "7:141972755_C/T";
 
         self.buildPhenotypes();
         self.populateSampleIds();
