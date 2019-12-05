@@ -498,6 +498,7 @@
             }
 
             else{
+
               gtMap[varText] = gts;
             }
 
@@ -556,6 +557,8 @@
         self.populateModel();
         self.selectedFamily = self.family_id;
       },
+
+
       buildFromUpload() {
         let self = this;
         self.pedTxt = self.txt;
@@ -566,6 +569,7 @@
         self.parsedVariants = Object.keys(self.genotypeMap);
 
         self.populatePhenotypes();
+        self.populateGenotypes();
 
         console.log("variants from gtMap");
 
@@ -586,17 +590,15 @@
 
         this.phenotypes =  [];
         this.phenotypes.push(pt);
-
-
         this.buildPTMap();
-
-
         console.log("pt", pt);
 
       },
 
+
       buildPTMap(){
 
+        //TODO: refactor for multi-PT csv
         this.ptMap = {};
 
         let lines = this.phenotypeText.split("\n");
@@ -605,7 +607,8 @@
 
           let cols = lines[i].split(",");
 
-          this.ptMap[cols[0]] = cols[1];
+          //TODO: refactor to remove allw htiespace from value
+          this.ptMap[cols[0]] = parseFloat(cols[1]);
         }
 
         console.log("ptMap", this.ptMap);
@@ -621,9 +624,12 @@
 
         let self = this;
 
-        self.buildDemoPhenotypes();
+        self.buildPhenotypes();
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds,  self.minThreshold, self.maxThreshold, self.inverted);
+        console.log("PTCPhenotypes", self.PTCPhenotypes);
+        console.log("self.ptMap", self.ptMap);
+
+        self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Linear", self.opts.dataset, self.sampleIds,  self.minThreshold, self.maxThreshold, self.inverted);
 
         self.linePoints = self.regression.getLinePoints();
 
@@ -644,6 +650,7 @@
 
         self.scatterplotData = self.regression.getScatterplotData();
 
+        console.log("self.scatterplotData", self.scatterplotData);
 
         self.buildRegressionTable();
 
@@ -1434,6 +1441,10 @@
       },
 
       buildRegression: function(){
+
+        if(this.selectedGenotype === null || this.selectedPhenotype === null){
+          return;
+        }
         if(this.displayAffectedAs === "continuous"){
           this.buildLinearRegression();
         }
@@ -1742,7 +1753,7 @@
 
 
 
-        self.buildLinearRegression();
+        self.buildRegression();
         console.log("self.sampleIds in watcher", self.sampleIds);
         $('#pedigree').on('nodeClick', self.onNodeClick)
 
@@ -1794,10 +1805,21 @@
       selectedPhenotype: function () {
         let self = this;
         self.buildPhenotypes();
+        self.buildRegression();
+
       },
       selectedGenotype: function () {
         let self = this;
-        self.buildGenotypes();
+
+        console.log("self.selectedGenotype", self.selectedGenotype);
+
+        if(typeof self.selectedGenotype === "undefined"){
+        }
+        else {
+          self.buildGenotypes();
+          self.buildRegression();
+        }
+
 
       },
       selectedRegression: function() {

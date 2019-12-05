@@ -64,6 +64,12 @@ export default class Regression {
 
     this.logJitterMapping = [[0,0], [1,0], [-1, 0], [0,1], [-1, 1], [1,1], [0, -1], [-1, -1], [1, -1]];
 
+
+    console.log("rawGenotypes", rawGenotypes);
+    console.log("rawPhenotypes", rawPhenotypes);
+
+    console.log()
+
     this.processRawData()
 
     this.populateRawCoords();
@@ -207,17 +213,10 @@ export default class Regression {
         // console.log("error: could not interpret GT", gt);
         af = "not a number";
       }
-
-
-      if(typeof pt === "string") {
-        if (pt.includes('>') || pt.includes('<')) {
-          pt = pt.slice(-1);
+        if (typeof af === "number" && !isNaN(pt)) {
+          self.xRawP.push(af);
+          self.yRawP.push(pt);
         }
-        if (typeof af === "number" && typeof parseInt(pt) === "number" && !isNaN(pt)) {
-          self.xRawP.push(parseFloat(af));
-          self.yRawP.push(parseInt(pt));
-        }
-      }
       else{
         // console.log("could not interpret PT", pt);
       }
@@ -520,7 +519,7 @@ export default class Regression {
 
 
 
-      console.log("actual: " + testingDataF[i][1] + " probability of being Iris-virginica: " + prob);
+      console.log("actual: " + testingDataF[i][1] + " probability of being affected " + prob);
       console.log("actual: " + testingDataF[i][1] + " predicted: " + predicted);
       yPredF.push(predicted);
     }
@@ -566,7 +565,10 @@ export default class Regression {
       for(const i in data){
         let d = data[i];
 
-        if(d.id === parseInt(j.id)){
+        console.log("d.id", d.id);
+        console.log("j.id", j.id);
+
+        if(d.id === j.id){
           d.xSource = j.x;
           d.ySource = j.y;
         }
@@ -735,11 +737,18 @@ export default class Regression {
 
     self.data = [];
 
+    console.log("self.rawGenotypes inside regression", self.rawGenotypes);
+
     for(let i  = 0; i < self.sampleIds.length; i++){
 
       let af = -1;
-      let key = self.sampleIds[i];
+      let key = self.sampleIds[i].toString();
+
+      console.log("key inside regression", key)
+
       let gt = self.rawGenotypes[key];
+
+      console.log("gt inside of regression", gt);
 
 
       if(gt === "1/1"){
@@ -757,17 +766,8 @@ export default class Regression {
       }
 
       let pt = self.rawPhenotypes[key];
-
-      if(typeof pt === "undefined"){
-        pt = "";
-      }
-
-      if (pt.includes('>') || pt.includes('<')) {
-        pt = pt.slice(-1);
-      }
-
       let x = af;
-      let y = parseInt(pt);
+      let y = parseFloat(pt);
       let sex = self.getSexFromSampleId(key);
       let color = self.getColorFromSampleId(key);
       let opacity = self.getOpacityFromSampleId(key);
@@ -775,7 +775,7 @@ export default class Regression {
 
 
 
-      if(typeof af === "number" && typeof parseInt(y) === "number" && !isNaN(y)) {
+      if(typeof af === "number" && !isNaN(y)) {
         let d = {
           x: x,
           y: y,
