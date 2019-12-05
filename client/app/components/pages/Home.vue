@@ -26,6 +26,8 @@
 
           <label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Upload Ped</label>
           <FileReader class="uploader" @load="uploadedPedTxt = $event;" ></FileReader>
+              <p>Upload a pedigree file from local storage.  Make sure the file is a valid <a href="https://gatkforums.broadinstitute.org/gatk/discussion/7696/pedigree-ped-files">.ped</a> file</p>
+
 
             </div>
 
@@ -39,8 +41,40 @@
 
           <label>Upload Phenotypes</label>
           <FileReader class="uploader" @load="uploadedPTS = $event;" ></FileReader>
+            <p>Upload a csv with sample phenotypes.  The first column should contain sample ids, and the second column should contain the phenotype values.</p>
 
-          <p>Upload a pedigree file from local storage.  Make sure the file is a valid <a href="https://gatkforums.broadinstitute.org/gatk/discussion/7696/pedigree-ped-files">.ped</a> file</p>
+            <v-dialog
+              width="500"
+            >
+              <template v-slot:activator="{ on }">
+                <v-btn
+                  color="red lighten-2"
+                  dark
+                  v-on="on"
+                >
+                  View example phenotype csv
+                </v-btn>
+              </template>
+
+              <v-card>
+                <v-card-title
+                  class="headline grey lighten-2"
+                  primary-title
+                >
+                  Example Phenotype csv
+                </v-card-title>
+
+                <v-card-text>
+                sampleIds, PTC Sensitivity <br>1348, 12 <br> 1349, 4 <br> 1482, 12 <br> 1278, 7
+
+                </v-card-text>
+              </v-card>
+            </v-dialog>
+
+
+
+
+
 
           </div>
             <v-btn v-on:click="launchedFrom = 'U'"> Submit Files</v-btn>
@@ -65,7 +99,7 @@
 
       <PEDHandler
       v-if="launchedFrom === 'H' && typeof pedTxt === 'string' && typeof familyId === 'string'"
-      :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants" :family_id="familyId" :phenotypes="phenotypes"
+      :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants" :family_id="familyId"
   />
 
     <PEDHandler
@@ -75,7 +109,7 @@
 
     <PEDHandler
       v-if="launchedFrom === 'U'"
-      :launchedFrom="launchedFrom" :txt="uploadedPedTxt" :vcfTxt="uploadedVCF" :PhenotypeText="uploadedPTS"
+      :launchedFrom="launchedFrom" :txt="uploadedPedTxt" :vcfTxt="uploadedVCF" :phenotypeText="uploadedPTS"
     />
 
   </div>

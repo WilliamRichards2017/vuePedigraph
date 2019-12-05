@@ -278,9 +278,8 @@
       launchedFrom: null,
       variants: null,
       family_id: null,
-      phenotypes: null,
       vcfTxt: null,
-      PhenotypeText: null,
+      phenotypeText: null,
     },
     components: {
       navigation,
@@ -319,6 +318,8 @@
         hubSession: null,
         sampleIds: null,
         idList: null,
+        phenotypes: [],
+
 
 
         sliderVal: null,
@@ -367,6 +368,8 @@
         familyPrecision: -1,
         familyRecall: -1,
         familyF1: -1,
+
+        ptMap: null,
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -396,6 +399,8 @@
       self.hubSession = new HubSession(self.source);
     },
     mounted() {
+
+      console.log("phenotypeText", this.phenotypeText);
 
 
       let self = this;
@@ -560,12 +565,54 @@
         self.genotypeMap = self.buildGTMapFromVcf();
         self.parsedVariants = Object.keys(self.genotypeMap);
 
-        self.populateModel();
+        self.populatePhenotypes();
 
         console.log("variants from gtMap");
 
       },
 
+      populatePhenotypes(){
+        console.log("phenotype text", this.phenotypeText);
+
+        let lines = this.phenotypeText.split("\n");
+
+        console.log("lines", lines);
+
+        let firstLine = lines[0];
+
+        let headerCols = firstLine.split(",");
+
+        let pt = headerCols[1];
+
+        this.phenotypes =  [];
+        this.phenotypes.push(pt);
+
+
+        this.buildPTMap();
+
+
+        console.log("pt", pt);
+
+      },
+
+      buildPTMap(){
+
+        this.ptMap = {};
+
+        let lines = this.phenotypeText.split("\n");
+
+        for(let i = 1; i < lines.length; i++){
+
+          let cols = lines[i].split(",");
+
+          this.ptMap[cols[0]] = cols[1];
+        }
+
+        console.log("ptMap", this.ptMap);
+
+
+
+      },
 
 
       buildLinearRegression() {
@@ -685,6 +732,10 @@
         } else if (self.launchedFrom === 'H') {
           self.buildHubPhenotypes();
         }
+        else if(self.launchedFrom === "U"){
+          self.buildUploadPhenotypes();
+        }
+
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
 
@@ -1121,6 +1172,148 @@
         }
         return data;
       },
+
+
+      buildUploadPhenotypes: function(){
+
+        let self = this;
+
+        if(self.selectedPhenotype === null){
+          console.log("null selected phenotype");
+
+
+          for (let i = 0; i < self.opts.dataset.length; i++) {
+            let id = self.opts.dataset[i].name;
+
+            self.opts.dataset[i].affected = 0;
+            // console.log("color", color);
+            self.opts.dataset[i].col = "none";
+            self.opts.dataset[i].opac = 0;
+
+
+            self.cachedPhenotypes[id] = 0;
+            self.cachedColors[id] = "none";
+            self.cachedOpacity[id] = 0;
+            // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
+          }
+          self.opts = self.addCachedValuesToOpts(self.opts);
+          self.opts = ptree.build(self.opts);
+          self.drawGenotypeBars();
+        }
+
+
+        else {
+          self.cachedPhenotypes = {};
+
+          for (let i = 0; i < self.opts.dataset.length; i++) {
+            let id = self.opts.dataset[i].name;
+            let sens = self.ptMap[id];
+            let scaledSens = -1;
+            let opacity = 1;
+
+
+            if (typeof sens === 'undefined' || sens === 'nan') {
+              self.opts.dataset[i].NA = true;
+
+              self.cachedNulls.push(id);
+            } else if (typeof sens === 'string') {
+              if (sens.includes('>') || sens.includes('<')) {
+                sens = sens.slice(-1);
+              }
+            }
+
+            sens = parseInt(sens);
+
+            self.opts.dataset[i].sens = sens;
+
+            let aff = 0;
+
+            let color = "white";
+
+            if (typeof sens === "undefined" || isNaN(parseInt(sens))) {
+              color = "none";
+            } else if (self.displayAffectedAs === "binary") {
+
+              if (!self.inverted) {
+                if (sens >= self.minThreshold && sens <= self.maxThreshold) {
+                  aff = 2;
+                  color = self.purple;
+                }
+              } else if (self.inverted) {
+                if (sens <= self.minThreshold || sens >= self.maxThreshold) {
+                  aff = 2;
+                  color = self.purple;
+                }
+              }
+
+            } else if (self.displayAffectedAs === "continuous") {
+
+              if (!this.inverted) {
+
+                if (sens < self.minThreshold) {
+                  scaledSens = -1;
+                  opacity = 0.4;
+                } else if (sens > self.maxThreshold) {
+                  scaledSens = -1;
+                  opacity = 0.4;
+                } else {
+                  scaledSens = (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
+                }
+
+                if (scaledSens === -1) {
+                  color = "gray";
+                } else {
+                  color = d3.interpolateRgb("white", self.purple)(scaledSens);
+                }
+              } else if (this.inverted) {
+
+                console.log("range", this.minThreshold, this.maxThreshold);
+
+
+                if (sens < self.minThreshold) {
+                  scaledSens = -1;
+                  opacity = 0.4;
+
+                } else if (sens > self.maxThreshold) {
+                  scaledSens = -1;
+                  opacity = 0.4;
+
+                } else {
+                  scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
+                }
+                if (scaledSens === -1) {
+                  color = "gray";
+                } else {
+                  color = d3.interpolateRgb("white", self.purple)(scaledSens);
+                }
+              }
+
+            }
+
+
+            self.opts.dataset[i].affected = aff;
+            // console.log("color", color);
+            self.opts.dataset[i].col = color;
+            self.opts.dataset[i].opac = opacity;
+
+
+            self.cachedPhenotypes[id] = aff;
+            self.cachedColors[id] = color;
+            self.cachedOpacity[id] = opacity;
+            // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
+          }
+          self.opts = self.addCachedValuesToOpts(self.opts);
+          self.opts = ptree.build(self.opts);
+          self.drawGenotypeBars();
+
+        }
+
+      },
+
+
+
+
+
       buildDemoPhenotypes: function () {
         let self = this;
 
@@ -1535,6 +1728,12 @@
 
       selectedFamily: function () {
         let self = this;
+
+
+        if(self.launchedFrom === "D") {
+          self.selectedPhenotype = "PTC Sensitivity";
+          self.selectedGenotype = "7:141972755_C/T";
+        }
 
         self.buildPhenotypes();
         self.populateSampleIds();
