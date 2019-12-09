@@ -82,7 +82,7 @@
 
 
         <v-card>
-        <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts" :regressionType="selectedRegression" :operand="selectedOperand" :cuttoff="affectedCuttoff"></vueScatter>
+        <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts" :regressionType="selectedRegression" :operand="selectedOperand" :cuttoff="affectedCuttoff" :maxPt="maxPt" :minPt="minPt"></vueScatter>
 
         </v-card>
 
@@ -320,6 +320,8 @@
         idList: null,
         phenotypes: [],
 
+        PTIndex: null,
+
 
 
         sliderVal: null,
@@ -332,8 +334,8 @@
         drawer: false,
         toggle: null,
 
-        minPt: 0,
-        maxPt: 12,
+        minPt: null,
+        maxPt: null,
 
         inverted: false,
 
@@ -346,7 +348,7 @@
         selectedRegression: null,
         showPed: true,
         affectedCuttoff: "7",
-        minThreshold: 0,
+        minThreshold: 3,
         maxThreshold: 12,
 
 
@@ -400,9 +402,6 @@
     },
     mounted() {
 
-      console.log("phenotypeText", this.phenotypeText);
-
-
       let self = this;
 
       self.tableHeader = [
@@ -444,6 +443,8 @@
       }
       if (self.launchedFrom === "U") {
         self.buildFromUpload();
+        self.buildSlider();
+
       }
     }
     ,
@@ -540,6 +541,8 @@
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
 
+        self.ptMap = self.PTCPhenotypes;
+
         // self.selectedGenotype = "7:141972755_C/T";
         self.selectedFamily = "1463";
         // self.selectedFamily = "1408";
@@ -569,7 +572,6 @@
         self.parsedVariants = Object.keys(self.genotypeMap);
 
         self.populatePhenotypes();
-        self.populateGenotypes();
 
         console.log("variants from gtMap");
 
@@ -586,12 +588,17 @@
 
         let headerCols = firstLine.split(",");
 
-        let pt = headerCols[1];
+        // let pt = headerCols[1];
 
-        this.phenotypes =  [];
-        this.phenotypes.push(pt);
+        this.phenotypes = [];
+
+        for(let i = 1; i < headerCols.length; i++){
+          this.phenotypes.push(headerCols[i]);
+        }
+
+        console.log("this.phenotypes in populatePhenotypes", this.phenotypes);
+
         this.buildPTMap();
-        console.log("pt", pt);
 
       },
 
@@ -607,9 +614,14 @@
 
           let cols = lines[i].split(",");
 
+          this.ptMap[cols[0]] = [];
+
+          for(let j = 1; j < cols.length; j++) {
+              this.ptMap[cols[0]].push(cols[j]);
+            }
+          }
+
           //TODO: refactor to remove allw htiespace from value
-          this.ptMap[cols[0]] = parseFloat(cols[1]);
-        }
 
         console.log("ptMap", this.ptMap);
 
@@ -626,12 +638,21 @@
 
         self.buildPhenotypes();
 
-        console.log("PTCPhenotypes", self.PTCPhenotypes);
-        console.log("self.ptMap", self.ptMap);
 
-        self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Linear", self.opts.dataset, self.sampleIds,  self.minThreshold, self.maxThreshold, self.inverted);
+        console.log("self.phenotypes inside buildLinearRegression", self.phenotypes);
+
+        self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
+
+        console.log("self.PTINdex right before regression", self.PTIndex);
+
+
+        self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Linear", self.opts.dataset, self.sampleIds,  self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex);
 
         self.linePoints = self.regression.getLinePoints();
+
+        self.maxPt = self.regression.getMaxPt();
+        self.minPt = self.regression.getMinPt();
+
 
 
         self.projectCorrelation = self.regression.getProjectCorrelation();
@@ -657,7 +678,6 @@
         self.buildPTLegend();
 
 
-
       },
 
       buildSlider(){
@@ -671,23 +691,27 @@
 
           d3.select("#slider-axisRange").remove();
 
+          // console.log("minPT", self.minPt);
+          // console.log("maxPt", self.maxPt);
+
 
 
         let sliderRange = d3
             .sliderVertical()
-            .min(0)
+            .min(3)
             .max(12)
+            .default([3, 12])
             .height(300)
             .ticks(0)
-            .default([0, 12])
             .fill('#2196f3')
             .on('onchange', val => {
 
               self.minThreshold = val[0];
               self.maxThreshold = val[1];
 
-            });
+              console.log("inside onChange", self.minThreshold, self.maxThreshold);
 
+            });
           d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
             .call(sliderRange)
             .append("text").text(self.selectedPhenotype);
@@ -701,7 +725,10 @@
 
         // self.buildDemoPhenotypes();
 
-        self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Logistic", self.opts.dataset, self.sampleIds, self.selectedOperand,self.minThreshold, self.maxThreshold, self.inverted);
+        self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
+
+
+        self.regression = new Regression(self.TASGenotypes, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex);
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
 
@@ -1181,6 +1208,32 @@
       },
 
 
+      populateThresholds: function(){
+
+
+        let self = this;
+
+        self.minPt = Math.min();
+        self.maxPt= Math.max();
+
+        for (let i = 0; i < self.opts.dataset.length; i++) {
+          let id = self.opts.dataset[i].name;
+          let pts = self.ptMap[id];
+
+          self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
+          let sens = parseFloat(pts[self.PTIndex]);
+
+          if(sens < this.minPt){
+            this.minPt = sens;
+          }
+          else if(sens > this.maxPt){
+            this.maxPt = sens;
+          }
+
+        }
+
+      },
+
       buildUploadPhenotypes: function(){
 
         let self = this;
@@ -1212,9 +1265,20 @@
         else {
           self.cachedPhenotypes = {};
 
+          // self.populateThresholds();
+
+          console.log("minThreshold", self.minThreshold);
+          console.log("maxThreshold", self.maxThreshold);
+
           for (let i = 0; i < self.opts.dataset.length; i++) {
             let id = self.opts.dataset[i].name;
-            let sens = self.ptMap[id];
+            let pts = self.ptMap[id];
+
+            self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
+
+            let sens = pts[self.PTIndex];
+
+
             let scaledSens = -1;
             let opacity = 1;
 
@@ -1529,35 +1593,19 @@
 
             let keys = Object.keys(self.genotypeMap);
 
-            console.log("keys", keys);
-            console.log("self.selectedGenotype", self.selectedGenotype, '.');
 
             let gts = self.genotypeMap[self.selectedGenotype];
-
-            console.log("gts", gts);
 
 
             for (let i = 0; i < opts.dataset.length; i++) {
               let id = parseInt(opts.dataset[i].name)
 
-              console.log("id", id);
 
               if (self.idList.includes(id.toString())) {
-                console.log("found id for gt", id);
 
-
-                console.log("gt.length", gts.length);
 
                 let index = self.idList.indexOf(id.toString());
-
-
-                console.log("index", index);
-
                 let gtForID = gts[index];
-
-
-                console.log("gtFroId", gtForID);
-
                 let allele = " ";
 
                 if(typeof  gtForID === "undefined"){
@@ -1568,8 +1616,6 @@
                   allele = gtForID.substr(0, 3);
 
                 }
-
-                console.log("allele for id", id, allele)
 
                 self.cachedGenotypes[id] = allele;
 
@@ -1695,7 +1741,7 @@
         let self = this;
         self.populateSampleIds();
         self.buildPhenotypes();
-        self.buildLogisticRegression();
+        // self.buildLogisticRegression();
 
       },
 
@@ -1703,7 +1749,7 @@
         let self = this;
         self.populateSampleIds();
         self.buildPhenotypes();
-        self.buildLogisticRegression();
+        // self.buildLogisticRegression();
       },
 
 
@@ -1726,6 +1772,8 @@
 
       minThreshold: function(){
         let self = this;
+
+        console.log("change in minThreshhold");
         self.buildPhenotypes();
 
         // self.buildLinearRegression();

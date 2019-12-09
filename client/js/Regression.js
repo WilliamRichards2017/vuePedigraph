@@ -8,10 +8,9 @@ import jsregression from 'js-regression'
 
 
 export default class Regression {
-  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds, selectedOperand, minThreshold, maxThreshold, inverted) {
+  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds,  minThreshold, maxThreshold, inverted, ptIndex) {
     this.rawGenotypes = rawGenotypes;
     this.rawPhenotypes = rawPhenotypes;
-    this.selectedOperand = selectedOperand;
     this.minThreshold = minThreshold;
     this.maxThreshold = maxThreshold;
     this.inverted = inverted;
@@ -20,6 +19,8 @@ export default class Regression {
 
     this.dataset = dataset;
     this.sampleIds = sampleIds;
+
+    this.ptIndex = ptIndex;
 
     this.data = null;
 
@@ -62,15 +63,14 @@ export default class Regression {
     this.projectTP = null;
     this.projectTN = null;
 
+    this.maxPt = null;
+    this.minPt = null;
+
     this.logJitterMapping = [[0,0], [1,0], [-1, 0], [0,1], [-1, 1], [1,1], [0, -1], [-1, -1], [1, -1]];
 
 
-    console.log("rawGenotypes", rawGenotypes);
-    console.log("rawPhenotypes", rawPhenotypes);
 
-    console.log()
-
-    this.processRawData()
+    this.processRawData();
 
     this.populateRawCoords();
 
@@ -91,7 +91,6 @@ export default class Regression {
     self.familyTN = 0;
     self.familyTP = 0;
 
-    console.log("y, yPred", y, yPred);
 
     //Make sure order of y and yPred is preserved in populate log
     for(let i = 0; i < y.length; i++){
@@ -115,7 +114,6 @@ export default class Regression {
     self.familyTN.toFixed(4);
     self.familyTP.toFixed(4);
 
-    console.log("TPS", self.familyFN, self.familyTN, self.familyFP, self.familyTP);
 
 
     self.familyAccuracy = (self.familyTP + self.familyTN) / y.length;
@@ -182,6 +180,14 @@ export default class Regression {
 
   }
 
+  getMaxPt(){
+    return this.maxPt;
+  }
+
+  getMinPt(){
+    return this.minPt;
+  }
+
 
 
   populateRawCoords() {
@@ -197,7 +203,7 @@ export default class Regression {
 
 
       let gt = self.rawGenotypes[key];
-      let pt = self.rawPhenotypes[key];
+      let pt = self.rawPhenotypes[key][this.ptIndex];
 
 
       if(gt === "1/1"){
@@ -321,12 +327,6 @@ export default class Regression {
 
     let yB = [];
 
-    console.log("this.inverted", this.inverted);
-
-    console.log("y", y);
-
-    console.log("threshold", this.minThreshold, this.maxThreshold);
-
      for (let i = 0; i < y.length; i++) {
         if (y[i] <= this.minThreshold || y[i] >= this.maxThreshold) {
           yB.push(0);
@@ -351,8 +351,6 @@ export default class Regression {
     if(self.inverted){
       yBF = self.invertArr(yBF);
     }
-
-    console.log("yf, yBF", yF, yBF);
 
     for(let i = 0; i < xF.length; i++){
       testingDataF.push([xF[i], yBF[i]])
@@ -397,8 +395,6 @@ export default class Regression {
 
 
     probs = probs.sort();
-    console.log("counts", counts, probs);
-
 
     for(let i=0; i < testingDataF.length; ++i) {
 
@@ -418,8 +414,6 @@ export default class Regression {
           maxProb = parseFloat(k);
         }
       }
-
-      console.log("maxCount, maxProb", maxCount, maxProb);
 
       if(prob === maxProb){
         predicted = 1;
@@ -469,8 +463,6 @@ export default class Regression {
       yBF = self.invertArr(yBF);
     }
 
-    console.log("yf, yBF", yF, yBF);
-
     for(let i = 0; i < xF.length; i++){
       testingDataF.push([xF[i], yBF[i]])
     }
@@ -482,8 +474,6 @@ export default class Regression {
 // === Create training data and testing data ===//
     var modelF = logistic.fit(testingDataF);
 
-// === Print the trained model === //
-    console.log(modelF);
 
     let yPredF = [];
 
@@ -518,9 +508,9 @@ export default class Regression {
       }
 
 
-
-      console.log("actual: " + testingDataF[i][1] + " probability of being affected " + prob);
-      console.log("actual: " + testingDataF[i][1] + " predicted: " + predicted);
+      //
+      // console.log("actual: " + testingDataF[i][1] + " probability of being affected " + prob);
+      // console.log("actual: " + testingDataF[i][1] + " predicted: " + predicted);
       yPredF.push(predicted);
     }
 
@@ -547,11 +537,7 @@ export default class Regression {
 
     let jDs = self.linearJitter(self.data);
 
-    console.log("jDs after jitter", jDs);
-
     self.scatterplotDataLog = self.mapJitterToData(jDs, self.data);
-
-    console.log("self.scatterplotDataLog", self.scatterplotDataLog);
 
     self.populateLogisticMetrics(self.xRawF, self.yRawF, self.xRawP, self.yRawP);
 
@@ -564,9 +550,6 @@ export default class Regression {
       let j = jDs[i];
       for(const i in data){
         let d = data[i];
-
-        console.log("d.id", d.id);
-        console.log("j.id", j.id);
 
         if(d.id === j.id){
           d.xSource = j.x;
@@ -629,15 +612,11 @@ export default class Regression {
 
     let self = this;
 
-    console.log("self.scatterplotDataLin", self.scatterplotDataLin)
-
     let familyCorrelation = self.pearsonCorrelation([self.xRawF,self.yRawF], 0, 1);
 
     //where family correlation is rho
     let ft = fisherTest(familyCorrelation, self.xRawF.length);
     self.familyPVal = ft.pvalue;
-
-    console.log(familyCorrelation, self.familyPVal);
 
     return [familyCorrelation.toFixed(4), self.familyPVal];
 
@@ -737,18 +716,17 @@ export default class Regression {
 
     self.data = [];
 
-    console.log("self.rawGenotypes inside regression", self.rawGenotypes);
+    self.minPt = Math.min();
+    self.maxPt = Math.max();
 
     for(let i  = 0; i < self.sampleIds.length; i++){
 
       let af = -1;
       let key = self.sampleIds[i].toString();
 
-      console.log("key inside regression", key)
 
       let gt = self.rawGenotypes[key];
 
-      console.log("gt inside of regression", gt);
 
 
       if(gt === "1/1"){
@@ -765,7 +743,16 @@ export default class Regression {
         af = "not a number";
       }
 
-      let pt = self.rawPhenotypes[key];
+      let pt = parseFloat(self.rawPhenotypes[key][this.ptIndex]);
+
+      if(pt > this.maxPt){
+        this.maxPt = pt;
+      }
+      else if(pt < this.minPt){
+        this.minPt = pt;
+      }
+
+
       let x = af;
       let y = parseFloat(pt);
       let sex = self.getSexFromSampleId(key);
@@ -789,7 +776,7 @@ export default class Regression {
         self.data.push(d);
       }
       else{
-        console.log("did not make data for key, sex, color, x, y",key, sex, color, x, self.rawPhenotypes[key]);
+        console.log("did not make data for key, sex, color, x, y",key, sex, color, x, pt);
       }
     }
 

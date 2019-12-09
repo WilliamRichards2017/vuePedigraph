@@ -42,6 +42,8 @@
       opts: null,
       regressionType: null,
       operand: null,
+      maxPt: null,
+      minPt: null,
 
 
     },
@@ -70,7 +72,7 @@
           .range([0, width]);
 
         self.yScale = d3.scaleLinear()
-          .domain([0, 12])
+          .domain([self.minPt, self.maxPt])
           .range([height, 0]);
 
 
@@ -208,7 +210,7 @@
             .domain([0, 1])
             .range([0, width]);
           var yScale = d3.scaleLinear()
-            .domain([0, 12])
+            .domain([this.minPt, this.maxPt])
             .range([height, 0]);
           let aLineGenerator = d3
             .line()
@@ -261,7 +263,7 @@
 
       let yScale = d3.scaleLinear()
         .range([w, 0])
-        .domain([0, 12]);
+        .domain([this.minPt, this.maxPt]);
 
       var yAxis = d3.axisBottom()
         .scale(yScale)
