@@ -146,24 +146,31 @@ export default class Regression {
     self.projectTN = 0;
     self.projectTP = 0;
 
+    let len = 0;
+
     //Make sure order of y and yPred is preserved in populate log
     for(let i = 0; i < y.length; i++){
       if(y[i] === 1 && yPred[i] === 1 ){
         self.projectTP += 1;
+        len +=1;
       }
       else if(y[i] === 0 && yPred[i] === 0){
-        self.projectTP +=1;
+        self.projectTN +=1;
+        len += 1;
       }
       else if(y[i] === 0 && yPred[i] === 1){
         self.projectFP +=1;
+        len += 1;
       }
       else if(y[i] === 1 && yPred[i] === 0){
         self.projectFN +=1;
+        len +=1;
       }
     }
 
 
-    self.projectAccuracy = (self.projectTP + self.projectTN) / y.length;
+
+    self.projectAccuracy = (self.projectTP + self.projectTN) / len;
 
     // Precision = tp / (tp+fp)
     self.projectPrecision = self.projectTP / (self.projectTP + self.projectFP);
@@ -431,6 +438,7 @@ export default class Regression {
         predicted = 1;
       }
       else{
+        console.log("prob", prob, maxProb);
         predicted = 0;
       }
 
@@ -629,6 +637,8 @@ export default class Regression {
     //where family correlation is rho
     let ft = fisherTest(familyCorrelation, self.xRawF.length);
     self.familyPVal = ft.pvalue;
+
+    console.log("self.familyPVal", self.familyPVal);
 
     return [familyCorrelation.toFixed(4), self.familyPVal];
 

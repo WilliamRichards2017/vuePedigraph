@@ -644,10 +644,12 @@
         console.log("PTCPhenotypes",self.PTCPhenotypes);
 
         if(self.launchedFrom === "U") {
+          //TODO: pass in all genotypes, not jjust family
           self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex, "U");
         }
         else if(self.launchedFrom === "D"){
-          self.regression = new Regression(self.cachedGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
+          console.log("PTCPhenotypes", self.PTCPhenotypes);
+          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
         }
 
         self.linePoints = self.regression.getLinePoints();
@@ -659,6 +661,7 @@
 
         self.projectCorrelation = self.regression.getProjectCorrelation();
         self.projectPVal = self.regression.getProjectPVal();
+
 
         let familyCandP = self.regression.getFamilyCorrelationAndPVal();
 
@@ -698,25 +701,59 @@
 
 
 
-        let sliderRange = d3
-            .sliderVertical()
-            .min(self.minPt)
-            .max(self.maxPt)
-            .default([self.minPt, self.maxPt])
-            .height(300)
-            .ticks(0)
-            .fill('#2196f3')
-            .on('onchange', val => {
+          if(self.displayAffectedAs === "continuous") {
+            let sliderRange = d3
+              .sliderVertical()
+              .min(self.minPt)
+              .max(self.maxPt)
+              .default([self.minPt, self.maxPt])
+              .height(300)
+              .ticks(0)
+              .fill('#2196f3')
+              .on('onchange', val => {
 
-              self.minThreshold = val[0];
-              self.maxThreshold = val[1];
+                self.minThreshold = val[0];
+                self.maxThreshold = val[1];
 
-              console.log("inside onChange", self.minThreshold, self.maxThreshold);
+                console.log("inside onChange", self.minThreshold, self.maxThreshold);
 
-            });
-          d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
-            .call(sliderRange)
-            .append("text").text(self.selectedPhenotype);
+              });
+
+
+            d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
+              .call(sliderRange)
+              .append("text").text(self.selectedPhenotype);
+          }
+
+          else if(self.displayAffectedAs === "binary"){
+
+            self.maxThreshold = self.maxThreshold/2;
+
+            let sliderRange = d3
+              .sliderVertical()
+              .min(self.minPt)
+              .max(self.maxPt)
+              .default([self.minPt, self.maxPt/2])
+              .height(300)
+              .ticks(0)
+              .fill('#2196f3')
+              .on('onchange', val => {
+
+                self.minThreshold = val[0];
+                self.maxThreshold = val[1];
+
+                console.log("inside onChange", self.minThreshold, self.maxThreshold);
+
+              });
+
+
+            d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
+              .call(sliderRange)
+              .append("text").text(self.selectedPhenotype);
+
+          }
+
+
 
       },
 
@@ -1773,6 +1810,8 @@
 
       displayAffectedAs: function(){
         let self = this;
+
+        self.buildSlider();
 
         if(self.displayAffectedAs === "continuous"){
           self.selectedRegression = "Linear";
