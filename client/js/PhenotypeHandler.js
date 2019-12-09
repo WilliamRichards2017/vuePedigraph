@@ -16,8 +16,9 @@ export default class PhenotypeHandler {
     let self = this;
 
     for(let key in self.PTC){
-      let newKey = self.idMap[key].split('-')[1];
-      self.replacedIDs[newKey] = self.PTC[key];
+      let newKey = self.idMap[key].split('-')[1].toString();
+      self.replacedIDs[newKey] =  [];
+      self.replacedIDs[newKey].push(self.PTC[key]);
     }
 
   }

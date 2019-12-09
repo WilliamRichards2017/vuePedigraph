@@ -318,7 +318,7 @@
         hubSession: null,
         sampleIds: null,
         idList: null,
-        phenotypes: [],
+        phenotypes: ["PTC Sensitivity"],
 
         PTIndex: null,
 
@@ -348,8 +348,8 @@
         selectedRegression: null,
         showPed: true,
         affectedCuttoff: "7",
-        minThreshold: 3,
-        maxThreshold: 12,
+        minThreshold: -1,
+        maxThreshold: -1,
 
 
 
@@ -437,14 +437,13 @@
         self.buildFromHub();
       }
       if (self.launchedFrom === "D") {
+        self.populateThresholds();
         self.buildFromDemo();
         self.buildSlider();
 
       }
       if (self.launchedFrom === "U") {
         self.buildFromUpload();
-        self.buildSlider();
-
       }
     }
     ,
@@ -547,7 +546,6 @@
         self.selectedFamily = "1463";
         // self.selectedFamily = "1408";
 
-        self.selectedPhenotype = "PTC Sensitivity";
         self.selectedGenotype = "7:141972755_C/T";
 
       },
@@ -636,8 +634,6 @@
 
         let self = this;
 
-        self.buildPhenotypes();
-
 
         console.log("self.phenotypes inside buildLinearRegression", self.phenotypes);
 
@@ -645,13 +641,19 @@
 
         console.log("self.PTINdex right before regression", self.PTIndex);
 
+        console.log("PTCPhenotypes",self.PTCPhenotypes);
 
-        self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Linear", self.opts.dataset, self.sampleIds,  self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex);
+        if(self.launchedFrom === "U") {
+          self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex, "U");
+        }
+        else if(self.launchedFrom === "D"){
+          self.regression = new Regression(self.cachedGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
+        }
 
         self.linePoints = self.regression.getLinePoints();
 
-        self.maxPt = self.regression.getMaxPt();
-        self.minPt = self.regression.getMinPt();
+        // self.maxPt = self.regression.getMaxPt();
+        // self.minPt = self.regression.getMinPt();
 
 
 
@@ -691,16 +693,16 @@
 
           d3.select("#slider-axisRange").remove();
 
-          // console.log("minPT", self.minPt);
-          // console.log("maxPt", self.maxPt);
+          console.log("minPT", self.minPt);
+          console.log("maxPt", self.maxPt);
 
 
 
         let sliderRange = d3
             .sliderVertical()
-            .min(3)
-            .max(12)
-            .default([3, 12])
+            .min(self.minPt)
+            .max(self.maxPt)
+            .default([self.minPt, self.maxPt])
             .height(300)
             .ticks(0)
             .fill('#2196f3')
@@ -1210,26 +1212,40 @@
 
       populateThresholds: function(){
 
-
         let self = this;
 
-        self.minPt = Math.min();
-        self.maxPt= Math.max();
 
-        for (let i = 0; i < self.opts.dataset.length; i++) {
-          let id = self.opts.dataset[i].name;
-          let pts = self.ptMap[id];
+        if(this.launchedFrom === "U") {
+          self.minPt = Math.min();
+          self.maxPt = Math.max();
 
-          self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
-          let sens = parseFloat(pts[self.PTIndex]);
+          for (let i = 0; i < self.opts.dataset.length; i++) {
+            let id = self.opts.dataset[i].name;
+            let pts = self.ptMap[id];
 
-          if(sens < this.minPt){
-            this.minPt = sens;
+            self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
+            let sens = parseFloat(pts[self.PTIndex]);
+
+            if (sens < this.minPt) {
+              this.minPt = sens;
+            } else if (sens > this.maxPt) {
+              this.maxPt = sens;
+            }
+
           }
-          else if(sens > this.maxPt){
-            this.maxPt = sens;
-          }
 
+          self.minThreshold = self.minPt;
+          self.maxThreshold = self.maxPt;
+
+        }
+
+        else if(this.launchedFrom === "D"){
+          self.minPt = 0;
+          self.maxPt = 12;
+          self.minThreshold = 0;
+          self.maxThreshold = 12;
+
+          console.log("Demo Data");
         }
 
       },
@@ -1265,7 +1281,7 @@
         else {
           self.cachedPhenotypes = {};
 
-          // self.populateThresholds();
+          self.populateThresholds();
 
           console.log("minThreshold", self.minThreshold);
           console.log("maxThreshold", self.maxThreshold);
@@ -1387,6 +1403,8 @@
 
       buildDemoPhenotypes: function () {
         let self = this;
+
+        console.log("this.minThreshold", this.minThreshold, this.maxThreshold);
 
         self.cachedPhenotypes = {};
         if (self.selectedPhenotype === "PTC Sensitivity") {
@@ -1852,7 +1870,12 @@
       },
       selectedPhenotype: function () {
         let self = this;
+        self.populateThresholds();
+
+
+        console.log("self.opts inside of selectedPhenotype", self.opts);
         self.buildPhenotypes();
+        self.buildSlider();
         self.buildRegression();
 
       },

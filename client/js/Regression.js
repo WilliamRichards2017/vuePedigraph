@@ -8,7 +8,7 @@ import jsregression from 'js-regression'
 
 
 export default class Regression {
-  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds,  minThreshold, maxThreshold, inverted, ptIndex) {
+  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds,  minThreshold, maxThreshold, inverted, ptIndex, launchedFrom) {
     this.rawGenotypes = rawGenotypes;
     this.rawPhenotypes = rawPhenotypes;
     this.minThreshold = minThreshold;
@@ -21,6 +21,8 @@ export default class Regression {
     this.sampleIds = sampleIds;
 
     this.ptIndex = ptIndex;
+
+    this.launchedFrom = launchedFrom;
 
     this.data = null;
 
@@ -70,6 +72,7 @@ export default class Regression {
 
 
 
+    this.findMinMaxPts();
     this.processRawData();
 
     this.populateRawCoords();
@@ -196,35 +199,44 @@ export default class Regression {
     self.xRawP = [];
     self.yRawP = [];
 
+    self.minPt = Math.min();
+    self.maxPt = Math.max();
+
 
     for (let key in self.rawGenotypes) {
 
       let af = -1;
 
 
-      let gt = self.rawGenotypes[key];
-      let pt = self.rawPhenotypes[key][this.ptIndex];
+      if (self.rawPhenotypes.hasOwnProperty(key)) {
 
 
-      if(gt === "1/1"){
-        af = 1;
-      }
-      else if(gt === "1/0" || gt === "0/1"){
-        af = 0.5;
-      }
-      else if(gt === "0/0"){
-        af = 0;
-      }
-      else{
-        // console.log("error: could not interpret GT", gt);
-        af = "not a number";
-      }
+        let gt = self.rawGenotypes[key];
+        let pt = parseFloat(self.rawPhenotypes[key][this.ptIndex]);
+
+        if (pt > self.maxPt) {
+          self.maxPt = pt;
+        } else if (pt < this.minPt) {
+          self.minPt = pt;
+        }
+
+
+        if (gt === "1/1") {
+          af = 1;
+        } else if (gt === "1/0" || gt === "0/1") {
+          af = 0.5;
+        } else if (gt === "0/0") {
+          af = 0;
+        } else {
+          // console.log("error: could not interpret GT", gt);
+          af = "not a number";
+        }
         if (typeof af === "number" && !isNaN(pt)) {
           self.xRawP.push(af);
           self.yRawP.push(pt);
+        } else {
+          // console.log("could not interpret PT", pt);
         }
-      else{
-        // console.log("could not interpret PT", pt);
       }
     }
   }
@@ -711,72 +723,79 @@ export default class Regression {
 
   }
 
+  findMinMaxPts(){
+
+    console.log("this.raw", this.yRawP);
+
+  }
+
   processRawData(){
     let self = this;
 
+    console.log("self.rawPhenotypes inside regression", self.rawPhenotypes);
+
     self.data = [];
 
-    self.minPt = Math.min();
-    self.maxPt = Math.max();
 
-    for(let i  = 0; i < self.sampleIds.length; i++){
+    for(let i  = 0; i < self.sampleIds.length; i++) {
 
       let af = -1;
+
+
       let key = self.sampleIds[i].toString();
+
+
+      let si = this.sampleIds[0];
+
+      let kiP = Object.keys(self.rawPhenotypes)[0];
+      let kiG = Object.keys(self.rawGenotypes)[0];
+
+      console.log("typeofs", typeof key, typeof kiP, typeof kiG);
 
 
       let gt = self.rawGenotypes[key];
 
 
-
-      if(gt === "1/1"){
+      if (gt === "1/1") {
         af = 1;
-      }
-      else if(gt === "1/0" || gt === "0/1"){
+      } else if (gt === "1/0" || gt === "0/1") {
         af = 0.5;
-      }
-      else if(gt === "0/0"){
+      } else if (gt === "0/0") {
         af = 0;
-      }
-      else{
+      } else {
         console.log("error: could not interpret GT", gt);
         af = "not a number";
       }
 
-      let pt = parseFloat(self.rawPhenotypes[key][this.ptIndex]);
 
-      if(pt > this.maxPt){
-        this.maxPt = pt;
-      }
-      else if(pt < this.minPt){
-        this.minPt = pt;
-      }
+      let pt = 0;
+
+      if (self.rawPhenotypes.hasOwnProperty(key)) {
+        pt = parseFloat(self.rawPhenotypes[key][this.ptIndex]);
 
 
-      let x = af;
-      let y = parseFloat(pt);
-      let sex = self.getSexFromSampleId(key);
-      let color = self.getColorFromSampleId(key);
-      let opacity = self.getOpacityFromSampleId(key);
+        let x = af;
+        let y = parseFloat(pt);
+        let sex = self.getSexFromSampleId(key);
+        let color = self.getColorFromSampleId(key);
+        let opacity = self.getOpacityFromSampleId(key);
 
 
-
-
-      if(typeof af === "number" && !isNaN(y)) {
-        let d = {
-          x: x,
-          y: y,
-          id: key,
-          sex: sex,
-          color: color,
-          opacity: opacity,
-          xSource: null,
-          ySource: null,
+        if (typeof af === "number" && !isNaN(y)) {
+          let d = {
+            x: x,
+            y: y,
+            id: key,
+            sex: sex,
+            color: color,
+            opacity: opacity,
+            xSource: null,
+            ySource: null,
+          }
+          self.data.push(d);
+        } else {
+          console.log("did not make data for key, sex, color, x, y", key, sex, color, x, pt);
         }
-        self.data.push(d);
-      }
-      else{
-        console.log("did not make data for key, sex, color, x, y",key, sex, color, x, pt);
       }
     }
 
