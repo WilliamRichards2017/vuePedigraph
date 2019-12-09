@@ -1281,7 +1281,7 @@
         else {
           self.cachedPhenotypes = {};
 
-          self.populateThresholds();
+          // self.populateThresholds();
 
           console.log("minThreshold", self.minThreshold);
           console.log("maxThreshold", self.maxThreshold);
