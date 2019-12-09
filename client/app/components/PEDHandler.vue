@@ -702,6 +702,9 @@
 
 
           if(self.displayAffectedAs === "continuous") {
+            self.maxThreshold = self.maxPt;
+
+
             let sliderRange = d3
               .sliderVertical()
               .min(self.minPt)
@@ -727,7 +730,7 @@
 
           else if(self.displayAffectedAs === "binary"){
 
-            self.maxThreshold = self.maxThreshold/2;
+            self.maxThreshold = self.maxPt/2;
 
             let sliderRange = d3
               .sliderVertical()
