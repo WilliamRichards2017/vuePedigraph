@@ -1013,7 +1013,7 @@
 
         let lScale = d3.scaleLinear()
           .range([0, w])
-          .domain([0, 12]);
+          .domain([self.minPt, self.maxPt]);
 
         let key = d3.select("#legend")
           .append('svg')

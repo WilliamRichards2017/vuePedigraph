@@ -19,67 +19,211 @@
 
         <div class="column">
 
-          <div class="flex-grid" style="justify:center; text-align: center">
+          <v-dialog
+          width="800"
+          >
+          <template v-slot:activator="{ on }">
+          <v-btn
+            raised large color="primary"
+            class="welcome-button"
+            v-on="on"
+          >
+          Upload Local Data
+          </v-btn>
+            <p>Visualize your pedigree by uploading a .ped file.  Upload a vcf file and a csv containing phenotype information to view genotype/phenotype correlation.</p>
 
-            <div class="column">
 
 
-          <label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Upload Ped</label>
-          <FileReader class="uploader" @load="uploadedPedTxt = $event;" ></FileReader>
-              <p>Upload a pedigree file from local storage.  Make sure the file is a valid <a href="https://gatkforums.broadinstitute.org/gatk/discussion/7696/pedigree-ped-files">.ped</a> file</p>
+          </template>
+
+          <v-card>
+          <v-card-title
+          class="headline grey lighten-2"
+          primary-title
+          >
+          Upload Files
+          </v-card-title>
+
+          <v-card-text>
 
 
-            </div>
+            <label class="headline lighten-2">Upload Pedigree</label>
+            <FileReader class="uploader" @load="uploadedPedTxt = $event;" ></FileReader>
+
+            <p>Upload a pedigree file from local storage.  Make sure the file is a valid <a href="https://gatkforums.broadinstitute.org/gatk/discussion/7696/pedigree-ped-files">.ped</a> file</p>
 
 
-            <div class="column">
-          <label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Upload VCF</label>
-          <VCFReader class="uploader" @load="uploadedVCF = $event;" ></VCFReader>
-            </div>
+            <br>
 
-          <div class="column">
+            <label class="headline lighten-2">Upload VCF</label>
+            <VCFReader class="uploader" @load="uploadedVCF = $event;" ></VCFReader>
 
-          <label>Upload Phenotypes</label>
-          <FileReader class="uploader" @load="uploadedPTS = $event;" ></FileReader>
-            <p>Upload a csv with sample phenotypes.  The first column should contain sample ids, and the second column should contain the phenotype values.</p>
+            <p>Make sure your vcf adheres to the standard <a href="https://www.internationalgenome.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-40/">VCF specifications</a></p>
+
+            <br>
+
+            <label class="headline lighten-2">Upload Phenotype CSV</label>
+            <FileReader class="uploader" @load="uploadedPTS = $event;" ></FileReader>
 
             <v-dialog
-              width="500"
+            width="500"
             >
-              <template v-slot:activator="{ on }">
-                <v-btn
-                  color="red lighten-2"
-                  dark
-                  v-on="on"
-                >
-                  View example phenotype csv
-                </v-btn>
-              </template>
+            <template v-slot:activator="{ on }">
+            <v-btn
+            v-on="on"
+            >
+            View example phenotype csv
+            </v-btn>
+            </template>
 
-              <v-card>
-                <v-card-title
-                  class="headline grey lighten-2"
-                  primary-title
-                >
-                  Example Phenotype csv
-                </v-card-title>
 
-                <v-card-text>
-                sampleIds, PTC Sensitivity <br>1348, 12 <br> 1349, 4 <br> 1482, 12 <br> 1278, 7
+            <v-card>
+            <v-card-title
+            class="headline grey lighten-2"
+            primary-title
+            >
+            Example Phenotype csv
+            </v-card-title>
 
-                </v-card-text>
-              </v-card>
+            <v-card-text>
+            sampleIds, PTC Sensitivity, height (cm) <br>1348, 12, 158 <br> 1349, 4, 179 <br> 1482, 12, 180 <br> 1278, 7, 173
+
+            </v-card-text>
+            </v-card>
             </v-dialog>
 
+            <p>Upload a csv with sample phenotypes. The first column should contain sample ids, and the next column should contain the phenotype values. The first row should be a header describing the contents of each column.</p>
+
+
+
+            <br>
+
+            <div class="text-xs-center">
+
+            <v-btn
+              :loading="loading3"
+              :disabled="loading3"
+              color="blue-grey"
+              class="ma-2 white--text"
+              @click="loader = 'loading3'"
+              large
+
+              v-on:click="launchedFrom = 'U'"> Submit Files
+
+              <v-icon right dark>mdi-cloud-upload</v-icon>
+
+
+            </v-btn>
+
+            </div>
 
 
 
 
 
-          </div>
-            <v-btn v-on:click="launchedFrom = 'U'"> Submit Files</v-btn>
+          </v-card-text>
+        </v-card>
+        </v-dialog>
 
-          </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <!--<div class="flex-grid" style="justify:center; text-align: center">-->
+
+            <!--<div class="column">-->
+
+
+          <!--<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Upload Ped</label>-->
+          <!--<FileReader class="uploader" @load="uploadedPedTxt = $event;" ></FileReader>-->
+              <!--<p>Upload a pedigree file from local storage.  Make sure the file is a valid <a href="https://gatkforums.broadinstitute.org/gatk/discussion/7696/pedigree-ped-files">.ped</a> file</p>-->
+
+
+            <!--</div>-->
+
+
+            <!--<div class="column">-->
+          <!--<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Upload VCF</label>-->
+          <!--<VCFReader class="uploader" @load="uploadedVCF = $event;" ></VCFReader>-->
+            <!--</div>-->
+
+          <!--<div class="column">-->
+
+          <!--<label>Upload Phenotypes</label>-->
+          <!--<FileReader class="uploader" @load="uploadedPTS = $event;" ></FileReader>-->
+            <!--<p>Upload a csv with sample phenotypes.  The first column should contain sample ids, and the second column should contain the phenotype values.</p>-->
+
+            <!--<v-dialog-->
+              <!--width="500"-->
+            <!--&gt;-->
+              <!--<template v-slot:activator="{ on }">-->
+                <!--<v-btn-->
+                  <!--color="red lighten-2"-->
+                  <!--dark-->
+                  <!--v-on="on"-->
+                <!--&gt;-->
+                  <!--View example phenotype csv-->
+                <!--</v-btn>-->
+              <!--</template>-->
+
+              <!--<v-card>-->
+                <!--<v-card-title-->
+                  <!--class="headline grey lighten-2"-->
+                  <!--primary-title-->
+                <!--&gt;-->
+                  <!--Example Phenotype csv-->
+                <!--</v-card-title>-->
+
+                <!--<v-card-text>-->
+                <!--sampleIds, PTC Sensitivity <br>1348, 12 <br> 1349, 4 <br> 1482, 12 <br> 1278, 7-->
+
+                <!--</v-card-text>-->
+              <!--</v-card>-->
+            <!--</v-dialog>-->
+
+
+
+
+
+
+          <!--</div>-->
+            <!--<v-btn v-on:click="launchedFrom = 'U'"> Submit Files</v-btn>-->
+
+          <!--</div>-->
 
         </div>
 
@@ -342,7 +486,6 @@
     margin-top: 25px;
     margin-bottom: 25px;
     text-align: center;
-    width: 200px;
     height: 80px;
 
     padding: 20px;
