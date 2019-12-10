@@ -96,16 +96,26 @@
             <div style="display: inline-flex">
 
 
+              <v-tooltip>
+                <template v-slot:activator="{ on }">
+                <v-icon v-on="on">info_outline</v-icon>
+                </template>
+                <span>This will invert the color scale for the Phenotype values</span>
+
+              </v-tooltip>
+
               <v-btn v-on:click="invertRange()" small>Invert affect status</v-btn>
 
 
-              <div style="margin-top: 10px" v-show="inverted"> Affected Threshold:
-                <strong style="margin-top: 10px; margin-left: 10px">[ {{minThreshold.toFixed(2)}}, {{maxThreshold.toFixed(2)}} ]</strong>
-              </div>
 
-              <div style="margin-top: 10px" v-show="!inverted"> Affected Range:
-                <strong style="margin-top: 10px; margin-left: 10px"  v-show="!inverted">[{{maxThreshold.toFixed(2)}}, {{minThreshold.toFixed(2)}}]</strong>
-              </div>
+
+              <!--<div style="margin-top: 10px" v-show="inverted"> Affected Threshold:-->
+                <!--<strong style="margin-top: 10px; margin-left: 10px">[ {{minThreshold.toFixed(2)}}, {{maxThreshold.toFixed(2)}} ]</strong>-->
+              <!--</div>-->
+
+              <!--<div style="margin-top: 10px" v-show="!inverted"> Affected Range:-->
+                <!--<strong style="margin-top: 10px; margin-left: 10px"  v-show="!inverted">[{{maxThreshold.toFixed(2)}}, {{minThreshold.toFixed(2)}}]</strong>-->
+              <!--</div>-->
 
             </div>
 
@@ -145,21 +155,48 @@
           <div style="display: inline-flex">
 
 
+            <v-tooltip left>
+              <template v-slot:activator="{ on }">
+                <v-icon v-on="on">info_outline</v-icon>
+              </template>
+              <span>This will invert the color scale for the Phenotype values</span>
+            </v-tooltip>
+
+
             <v-btn v-on:click="invertRange()" small>Invert affect status</v-btn>
 
 
-            <div style="margin-top: 10px" v-show="inverted"> Affected Range:
-            <strong style="margin-top: 10px; margin-left: 10px">[ {{minThreshold.toFixed(2)}}, {{maxThreshold.toFixed(2)}} ]</strong>
-          </div>
+            <!--<div style="margin-top: 10px" v-show="inverted"> Affected Range:-->
+            <!--<strong style="margin-top: 10px; margin-left: 10px">[ {{minThreshold.toFixed(2)}}, {{maxThreshold.toFixed(2)}} ]</strong>-->
+          <!--</div>-->
 
-          <div style="margin-top: 10px" v-show="!inverted"> Affected Range:
-          <strong style="margin-top: 10px; margin-left: 10px"  v-show="!inverted">[{{maxThreshold.toFixed(2)}}, {{minThreshold.toFixed(2)}}]</strong>
-        </div>
+          <!--<div style="margin-top: 10px" v-show="!inverted"> Affected Range:-->
+          <!--<strong style="margin-top: 10px; margin-left: 10px"  v-show="!inverted">[{{maxThreshold.toFixed(2)}}, {{minThreshold.toFixed(2)}}]</strong>-->
+        <!--</div>-->
 
           </div>
 
 
             <div class="tableTitle">Regression Statistics</div>
+
+
+          <div class="d-inline-flex">
+
+
+          <table>
+            <thead>
+            Significant
+            </thead>
+            <tbody>
+            <tr>
+              <v-icon dense right color="green">check_circle</v-icon>
+            </tr>
+            <tr>
+              <v-icon dense right color="green">check_circle</v-icon>
+            </tr>
+            </tbody>
+          </table>
+
               <table>
                 <thead>
                 <th></th> <th style="text-align: left"> Pearsons 'r' </th> <th style="text-align: left"> r^2 </th> <th style="text-align: left"> P-val </th>
@@ -183,8 +220,11 @@
                 </tr>
               </table>
 
+          </div>
 
         </div>
+
+
 
           <div id="legend"></div>
 
@@ -1139,29 +1179,29 @@
       //refactor name to styleLinearTableMetrics
       buildRegressionTable() {
 
-        let self = this;
-
-          if(self.familyPVal > 0.05){
-            self.familyPColor = "none";
-          }
-          else{
-            let normFamP = 1 - self.familyPVal;
-            self.familyPColor  = d3.interpolateRgb("white", "#50c878")(normFamP);
-          }
-
-          d3.select("#familyRow")
-            .style("background", self.familyPColor);
-
-        if(self.projectPVal > 0.05){
-          self.projectPColor = "none";
-        }
-        else{
-          let normProjP = 1 - self.projectPVal;
-          self.projectPColor  = d3.interpolateRgb("white", "#50c878")(normProjP);
-        }
-
-        d3.select("#projectRow")
-          .style("background", self.projectPColor);
+        // let self = this;
+        //
+        //   if(self.familyPVal > 0.05){
+        //     self.familyPColor = "none";
+        //   }
+        //   else{
+        //     let normFamP = 1 - self.familyPVal;
+        //     self.familyPColor  = d3.interpolateRgb("white", "#50c878")(normFamP);
+        //   }
+        //
+        //   d3.select("#familyRow")
+        //     .style("background", self.familyPColor);
+        //
+        // if(self.projectPVal > 0.05){
+        //   self.projectPColor = "none";
+        // }
+        // else{
+        //   let normProjP = 1 - self.projectPVal;
+        //   self.projectPColor  = d3.interpolateRgb("white", "#50c878")(normProjP);
+        // }
+        //
+        // d3.select("#projectRow")
+        //   .style("background", self.projectPColor);
 
 
 
@@ -1961,7 +2001,7 @@
 
 <style>
   #pedigrees svg > rect {
-    background-color: rgb(240, 250, 254);
+
   }
   #pedigrees svg {
     height:96vh;

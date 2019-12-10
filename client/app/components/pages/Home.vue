@@ -1,7 +1,6 @@
 <template>
   <div id="wrapper" style="height: 96vh">
 
-
     <div id="mainContent">
     <div v-if="launchedFrom===null">
 
@@ -11,6 +10,7 @@
 
       <div class="tag-line"> <h1>An Interactive Pedigree</h1></div>
       <div class="tag-line2"><h1>Visualization</h1></div>
+
 
       <h4 class="headline" style="text-align: center; padding-top: 25px; padding-bottom: 0; margin-bottom: 0">Visually inspect genotype and phenotype</h4>
       <h4 class="headline" style="text-align: center; padding-top: 0; margin-top: 0; padding-bottom: 25px; margin-bottom: 25px">relationships across a pedigree</h4>
@@ -271,6 +271,7 @@
 </template>
 
 <script>
+
 
 
   import demoTxt from '../../../static/ped.js';
