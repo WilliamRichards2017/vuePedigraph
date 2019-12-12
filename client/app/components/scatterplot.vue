@@ -1,16 +1,16 @@
 <template>
-  <div id='vueScatter' width="400px" height="400px">
+  <div id='vueScatter' width="500px" height="500px">
     <div class="chartTitle"> GT/PT regression for selected Family</div>
 
     <div class="svg-container">
 
-      <svg class="scatter-plot" id="scatterplotSvg" width="400px" height="400px">
+      <svg class="scatter-plot" id="scatterplotSvg" width="500px" height="500px">
 
         <!--<rect width="300" height="300"/>-->
         <g transform="translate(50, 50) " id="scatterplot">
           <g id="plot"></g>
           <path id="regression-line"/>
-          <g id="x-axis" transform="translate(0, 300)"></g>
+          <g id="x-axis" transform="translate(0, 400)"></g>
           <g id="yLeft-axis" transform="translate(0, 0)"></g>
           <g id="yRight-axis" transform="translate(0, 0)"></g>
 
@@ -31,7 +31,8 @@
         purple: "#8629EA",
         xScale: null,
         yScale: null,
-        width: 300,
+        width: 400,
+        height: 400
       }
     },
 
@@ -64,16 +65,15 @@
             F.push(self.rawData[i]);
           }
         }
-        let width = 300;
-        let height = 300;
+
         // Set up the scales
         self.xScale = d3.scaleLinear()
           .domain([-0.2, 1.2])
-          .range([0, width]);
+          .range([0, self.width]);
 
         self.yScale = d3.scaleLinear()
           .domain([self.minPt, self.maxPt])
-          .range([height, 0]);
+          .range([self.height, 0]);
 
 
 
@@ -157,10 +157,10 @@
         let squares = d3.select("#plot").selectAll('rect')
           .data(M).join("rect");
         squares
-          .attr("x", d => self.xScale(d.xSource) - 10)
-          .attr("y", d => self.yScale(d.ySource) - 10)
-          .attr("width", 20)
-          .attr("height", 20)
+          .attr("x", d => self.xScale(d.xSource) - 12)
+          .attr("y", d => self.yScale(d.ySource) - 12)
+          .attr("width", 24)
+          .attr("height", 24)
           .style("fill", d => d.color)
           .style("opacity", d => d.opacity)
           .on("click", d => console.log("(x,y): ", d.x, d.y));
@@ -177,7 +177,7 @@
         circles
           .attr("cx", d => self.xScale(d.xSource))
           .attr("cy", d => self.yScale(d.ySource))
-          .attr("r", 10)
+          .attr("r", 12)
           .style("fill", d => d.color)
           .style("opacity", d => d.opacity)
           .on("click", d => console.log("(x,y): ", d.x, d.y));
@@ -186,15 +186,14 @@
           .style("text-shadow", "2px 2px 11px white")
           .classed("circ", true);
         circleText
-          .attr("x", d => self.xScale(d.xSource) - 10)
+          .attr("x", d => self.xScale(d.xSource) -10)
           .attr("y", d => self.yScale(d.ySource))
           .text(d => d.id);
 
     },
 
       buildRegressionLine(){
-          let width = 300;
-          let height = 300;
+
           let coords = [];
 
           if(this.linePoints === null) {
@@ -208,10 +207,10 @@
 
           var xScale = d3.scaleLinear()
             .domain([0, 1])
-            .range([0, width]);
+            .range([0, self.width]);
           var yScale = d3.scaleLinear()
             .domain([this.minPt, this.maxPt])
-            .range([height, 0]);
+            .range([self.height, 0]);
           let aLineGenerator = d3
             .line()
             .x(d => xScale(d.x))

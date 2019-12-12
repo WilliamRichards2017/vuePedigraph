@@ -70,14 +70,14 @@
 
     <div class="flex">
 
-      <div id="pedigrees" v-show="showPed" style="width: 80%;"></div>
+      <div id="pedigrees" v-show="showPed" style="width: 70%;"></div>
 
       <!--<div class="flexCol" width="450px" >-->
 
 
-      <div id="container">
+      <div id="container"  style="width: 30%">
 
-      <div  class="col">
+      <div  class="col" height="100vh">
 
 
 
@@ -104,7 +104,7 @@
 
               </v-tooltip>
 
-              <v-btn v-on:click="invertRange()" small>Invert affect status</v-btn>
+              <v-btn v-on:click="invertRange()" small>Invert color scale</v-btn>
 
 
 
@@ -124,7 +124,8 @@
               <!--<v-select :items="operands" style="width: 50px; margin-top: 0; padding-left:10px; padding-top: 0" outlined dense v-model="selectedOperand"></v-select>-->
               <!--<strong style="margin-top: 10px; margin-left: 10px">{{affectedCuttoff}} </strong> </div>-->
 
-            <table>
+
+            <table class="gridtable">
               <thead>
               <th></th> <th style="text-align: left"> Project: </th> <th style="text-align: left"> Family: </th>
               </thead>
@@ -183,23 +184,9 @@
           <div class="d-inline-flex">
 
 
-          <table>
-            <thead>
-            Significant
-            </thead>
-            <tbody>
-            <tr>
-              <v-icon dense right color="green" v-show="familyPVal <= 0.05">check_circle</v-icon>
-            </tr>
-            <tr>
-              <v-icon dense right color="green" v-show="projectPVal <= 0.05">check_circle</v-icon>
-            </tr>
-            </tbody>
-          </table>
-
-              <table>
+              <table class="gridtable">
                 <thead>
-                <th></th> <th style="text-align: left"> Pearsons 'r' </th> <th style="text-align: left"> r^2 </th> <th style="text-align: left"> P-val </th>
+                <th></th> <th style="text-align: left"> Pearsons 'r' </th> <th style="text-align: left"> r^2 </th> <th style="text-align: left"> P-val </th> <th>Significant</th>
                 </thead>
                 <tbody></tbody>
                 <tr class="val" id="familyRow">
@@ -208,6 +195,9 @@
                 <td id="familyR" class="val">{{familyCorrelation}}</td>
                   <td>{{(familyCorrelation**2).toFixed(4)}}</td>
                  <td id="familyP" class="val">{{familyPVal.toExponential(3)}}</td>
+                  <td>
+                    <v-icon right color="green" v-show="familyPVal <= 0.05">check_circle</v-icon>
+                  </td>
                 </tr>
 
                 <tr></tr>
@@ -217,8 +207,32 @@
                   <td id="projectR" > {{projectCorrelation}}</td>
                   <td class="val">{{(projectCorrelation**2).toFixed(4)}}</td>
                   <td id="projectP" class="val"> {{projectPVal.toExponential(3)}}</td>
+                  <td>
+                    <v-icon right color="green" v-show="projectPVal <= 0.05">check_circle</v-icon>
+                  </td>
                 </tr>
               </table>
+
+            <!--<table>-->
+              <!--<thead>-->
+              <!--<th style="height: 32px; font-weight: normal">-->
+                <!--Significant-->
+              <!--</th>-->
+              <!--</thead>-->
+              <!--<tbody>-->
+              <!--<tr>-->
+                <!--<td style="height: 32px">-->
+                  <!--<v-icon right color="green" v-show="familyPVal <= 0.05">check_circle</v-icon>-->
+                <!--</td>-->
+              <!--</tr>-->
+              <!--<tr>-->
+                <!--<td style="height: 32px">-->
+                  <!--<v-icon right color="green" v-show="projectPVal <= 0.05">check_circle</v-icon>-->
+                <!--</td>-->
+              <!--</tr>-->
+              <!--</tbody>-->
+            <!--</table>-->
+
 
           </div>
 
@@ -361,6 +375,19 @@
         phenotypes: ["PTC Sensitivity"],
 
         PTIndex: null,
+
+        linearMetrics: [],
+        linearHeader: [
+          {
+            text: '',
+            align: 'left',
+            sortable: false,
+            value: 'name',
+          },
+          { text: 'Pearsons R', value: 'Pearsons R' },
+          { text: 'R^2', value: 'R^2' },
+          { text: 'P-Vale', value: 'P-Val' },
+        ],
 
 
 
@@ -548,9 +575,9 @@
               }
             }
 
-            let variant = filteredCols.slice(0,2);
+            let variant = filteredCols.slice(0,5);
 
-            let varText = variant[0] + ':' + variant[1];
+            let varText = variant[0] + ':' + variant[1] + "_" + variant[3] + '/' + variant[4];
 
             varText = varText.replace(/\s/g, '');
 
@@ -733,6 +760,12 @@
 
         self.familyCorrelation = familyCandP[0];
         self.familyPVal = familyCandP[1];
+
+        self.linearMetrics = [
+          {name: "family", "Pearsons R": self.familyCorrelation, "R^2" : self.familyCorrelation**2, "P-val" : self.familyPVal},
+          {name: "project", "Pearsons R": self.projectCorrelation, "R^2" : self.projectCorrelation**2, "P-val" : self.projectPVal}
+
+      ]
         // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
         // self.familyPVal= self.regression.getFamilyCorrelation(self.sampleIds)[1].toExponential(3);
 
@@ -774,7 +807,7 @@
               .min(self.minPt)
               .max(self.maxPt)
               .default([self.minPt, self.maxPt])
-              .height(300)
+              .height(400)
               .ticks(0)
               .fill('#2196f3')
               .on('onchange', val => {
@@ -1206,7 +1239,7 @@
         if(self.displayAffectedAs === "continuous") {
 
 
-       this.buildLinearRegressionLegend();
+       // this.buildLinearRegressionLegend();
 
         }
         else if(self.displayAffectedAs === "binary") {
@@ -2009,6 +2042,8 @@
           self.buildLinearRegression();
         } else {
           self.removeHighlight();
+          $('#pedigree').on('nodeClick', self.onNodeClick);
+          $('#pedigree').on('bgClick', self.onBGClick);
 
 
         }
@@ -2155,15 +2190,44 @@
     text-align: center;
   }
 
-  td .val{
-    text-align: left;
+
+  table.gridtable {
+    font-family: verdana,arial,sans-serif;
+    font-size:11px;
+    color:#333333;
+    border-width: 1px;
+    border-color: #666666;
+    border-collapse: collapse;
   }
-  th .val{
-    text-align: center;
-    color: grey;
+  table.gridtable th {
+    border-width: 1px;
+    padding: 8px;
+    border-style: solid;
+    border-color: #666666;
+    background-color: #dedede;
+  }
+  table.gridtable td {
+    border-width: 1px;
+    padding: 8px;
+    border-style: solid;
+    border-color: #666666;
+    background-color: #ffffff;
   }
 
-  tr:nth-child(odd).val {background-color: #f2f2f2;}
+  th:empty {
+    visibility: hidden;
+  }
+
+
+  /*td .val{*/
+    /*text-align: left;*/
+  /*}*/
+  /*th .val{*/
+    /*text-align: center;*/
+    /*color: grey;*/
+  /*}*/
+
+  /*tr:nth-child(odd).val {background-color: #f2f2f2;}*/
 
   .tableTitle {
     /*text-decoration: underline;*/

@@ -298,7 +298,7 @@ export default class Regression {
 
         let ls = -1*(value.length-1)/2;
         for(let i = 0; i < value.length; i++) {
-          let x = xi + ls*0.11;
+          let x = xi + ls*0.09;
 
           jitterCoords[value[i]] = [x,yi];
           ls +=1;
@@ -307,7 +307,7 @@ export default class Regression {
       else if (value.length % 2 === 0){
         let ls = -1*(value.length)/2;
         for(let i = 0; i < value.length; i++) {
-          let x = xi + ls*0.1;
+          let x = xi + ls*0.09;
           jitterCoords[value[i]] = [x,yi];
           ls +=1;
         }
