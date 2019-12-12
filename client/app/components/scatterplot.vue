@@ -1,13 +1,14 @@
 <template>
-  <div id='vueScatter' width="500px" height="500px">
+  <div id='vueScatter' width="500px" height="500px" style="background-color:	 #f2f2f2">
     <div class="chartTitle"> GT/PT regression for selected Family</div>
 
     <div class="svg-container">
 
       <svg class="scatter-plot" id="scatterplotSvg" width="500px" height="500px">
+        <rect width="400px" height="400px" style="fill: white" transform="translate(50, 30)"></rect>
 
         <!--<rect width="300" height="300"/>-->
-        <g transform="translate(50, 50) " id="scatterplot">
+        <g transform="translate(50, 30) " id="scatterplot">
           <g id="plot"></g>
           <path id="regression-line"/>
           <g id="x-axis" transform="translate(0, 400)"></g>
@@ -28,7 +29,7 @@
     name: 'vueScatter',
     data() {
       return {
-        purple: "#8629EA",
+        purple: "#3D6FFF",
         xScale: null,
         yScale: null,
         width: 400,
@@ -194,6 +195,8 @@
 
       buildRegressionLine(){
 
+        let self = this;
+
           let coords = [];
 
           if(this.linePoints === null) {
@@ -316,10 +319,14 @@
 
   }
 
-  .scatter-plot text {
+  .scatter-plot text.sq {
     font-size: 8px;
     font-weight: bold;
+  }
 
+  .scatter-plot text.circ {
+    font-size: 8px;
+    font-weight: bold;
   }
 
   /* style of scatter plot frame */
@@ -369,6 +376,7 @@
     font-style: normal;
     font-weight: bold;
     margin-left: 20px;
+    padding-top: 20px;
   }
 
 </style>

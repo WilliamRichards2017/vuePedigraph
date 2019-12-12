@@ -346,7 +346,7 @@
     data() {
       return {
         affectedStatuses: ["binary", "continuous"],
-        purple: "#8629EA",
+        purple: "#3D6FFF",
         txtLines: '',
         txtDict: {},
         pedDict: {},
@@ -1855,8 +1855,11 @@
       drawGenotypeBars: function(){
         let self = this;
 
-        let blue = "#0059D1";
-        let red = "#DD0000";
+        let blue = " #e6e6e6";
+        let red = "#595959";
+
+        let w = "6px";
+        let h = "13px";
 
         // console.log("cachedGenotypes inside draw bars", self.cachedGenotypes);
 
@@ -1878,19 +1881,23 @@
           if(gt === "0/1") {
 
             node.append("rect")
-              .attr("width", "5px")
-              .attr('height', "13px")
+              .attr("width", w)
+              .attr('height', h)
               .attr("x", "-7")
               .attr("y", "25")
               .attr("opacity", opacity)
-              .attr("fill", blue);
+              .attr("fill", blue)
+              .style("stroke", "black")
+              .style("stroke-width", 1);
 
             node.append("rect")
               .attr("width", "5px")
               .attr('height', "13px")
-              .attr("x", "2")
+              .attr("x", "4")
               .attr("y", "25")
               .attr("opacity", opacity)
+              .style("stroke", "black")
+              .style("stroke-width",1)
               .attr("fill", red);
           }
 
@@ -1901,31 +1908,39 @@
               .attr("x", "-7")
               .attr("y", "25")
               .attr("opacity", opacity)
+              .style("stroke", "black")
+              .style("stroke-width", 1)
               .attr("fill", blue);
 
             node.append("rect")
-              .attr("width", "5px")
-              .attr('height', "13px")
-              .attr("x", "2")
+              .attr("width", w)
+              .attr('height', h)
+              .attr("x", "4")
               .attr("y", "25")
               .attr("opacity", opacity)
+              .style("stroke", "black")
+              .style("stroke-width", 1)
               .attr("fill", blue);
             }
           else if (gt === "1/1"){
             node.append("rect")
-              .attr("width", "5px")
-              .attr('height', "13px")
+              .attr("width", w)
+              .attr('height', h)
               .attr("x", "-7")
               .attr("y", "25")
               .attr("opacity", opacity)
+              .style("stroke", "black")
+              .style("stroke-width", 1)
               .attr("fill", red);
 
             node.append("rect")
-              .attr("width", "5px")
-              .attr('height', "13px")
-              .attr("x", "2")
+              .attr("width", w)
+              .attr('height', h)
+              .attr("x", "4")
               .attr("y", "25")
               .attr("opacity", opacity)
+              .style("stroke", "black")
+              .style("stroke-width", 1)
               .attr("fill", red);
           }
         }

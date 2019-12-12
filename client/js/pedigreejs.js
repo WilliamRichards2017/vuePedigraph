@@ -1001,7 +1001,7 @@ function mouseout() {
       font_size: '.75em',
       font_family: 'Helvetica',
       font_weight: 700,
-      background: "#f5f9ff",
+      background: "white",
 
       node_background: '#fdfdfd',
       validate: true,
@@ -1046,11 +1046,11 @@ function mouseout() {
 
     // var xytransform = pedcache.getposition(opts);  // cached position
 
-    var xytransform = [0, 0];
+    var xytransform = [100, 0];
 
     var xtransform = xytransform[0];
     var ytransform = xytransform[1];
-    var zoom = 0.9;
+    var zoom = 1.2;
     if(xytransform.length == 3){
       zoom = xytransform[2];
     }
