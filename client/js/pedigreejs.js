@@ -952,6 +952,12 @@
 }(window.pedigree_util = window.pedigree_util || {}, jQuery));
 
 
+function clickBG(){
+  console.log("triggering clickBG");
+
+  $('#pedigree').trigger('bgClick', "swag");
+}
+
 function click() {
   d3.select(this).select("circle").transition()
     .duration(750)
@@ -1027,11 +1033,13 @@ function mouseout() {
 
 
     svg.append("rect")
+      .attr("id", "pedigreeBackground")
       .attr("width", "100%")
       .attr("height", "96vh")
       .style("stroke", "darkgrey")
       .style("fill", opts.background) // or none
-      .style("stroke-width", 1);
+      .style("stroke-width", 1)
+      .on("click", clickBG);
 
 
 

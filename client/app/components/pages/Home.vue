@@ -101,11 +101,8 @@
             <div class="text-xs-center">
 
             <v-btn
-              :loading="loading3"
-              :disabled="loading3"
               color="blue-grey"
               class="ma-2 white--text"
-              @click="loader = 'loading3'"
               large
 
               v-on:click="launchedFrom = 'U'"> Submit Files

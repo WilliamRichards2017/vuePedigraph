@@ -189,10 +189,10 @@
             </thead>
             <tbody>
             <tr>
-              <v-icon dense right color="green">check_circle</v-icon>
+              <v-icon dense right color="green" v-show="familyPVal <= 0.05">check_circle</v-icon>
             </tr>
             <tr>
-              <v-icon dense right color="green">check_circle</v-icon>
+              <v-icon dense right color="green" v-show="projectPVal <= 0.05">check_circle</v-icon>
             </tr>
             </tbody>
           </table>
@@ -440,7 +440,13 @@
       localStorage.setItem('hub-iobio-tkn', self.token_type + ' ' + self.access_token);
       self.hubSession = new HubSession(self.source);
     },
+
+    beforeDestroy(){
+
+    },
+
     mounted() {
+
 
       let self = this;
 
@@ -485,9 +491,26 @@
       if (self.launchedFrom === "U") {
         self.buildFromUpload();
       }
+
+
     }
     ,
     methods: {
+
+      removeHighlight: function(){
+        let self = this;
+
+        console.log("removeHighlight");
+
+        self.opts.dataset = io.readLinkage(self.pedTxt);
+        self.opts = self.addCachedValuesToOpts(self.opts);
+        self.opts = ptree.build(self.opts);
+        ptree.build(self.opts);
+
+        self.highlightAll();
+        self.drawGenotypeBars();
+
+      },
 
       buildGTMapFromVcf(){
 
@@ -612,6 +635,7 @@
         self.populatePhenotypes();
 
         console.log("variants from gtMap");
+
 
       },
 
@@ -853,6 +877,13 @@
         }
 
         $('#pedigree').on('nodeClick', self.onNodeClick);
+        $('#pedigree').on('bgClick', self.onBGClick);
+
+
+
+
+        d3.select("#pedigreeBackground")
+          .on("click", console.log("clicked background"));
       },
 
       buildGenotypes: function () {
@@ -869,6 +900,8 @@
         self.drawGenotypeBars();
 
         $('#pedigree').on('nodeClick', self.onNodeClick);
+        $('#pedigree').on('bgClick', self.onBGClick);
+
       },
       //Needed for when mosaic has variants for a project with ped data
       parseVariants: function () {
@@ -890,6 +923,12 @@
         self.highlightedSampleIDs = fam.getFamily(nodeId.toString());
         self.highlightFamily();
       },
+
+      onBGClick: function(e, swag){
+        console.log("onBGClick", swag);
+        this.removeHighlight();
+      },
+
       notHighlighted: function (id) {
         let self = this;
         if (self.highlightedSampleIDs.includes(id)) {
@@ -932,7 +971,32 @@
         }
       },
 
+      highlightAll: function(){
+
+        console.log("inside highlight Family");
+        let self = this;
+        let parentNodes =
+          d3.selectAll(".node").nodes().map(function (d) {
+            return d.parentNode;
+          });
+        parentNodes.forEach(function (n) {
+          let nodeToHightlight = d3.select(n.nextSibling.childNodes[0]);
+          let border = d3.select(n.previousSibling);
+          let txt = d3.select(n.nextSibling.nextSibling.nextSibling.nextSibling);
+
+          nodeToHightlight.style('opacity', 1)
+          border.style('opacity', 1);
+          txt.style('opacity', 1);
+
+        });
+
+        self.highlightGTs();
+
+      },
+
       highlightFamily: function () {
+
+        console.log("inside highlight Family");
         let self = this;
         let parentNodes =
           d3.selectAll(".node").nodes().map(function (d) {
@@ -945,6 +1009,7 @@
           if (self.notHighlighted(n.id.toString())) {
             nodeToHightlight.style('opacity', 0.1);
             border.style('opacity', 0.1);
+            console.log("found not highlighted");
             txt.style("opacity", 0.1);
           } else {
 
@@ -1355,6 +1420,7 @@
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
           self.drawGenotypeBars();
+
         }
 
 
@@ -1904,6 +1970,8 @@
         self.buildRegression();
         console.log("self.sampleIds in watcher", self.sampleIds);
         $('#pedigree').on('nodeClick', self.onNodeClick)
+        $('#pedigree').on('bgClick', self.onBGClick);
+
 
 
 
@@ -1940,11 +2008,7 @@
           self.populateSampleIds();
           self.buildLinearRegression();
         } else {
-          self.opts.dataset = io.readLinkage(self.pedTxt);
-          self.opts = self.addCachedValuesToOpts(self.opts);
-          self.opts = ptree.build(self.opts);
-          ptree.build(self.opts)
-          self.drawGenotypeBars();
+          self.removeHighlight();
 
 
         }
