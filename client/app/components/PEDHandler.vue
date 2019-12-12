@@ -87,37 +87,10 @@
         </v-card>
 
 
-        <v-card>
-
+        <v-card style="background-color: #f2f2f2;">
 
 
           <div id="logisticRegression" v-show="displayAffectedAs === 'binary'">
-
-            <div style="display: inline-flex">
-
-
-              <v-tooltip>
-                <template v-slot:activator="{ on }">
-                <v-icon v-on="on">info_outline</v-icon>
-                </template>
-                <span>This will invert the color scale for the Phenotype values</span>
-
-              </v-tooltip>
-
-              <v-btn v-on:click="invertRange()" small>Invert color scale</v-btn>
-
-
-
-
-              <!--<div style="margin-top: 10px" v-show="inverted"> Affected Threshold:-->
-                <!--<strong style="margin-top: 10px; margin-left: 10px">[ {{minThreshold.toFixed(2)}}, {{maxThreshold.toFixed(2)}} ]</strong>-->
-              <!--</div>-->
-
-              <!--<div style="margin-top: 10px" v-show="!inverted"> Affected Range:-->
-                <!--<strong style="margin-top: 10px; margin-left: 10px"  v-show="!inverted">[{{maxThreshold.toFixed(2)}}, {{minThreshold.toFixed(2)}}]</strong>-->
-              <!--</div>-->
-
-            </div>
 
 
             <!--<div style="display: inline-flex">  <div style="margin-top: 10px"> Affected Cuttoff</div>-->
@@ -147,36 +120,26 @@
             </table>
 
 
+            <div style="display: inline-flex">
+
+
+              <v-tooltip>
+                <template v-slot:activator="{ on }">
+                  <v-icon v-on="on" color="black">info_outline</v-icon>
+                </template>
+                <span>This will invert the color scale for the Phenotype values</span>
+
+              </v-tooltip>
+
+              <v-btn v-on:click="invertRange()" small>Invert color scale</v-btn>
+            </div>
+
+
           </div>
 
 
 
         <div id="linearRegression" v-show="displayAffectedAs === 'continuous'">
-
-          <div style="display: inline-flex">
-
-
-            <v-tooltip left>
-              <template v-slot:activator="{ on }">
-                <v-icon v-on="on">info_outline</v-icon>
-              </template>
-              <span>This will invert the color scale for the Phenotype values</span>
-            </v-tooltip>
-
-
-            <v-btn v-on:click="invertRange()" small>Invert affect status</v-btn>
-
-
-            <!--<div style="margin-top: 10px" v-show="inverted"> Affected Range:-->
-            <!--<strong style="margin-top: 10px; margin-left: 10px">[ {{minThreshold.toFixed(2)}}, {{maxThreshold.toFixed(2)}} ]</strong>-->
-          <!--</div>-->
-
-          <!--<div style="margin-top: 10px" v-show="!inverted"> Affected Range:-->
-          <!--<strong style="margin-top: 10px; margin-left: 10px"  v-show="!inverted">[{{maxThreshold.toFixed(2)}}, {{minThreshold.toFixed(2)}}]</strong>-->
-        <!--</div>-->
-
-          </div>
-
 
             <div class="tableTitle">Regression Statistics</div>
 
@@ -196,7 +159,7 @@
                   <td>{{(familyCorrelation**2).toFixed(4)}}</td>
                  <td id="familyP" class="val">{{familyPVal.toExponential(3)}}</td>
                   <td>
-                    <v-icon right color="green" v-show="familyPVal <= 0.05">check_circle</v-icon>
+                    <v-icon dense right color="green" v-show="familyPVal <= 0.05">check_circle</v-icon>
                   </td>
                 </tr>
 
@@ -208,32 +171,24 @@
                   <td class="val">{{(projectCorrelation**2).toFixed(4)}}</td>
                   <td id="projectP" class="val"> {{projectPVal.toExponential(3)}}</td>
                   <td>
-                    <v-icon right color="green" v-show="projectPVal <= 0.05">check_circle</v-icon>
+                    <v-icon dense right color="green" v-show="projectPVal <= 0.05">check_circle</v-icon>
                   </td>
                 </tr>
               </table>
 
-            <!--<table>-->
-              <!--<thead>-->
-              <!--<th style="height: 32px; font-weight: normal">-->
-                <!--Significant-->
-              <!--</th>-->
-              <!--</thead>-->
-              <!--<tbody>-->
-              <!--<tr>-->
-                <!--<td style="height: 32px">-->
-                  <!--<v-icon right color="green" v-show="familyPVal <= 0.05">check_circle</v-icon>-->
-                <!--</td>-->
-              <!--</tr>-->
-              <!--<tr>-->
-                <!--<td style="height: 32px">-->
-                  <!--<v-icon right color="green" v-show="projectPVal <= 0.05">check_circle</v-icon>-->
-                <!--</td>-->
-              <!--</tr>-->
-              <!--</tbody>-->
-            <!--</table>-->
+            <div style="display: inline-flex; justify-content: center">
+
+              <v-tooltip left>
+                <template v-slot:activator="{ on }">
+                  <v-icon v-on="on" color="black">info_outline</v-icon>
+                </template>
+                <span>This will invert the color scale for the Phenotype values</span>
+              </v-tooltip>
 
 
+              <v-btn v-on:click="invertRange()" small color="white">Invert color scale</v-btn>
+
+            </div>
           </div>
 
         </div>
@@ -822,7 +777,12 @@
 
             d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
               .call(sliderRange)
-              .append("text").text(self.selectedPhenotype);
+              .append("text").text(self.selectedPhenotype)
+              .attr("class", "axis-label")
+              .attr("x", -250)
+              .attr("y", -25)
+              .attr("transform", "rotate(-90)");
+
           }
 
           else if(self.displayAffectedAs === "binary"){
@@ -2266,7 +2226,12 @@
 
   }
 
+  .axis-label {
 
+    fill: black;
+    font-size: 14px;
+    font-weight: bold;
+  }
 
 
 

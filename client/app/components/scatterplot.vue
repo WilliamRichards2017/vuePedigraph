@@ -1,5 +1,5 @@
 <template>
-  <div id='vueScatter' width="500px" height="500px" style="background-color:	 #f2f2f2">
+  <div id='vueScatter' width="500px" height="500px" style="background-color: #f2f2f2; border-color: black; border-style: solid; border-width: 1px" >
     <div class="chartTitle"> GT/PT regression for selected Family</div>
 
     <div class="svg-container">
@@ -11,9 +11,8 @@
         <g transform="translate(50, 30) " id="scatterplot">
           <g id="plot"></g>
           <path id="regression-line"/>
-          <g id="x-axis" transform="translate(0, 400)"></g>
-          <g id="yLeft-axis" transform="translate(0, 0)"></g>
-          <g id="yRight-axis" transform="translate(0, 0)"></g>
+          <g id="x-axis" transform="translate(0, 400)" style="font-size: 12px; font-weight: bold"></g>
+          <g id="yLeft-axis" transform="translate(0, 0)" style="font-size: 12px; font-weight: bold"></g>
 
         </g>
       </svg>
@@ -84,23 +83,21 @@
         let yLeftAxis = d3.select("#yLeft-axis");
         // let yRightAxis = d3.select("#yRight-axis")
         let xAxis = d3.select("#x-axis");
+
         xAxis.append("text")
           .attr("class", "axis-label")
           .attr("id", "xlabel")
-        d3.select("#xlabel")
+          .append("g")
           .attr("transform", "translate(150, 37)")
           .text("Alternate Allele Frequency (GT)");
 
 
         d3.select("#ylabel")
-          .attr("transform", "rotate(-90)")
-          .attr("y", -50)
-          .attr("x", -30)
           .text("PTC Sensitivity (PT)");
 
         yLeftAxis
-          .call(d3.axisLeft(self.yScale))
-          .attr("transform", "translate(0, 0 )");
+          .call(d3.axisLeft(self.yScale));
+          // .attr("transform", "translate(0, 0 )");
 
         if(self.regressionType === "Logistic") {
 
@@ -113,45 +110,60 @@
 
 
 
+        let blue = " #e6e6e6";
+        let red = "#595959";
+
         xAxis
           .call(d3.axisBottom(self.xScale).ticks(3).tickFormat(function (d, i) {
             return ticks[i];
           }))
 
           xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 70)
+          .attr("x", 75)
           .attr("y", 5)
-          .attr("fill", "blue");
+            .style("stroke", "black")
+            .style("stroke-width", 1)
+          .attr("fill", blue);
 
         xAxis.append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 80)
+          .attr("x", 86)
           .attr("y", 5)
-          .attr("fill", "blue");
+          .style("stroke", "black")
+          .style("stroke-width", 1)
+          .attr("fill", blue);
 
 
 
 
         xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 169)
+          .attr("x", 222)
           .attr("y", 5)
-          .attr("fill", "blue");
+          .style("stroke", "black")
+          .style("stroke-width", 1)
+          .attr("fill", blue);
 
         xAxis.append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 179)
+          .attr("x", 233)
           .attr("y", 5)
-          .attr("fill", "red");
+          .style("stroke", "black")
+          .style("stroke-width", 1)
+          .attr("fill", red);
 
 
 
         xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 270)
+          .attr("x", 363)
           .attr("y", 5)
-          .attr("fill", "red");
+          .style("stroke", "black")
+          .style("stroke-width", 1)
+          .attr("fill", red);
 
         xAxis.append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 280)
+          .attr("x", 374)
           .attr("y", 5)
-          .attr("fill", "red");
+          .style("stroke", "black")
+          .style("stroke-width", 1)
+          .attr("fill", red);
 
 
 

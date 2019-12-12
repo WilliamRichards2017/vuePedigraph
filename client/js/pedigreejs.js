@@ -1528,10 +1528,8 @@ function mouseout() {
       .style("stroke-width", "1px")
       .style("stroke-dasharray", "2,4");
 
-
-    let blue = "#0059D1";
-    let red = "#DD0000";
-
+    let blue = " #e6e6e6";
+    let red = "#595959";
 
     pedLegend.append("rect").attr("width", "5px").attr('height', "13px")
       .attr("x", 10)
