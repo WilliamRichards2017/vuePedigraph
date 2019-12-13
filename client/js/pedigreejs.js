@@ -1046,11 +1046,11 @@ function mouseout() {
 
     // var xytransform = pedcache.getposition(opts);  // cached position
 
-    var xytransform = [100, 0];
+    var xytransform = [75, 0];
 
     var xtransform = xytransform[0];
     var ytransform = xytransform[1];
-    var zoom = 1.2;
+    var zoom = .9;
     if(xytransform.length == 3){
       zoom = xytransform[2];
     }
@@ -1515,14 +1515,17 @@ function mouseout() {
       .attr("z-index", 1);
 
 
-    pedLegend.append("rect").attr("width", 133).attr("height", 120).style("fill", "#dde9f9").style("opacity", 0.9).style("stroke", "black");
+    pedLegend.append("rect").attr("width", 133).attr("height", 160).style("fill", "#f2f2f2").style("opacity", 0.9).style("stroke", "black");
 
-    pedLegend.append("text").attr("x", 35).attr("y", 15).text("Phenotype N/A").style("font-size", "12px").attr("alignment-baseline","middle");
-    pedLegend.append("text").attr("x", 35).attr("y", 46).text("Hom. Ref.").style("font-size", "12px").attr("alignment-baseline","middle");
-    pedLegend.append("text").attr("x", 35).attr("y", 71).text("Het.").style("font-size", "12px").attr("alignment-baseline","middle");
-    pedLegend.append("text").attr("x", 35).attr("y", 97).text("Hom. Alt.").style("font-size", "12px").attr("alignment-baseline","middle");
 
-    pedLegend.append("circle").attr("cx",15).attr("cy",15).attr("r", 7)
+    pedLegend.append("text").attr("x", 15).attr("y", 15).text("Legend").style("font-size", "12px").attr("alignment-baseline","middle").style("font-weight", "bold").style("text-decoration", "underline");
+
+    pedLegend.append("text").attr("x", 35).attr("y", 46).text("Phenotype N/A").style("font-size", "12px").attr("alignment-baseline","middle");
+    pedLegend.append("text").attr("x", 35).attr("y", 71).text("Hom. Ref.").style("font-size", "12px").attr("alignment-baseline","middle");
+    pedLegend.append("text").attr("x", 35).attr("y", 100).text("Het.").style("font-size", "12px").attr("alignment-baseline","middle");
+    pedLegend.append("text").attr("x", 35).attr("y", 128).text("Hom. Alt.").style("font-size", "12px").attr("alignment-baseline","middle");
+
+    pedLegend.append("circle").attr("cx",15).attr("cy",46).attr("r", 7)
       .style("fill", "none")
       .style("stroke", "black")
       .style("stroke-width", "1px")
@@ -1533,41 +1536,54 @@ function mouseout() {
 
     pedLegend.append("rect").attr("width", "5px").attr('height', "13px")
       .attr("x", 10)
-      .attr("y", 37)
-      .attr("fill", blue);
+      .attr("y", 62)
+      .attr("fill", blue)
+      .style("stroke", "black")
+      .style("stroke-width", 1);
 
     pedLegend.append("rect").attr("width", "5px").attr('height', "13px")
       .attr("x", 20)
-      .attr("y", 37)
-      .attr("fill", blue);
-
-    pedLegend.append("rect")
-      .attr("width", "5px")
-      .attr('height', "13px")
-      .attr("x", 10)
       .attr("y", 62)
-      .attr("fill", blue);
+      .attr("fill", blue)
 
-    pedLegend.append("rect")
-      .attr("width", "5px")
-      .attr('height', "13px")
-      .attr("x", 20)
-      .attr("y", 62)
-      .attr("fill", red);
+      .style("stroke", "black")
+      .style("stroke-width", 1);
 
     pedLegend.append("rect")
       .attr("width", "5px")
       .attr('height', "13px")
       .attr("x", 10)
       .attr("y", 90)
-      .attr("fill", red);
+      .attr("fill", blue)
+      .style("stroke", "black")
+      .style("stroke-width", 1);
 
     pedLegend.append("rect")
       .attr("width", "5px")
       .attr('height', "13px")
       .attr("x", 20)
       .attr("y", 90)
-      .attr("fill", red);
+      .attr("fill", red)
+      .style("stroke", "black")
+      .style("stroke-width", 1);
+
+    pedLegend.append("rect")
+      .attr("width", "5px")
+      .attr('height', "13px")
+      .attr("x", 10)
+      .attr("y", 118)
+      .attr("fill", red)
+      .style("stroke", "black")
+      .style("stroke-width", 1);
+
+    pedLegend.append("rect")
+      .attr("width", "5px")
+      .attr('height', "13px")
+      .attr("x", 20)
+      .attr("y", 118)
+      .attr("fill", red)
+      .style("stroke", "black")
+      .style("stroke-width", 1);
 
 
     return opts;

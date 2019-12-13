@@ -1,17 +1,17 @@
 <template>
-  <div id='vueScatter' width="500px" height="500px" style="background-color: #f2f2f2; border-color: black; border-style: solid; border-width: 1px" >
+  <div id='vueScatter' width="400px" height="400px" style="background-color: #f2f2f2; border-color: black; border-style: solid; border-width: 1px" >
     <div class="chartTitle"> GT/PT regression for selected Family</div>
 
     <div class="svg-container">
 
-      <svg class="scatter-plot" id="scatterplotSvg" width="500px" height="500px">
-        <rect width="400px" height="400px" style="fill: white" transform="translate(50, 30)"></rect>
+      <svg class="scatter-plot" id="scatterplotSvg" width="400px" height="400px">
+        <rect width="300px" height="300px" style="fill: white" transform="translate(50, 30)"></rect>
 
         <!--<rect width="300" height="300"/>-->
         <g transform="translate(50, 30) " id="scatterplot">
           <g id="plot"></g>
           <path id="regression-line"/>
-          <g id="x-axis" transform="translate(0, 400)" style="font-size: 12px; font-weight: bold"></g>
+          <g id="x-axis" transform="translate(0, 300)" style="font-size: 12px; font-weight: bold"></g>
           <g id="yLeft-axis" transform="translate(0, 0)" style="font-size: 12px; font-weight: bold"></g>
 
         </g>
@@ -31,8 +31,8 @@
         purple: "#3D6FFF",
         xScale: null,
         yScale: null,
-        width: 400,
-        height: 400
+        width: 300,
+        height: 300
       }
     },
 
@@ -75,9 +75,6 @@
           .domain([self.minPt, self.maxPt])
           .range([self.height, 0]);
 
-
-
-
         let svg = d3.select("#scatterplotSvg");
         let ticks = ["0 AF", "0.5 AF", "1 AF"];
         let yLeftAxis = d3.select("#yLeft-axis");
@@ -119,14 +116,14 @@
           }))
 
           xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 75)
+          .attr("x", 62)
           .attr("y", 5)
             .style("stroke", "black")
             .style("stroke-width", 1)
           .attr("fill", blue);
 
         xAxis.append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 86)
+          .attr("x", 73)
           .attr("y", 5)
           .style("stroke", "black")
           .style("stroke-width", 1)
@@ -136,14 +133,14 @@
 
 
         xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 222)
+          .attr("x", 172)
           .attr("y", 5)
           .style("stroke", "black")
           .style("stroke-width", 1)
           .attr("fill", blue);
 
         xAxis.append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 233)
+          .attr("x", 182)
           .attr("y", 5)
           .style("stroke", "black")
           .style("stroke-width", 1)
@@ -152,14 +149,14 @@
 
 
         xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 363)
+          .attr("x", 277)
           .attr("y", 5)
           .style("stroke", "black")
           .style("stroke-width", 1)
           .attr("fill", red);
 
         xAxis.append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 374)
+          .attr("x", 287)
           .attr("y", 5)
           .style("stroke", "black")
           .style("stroke-width", 1)
@@ -170,10 +167,10 @@
         let squares = d3.select("#plot").selectAll('rect')
           .data(M).join("rect");
         squares
-          .attr("x", d => self.xScale(d.xSource) - 12)
-          .attr("y", d => self.yScale(d.ySource) - 12)
-          .attr("width", 24)
-          .attr("height", 24)
+          .attr("x", d => self.xScale(d.xSource) - 10)
+          .attr("y", d => self.yScale(d.ySource) - 10)
+          .attr("width", 20)
+          .attr("height", 20)
           .style("fill", d => d.color)
           .style("opacity", d => d.opacity)
           .on("click", d => console.log("(x,y): ", d.x, d.y));
@@ -190,7 +187,7 @@
         circles
           .attr("cx", d => self.xScale(d.xSource))
           .attr("cy", d => self.yScale(d.ySource))
-          .attr("r", 12)
+          .attr("r", 10)
           .style("fill", d => d.color)
           .style("opacity", d => d.opacity)
           .on("click", d => console.log("(x,y): ", d.x, d.y));

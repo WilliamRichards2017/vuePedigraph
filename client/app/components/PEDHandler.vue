@@ -75,7 +75,7 @@
       <!--<div class="flexCol" width="450px" >-->
 
 
-      <div id="container"  style="width: 30%">
+      <div id="container"  style="width: 400px">
 
       <div  class="col" height="100vh">
 
@@ -118,25 +118,22 @@
                 <th class="val"> F1 </th> <td id="f1P" class="val"> {{projectF1}}</td> <td id="f1F" class="val">{{familyF1}}</td>
               </tr>
             </table>
-
-
-            <div style="display: inline-flex">
-
-
-              <v-tooltip>
-                <template v-slot:activator="{ on }">
-                  <v-icon v-on="on" color="black">info_outline</v-icon>
-                </template>
-                <span>This will invert the color scale for the Phenotype values</span>
-
-              </v-tooltip>
-
-              <v-btn v-on:click="invertRange()" small>Invert color scale</v-btn>
-            </div>
-
-
           </div>
 
+
+          <div style="display: inline-flex">
+
+
+            <v-tooltip>
+              <template v-slot:activator="{ on }">
+                <v-icon v-on="on" color="black">info_outline</v-icon>
+              </template>
+              <span>This will invert the color scale for the Phenotype values</span>
+
+            </v-tooltip>
+
+            <v-btn v-on:click="invertRange()" small>Invert color scale</v-btn>
+          </div>
 
 
         <div id="linearRegression" v-show="displayAffectedAs === 'continuous'">
@@ -175,22 +172,22 @@
                   </td>
                 </tr>
               </table>
-
-            <div style="display: inline-flex; justify-content: center">
-
-              <v-tooltip left>
-                <template v-slot:activator="{ on }">
-                  <v-icon v-on="on" color="black">info_outline</v-icon>
-                </template>
-                <span>This will invert the color scale for the Phenotype values</span>
-              </v-tooltip>
-
-
-              <v-btn v-on:click="invertRange()" small color="white">Invert color scale</v-btn>
-
-            </div>
           </div>
 
+
+          <div style="display: inline-flex; justify-content: center">
+
+            <v-tooltip left>
+              <template v-slot:activator="{ on }">
+                <v-icon v-on="on" color="black">info_outline</v-icon>
+              </template>
+              <span>This will invert the color scale for the Phenotype values</span>
+            </v-tooltip>
+
+
+            <v-btn v-on:click="invertRange()" small color="white">Invert color scale</v-btn>
+
+          </div>
         </div>
 
 
@@ -202,33 +199,7 @@
 
         </v-card>
 
-
-      </div>
-
-
-
-            <!--<div class="tableTitle">Stats Legend</div>-->
-
-            <!--<v-card id="regressionLegend" class="col" style="margin-left: 10px; margin-right: 10px;">-->
-
-
-              <!--<table>-->
-                <!--<thead>-->
-                <!--<th></th> <th style="background: limegreen; height: 20px;"></th> <th style="background: yellow"> </th> <th style="background: orange"></th> <th style="background: red"> </th>-->
-                <!--</thead>-->
-                <!--<tbody>-->
-                <!--<tr>-->
-                  <!--<th> Pearsons 'r' </th> <td> r > 0.7 </td> <td> r > 0.5 </td> <td> r > 0.3 </td> <td> r <= 0.3 </td>-->
-                <!--</tr>-->
-                <!--<tr>-->
-                  <!--<th> P-val </th> <td> p < 0.05 </td> <td> p < 0.1 </td> <td> p < 0.25 </td> <td> p >= 0.25 </td>-->
-                <!--</tr>-->
-                <!--</tbody>-->
-
-              <!--</table>-->
-
-            <!--</v-card>-->
-
+        </div>
       </div>
 
 
@@ -762,7 +733,7 @@
               .min(self.minPt)
               .max(self.maxPt)
               .default([self.minPt, self.maxPt])
-              .height(400)
+              .height(300)
               .ticks(0)
               .fill('#2196f3')
               .on('onchange', val => {
