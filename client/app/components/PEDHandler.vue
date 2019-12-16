@@ -7,7 +7,6 @@
       <v-spacer></v-spacer>
 
       <v-select :items="familyIDs"
-                @change="resetValues()"
                 id='selectFamily'
                 label="Select Family ID"
                 v-model="selectedFamily"
@@ -553,12 +552,13 @@
 
         self.populateModel();
         self.populatePTC();
-        // self.selectedPhenotype = "PTC Sensitivity";
+        self.selectedPhenotype = "PTC Sensitivity";
+        self.selectedGenotype = "7:141972755_C/T";
+
         self.selectedRegression = "Linear";
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
         self.ptMap = self.PTCPhenotypes;
-        // self.selectedGenotype = "7:141972755_C/T";
         self.selectedFamily = "1463";
         // self.selectedFamily = "1408";
         self.selectedGenotype = self.parsedVariants[0];
@@ -1634,6 +1634,7 @@
       buildRegression: function(){
 
         if(this.selectedGenotype === null || this.selectedPhenotype === null){
+          console.log("uhh ohh returning");
           return;
         }
         if(this.displayAffectedAs === "continuous"){
@@ -1932,18 +1933,32 @@
       selectedFamily: function () {
         let self = this;
 
+        console.log("self.selectedGT before", self.selectedGenotype);
+        console.log("self.selectedPT before", self.selectedPhenotype);
+
+
+
+        let gt = self.selectedGenotype;
+        let pt = self.selectedPhenotype;
+
+        self.resetValues();
+
+
+
+        self.selectedGenotype = gt;
+        self.selectedPhenotype = pt;
+
 
         if(self.launchedFrom === "D") {
-          self.selectedPhenotype = "PTC Sensitivity";
+          // self.selectedPhenotype = "PTC Sensitivity";
           // self.selectedGenotype = "7:141972755_C/T";
         }
-        self.populateSampleIds();
+
 
         self.buildPhenotypes();
-
+        self.populateSampleIds();
         self.buildGenotypes();
-
-
+        self.buildRegression();
 
         self.buildRegression();
         console.log("self.sampleIds in watcher", self.sampleIds);
