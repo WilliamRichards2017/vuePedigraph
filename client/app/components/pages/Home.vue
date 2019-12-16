@@ -245,7 +245,7 @@
 
     <PEDHandler
       v-if="launchedFrom === 'D'"
-      :launchedFrom="launchedFrom" :txt="demoTxt" :phenotypes="demoPhenotypes" :variants="demoVariants"
+      :launchedFrom="launchedFrom" :txt="demoTxt" :phenotypes="demoPhenotypes" :variants="demoVariants" :vcfTxt="uploadedVCF"
      />
 
     <PEDHandler
@@ -273,6 +273,8 @@
 
   import demoTxt from '../../../static/ped.js';
   import pedTxtBuilder from '../../../js/pedTxtBuilder'
+
+  import cephGTs from '../../../static/cephGtS'
 
   import PEDHandler from "./../PEDHandler.vue";
   import FileReader from "./../FileReader.vue";
@@ -337,7 +339,7 @@
         // self.buildAllVariants();
       }
       else if (self.launchedFrom === "D"){
-
+        self.uploadedVCF = cephGTs;
       }
 
     },

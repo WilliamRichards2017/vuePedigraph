@@ -526,7 +526,6 @@
 
         self.idList = sampleIDs;
 
-
         return gtMap;
 
       },
@@ -547,7 +546,10 @@
       buildFromDemo() {
         let self = this;
         self.pedTxt = self.txt;
-        self.parsedVariants = self.variants;
+
+
+        self.genotypeMap = self.buildGTMapFromVcf();
+        self.parsedVariants = Object.keys(self.genotypeMap);
 
         self.populateModel();
         self.populatePTC();
@@ -555,14 +557,11 @@
         self.selectedRegression = "Linear";
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
-
         self.ptMap = self.PTCPhenotypes;
-
         // self.selectedGenotype = "7:141972755_C/T";
         self.selectedFamily = "1463";
         // self.selectedFamily = "1408";
-
-        self.selectedGenotype = "7:141972755_C/T";
+        self.selectedGenotype = self.parsedVariants[0];
 
       },
 
@@ -666,7 +665,7 @@
         }
         else if(self.launchedFrom === "D"){
           console.log("PTCPhenotypes", self.PTCPhenotypes);
-          self.regression = new Regression(self.TASGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
+          self.regression = new Regression(self.cachedGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
         }
 
         self.linePoints = self.regression.getLinePoints();
@@ -798,7 +797,7 @@
         self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
 
 
-        self.regression = new Regression(self.TASGenotypes, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex);
+        self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex);
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
 
@@ -1936,11 +1935,11 @@
 
         if(self.launchedFrom === "D") {
           self.selectedPhenotype = "PTC Sensitivity";
-          self.selectedGenotype = "7:141972755_C/T";
+          // self.selectedGenotype = "7:141972755_C/T";
         }
+        self.populateSampleIds();
 
         self.buildPhenotypes();
-        self.populateSampleIds();
 
         self.buildGenotypes();
 
