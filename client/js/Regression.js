@@ -243,6 +243,9 @@ export default class Regression {
         }
       }
     }
+
+    console.log("self.xRawP", self.xRawP);
+    console.log("self.xRawF", self.xRawF);
   }
 
   calculateProjectCorrelation(){
@@ -331,10 +334,10 @@ export default class Regression {
     let self = this;
     if(self.regressionType === "Linear"){
       self.populateLinearScatterplotData();
+
     }
     else if(self.regressionType === "Logistic"){
       self.populateLogisticScatterplotData();
-
     }
   }
 
@@ -356,6 +359,10 @@ export default class Regression {
 
   populateLogisticProjectMetrics(xF,yF){
     //
+
+
+    console.log("xF.length", xF.length);
+    console.log("xY.length", yF.length);
 
     let self = this;
 

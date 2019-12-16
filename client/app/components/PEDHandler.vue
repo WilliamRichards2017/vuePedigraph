@@ -92,6 +92,21 @@
           <div id="logisticRegression" v-show="displayAffectedAs === 'binary'">
 
 
+            <div style="display: inline-flex">
+
+
+              <v-tooltip>
+                <template v-slot:activator="{ on }">
+                  <v-icon v-on="on" color="black">info_outline</v-icon>
+                </template>
+                <span>This will invert the color scale for the Phenotype values</span>
+
+              </v-tooltip>
+
+              <v-btn v-on:click="invertRange()" small>Invert color scale</v-btn>
+            </div>
+
+
             <!--<div style="display: inline-flex">  <div style="margin-top: 10px"> Affected Cuttoff</div>-->
               <!--<v-select :items="operands" style="width: 50px; margin-top: 0; padding-left:10px; padding-top: 0" outlined dense v-model="selectedOperand"></v-select>-->
               <!--<strong style="margin-top: 10px; margin-left: 10px">{{affectedCuttoff}} </strong> </div>-->
@@ -119,20 +134,6 @@
             </table>
           </div>
 
-
-          <div style="display: inline-flex">
-
-
-            <v-tooltip>
-              <template v-slot:activator="{ on }">
-                <v-icon v-on="on" color="black">info_outline</v-icon>
-              </template>
-              <span>This will invert the color scale for the Phenotype values</span>
-
-            </v-tooltip>
-
-            <v-btn v-on:click="invertRange()" small>Invert color scale</v-btn>
-          </div>
 
 
         <div id="linearRegression" v-show="displayAffectedAs === 'continuous'">
@@ -210,7 +211,6 @@
 
 <script>
   import 'vuetify'
-  import TAS from '../../static/TAS2R38';
   // import '@mdi/font/css/materialdesignicons.css' // Ensure you are using css-loader
   // import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
@@ -226,6 +226,7 @@
   import navigation from './navigation.vue'
   import vueScatter from "./scatterplot.vue"
   import mapToCsv from "../../js/mapToCsv";
+  import TAS from "../../static/TAS2R38";
   // import * as d3 from "d3";
 
   export default {
@@ -284,6 +285,8 @@
         sampleIds: null,
         idList: null,
         phenotypes: ["PTC Sensitivity"],
+
+        allIds: null,
 
         PTIndex: null,
 
@@ -550,8 +553,6 @@
         self.ptMap = self.PTCPhenotypes;
         self.selectedGenotype = self.parsedVariants[0];
 
-        console.log("self")
-
       },
 
 
@@ -617,12 +618,74 @@
           }
       },
 
+      populateAllSampleIds(){
+
+
+        this.allIds = [];
+
+
+        for(let i = 1; i < this.txtLines.length; i++){
+
+          let cols = this.txtLines[i].split(" ");
+
+          if(typeof cols[1] === "undefined"){}
+          else {
+            this.allIds.push(cols[1])
+          }
+
+        }
+        //console.log("allIds", this.allIds);
+
+      },
+
+      populateGenotypes(){
+
+        this.fullGTMap = {}
+
+        console.log("gtMap", this.genotypeMap);
+
+        let gts = this.genotypeMap[this.selectedGenotype];
+
+        for(let i = 0; i < this.allIds.length; i++) {
+
+          let id = this.allIds[i];
+
+          if (this.allIds.includes(id.toString())) {
+
+            let index = this.allIds.indexOf(id.toString());
+
+            let gtForID = gts[index];
+            let allele = " ";
+
+            if (typeof gtForID === "undefined") {
+
+            } else {
+
+              allele = gtForID.substr(0, 3);
+
+            }
+
+            // console.log("id/gt", id, allele);
+
+            this.fullGTMap[id] = allele;
+
+          }
+
+        }
+
+      },
+
 
       buildLinearRegression() {
 
 
 
         let self = this;
+
+
+        //TODO - implement this
+        self.populateGenotypes();
+
 
 
 
@@ -634,7 +697,7 @@
           self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex, "U");
         }
         else if(self.launchedFrom === "D"){
-          self.regression = new Regression(self.cachedGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
+          self.regression = new Regression(self.fullGTMap, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
         }
 
         self.linePoints = self.regression.getLinePoints();
@@ -740,9 +803,6 @@
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
 
-        self.buildRegressionTable();
-        self.buildPTLegend();
-
         self.populateLogisticEvaluationMetrics();
 
 
@@ -753,6 +813,7 @@
       populateModel() {
         let self = this;
         self.splitTxt();
+        self.populateAllSampleIds();
         self.populateTxtDict();
         self.populatePedDict();
         self.populateFamilies();
@@ -1103,7 +1164,6 @@
         }
         else if(self.displayAffectedAs === "binary") {
 
-          this.buildLogisticRegressionLegend();
 
         }
 
