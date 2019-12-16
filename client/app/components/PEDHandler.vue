@@ -172,21 +172,6 @@
                 </tr>
               </table>
           </div>
-
-
-          <div style="display: inline-flex; justify-content: center">
-
-            <v-tooltip left>
-              <template v-slot:activator="{ on }">
-                <v-icon v-on="on" color="black">info_outline</v-icon>
-              </template>
-              <span>This will invert the color scale for the Phenotype values</span>
-            </v-tooltip>
-
-
-            <v-btn v-on:click="invertRange()" small color="white">Invert color scale</v-btn>
-
-          </div>
         </div>
 
 
@@ -240,6 +225,7 @@
   import toggle from './toggle.vue'
   import navigation from './navigation.vue'
   import vueScatter from "./scatterplot.vue"
+  import mapToCsv from "../../js/mapToCsv";
   // import * as d3 from "d3";
 
   export default {
@@ -554,14 +540,17 @@
         self.populatePTC();
         self.selectedPhenotype = "PTC Sensitivity";
         self.selectedGenotype = "7:141972755_C/T";
+        self.selectedFamily = "1463";
+
+
 
         self.selectedRegression = "Linear";
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
         self.ptMap = self.PTCPhenotypes;
-        self.selectedFamily = "1463";
-        // self.selectedFamily = "1408";
         self.selectedGenotype = self.parsedVariants[0];
+
+        console.log("self")
 
       },
 
@@ -586,17 +575,12 @@
 
         self.populatePhenotypes();
 
-        console.log("variants from gtMap");
-
-
       },
 
       populatePhenotypes(){
-        console.log("phenotype text", this.phenotypeText);
 
         let lines = this.phenotypeText.split("\n");
 
-        console.log("lines", lines);
 
         let firstLine = lines[0];
 
@@ -609,9 +593,6 @@
         for(let i = 1; i < headerCols.length; i++){
           this.phenotypes.push(headerCols[i]);
         }
-
-        console.log("this.phenotypes in populatePhenotypes", this.phenotypes);
-
         this.buildPTMap();
 
       },
@@ -634,13 +615,6 @@
               this.ptMap[cols[0]].push(cols[j]);
             }
           }
-
-          //TODO: refactor to remove allw htiespace from value
-
-        console.log("ptMap", this.ptMap);
-
-
-
       },
 
 
@@ -651,37 +625,23 @@
         let self = this;
 
 
-        console.log("self.phenotypes inside buildLinearRegression", self.phenotypes);
 
         self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
 
-        console.log("self.PTINdex right before regression", self.PTIndex);
-
-        console.log("PTCPhenotypes",self.PTCPhenotypes);
 
         if(self.launchedFrom === "U") {
           //TODO: pass in all genotypes, not jjust family
           self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex, "U");
         }
         else if(self.launchedFrom === "D"){
-          console.log("PTCPhenotypes", self.PTCPhenotypes);
           self.regression = new Regression(self.cachedGenotypes, self.PTCPhenotypes, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
         }
 
         self.linePoints = self.regression.getLinePoints();
-
-        // self.maxPt = self.regression.getMaxPt();
-        // self.minPt = self.regression.getMinPt();
-
-
-
         self.projectCorrelation = self.regression.getProjectCorrelation();
         self.projectPVal = self.regression.getProjectPVal();
 
-
         let familyCandP = self.regression.getFamilyCorrelationAndPVal();
-
-
 
         self.familyCorrelation = familyCandP[0];
         self.familyPVal = familyCandP[1];
@@ -689,22 +649,10 @@
         self.linearMetrics = [
           {name: "family", "Pearsons R": self.familyCorrelation, "R^2" : self.familyCorrelation**2, "P-val" : self.familyPVal},
           {name: "project", "Pearsons R": self.projectCorrelation, "R^2" : self.projectCorrelation**2, "P-val" : self.projectPVal}
-
-      ]
-        // self.familyCorrelation = self.regression.getFamilyCorrelation(self.sampleIds)[0].toFixed(4);
-        // self.familyPVal= self.regression.getFamilyCorrelation(self.sampleIds)[1].toExponential(3);
-
-        // console.log("self.familyPVal inside PedHandler", self.familyPVal);
+        ]
 
         self.scatterplotData = self.regression.getScatterplotData();
-
-        console.log("self.scatterplotData", self.scatterplotData);
-
-        self.buildRegressionTable();
-
         self.buildPTLegend();
-
-
       },
 
       buildSlider(){
@@ -717,11 +665,6 @@
         //   d3.select("#slider-axisCuttoff").remove();
 
           d3.select("#slider-axisRange").remove();
-
-          console.log("minPT", self.minPt);
-          console.log("maxPt", self.maxPt);
-
-
 
           if(self.displayAffectedAs === "continuous") {
             self.maxThreshold = self.maxPt;
@@ -739,8 +682,6 @@
 
                 self.minThreshold = val[0];
                 self.maxThreshold = val[1];
-
-                console.log("inside onChange", self.minThreshold, self.maxThreshold);
 
               });
 
@@ -771,8 +712,6 @@
 
                 self.minThreshold = val[0];
                 self.maxThreshold = val[1];
-
-                console.log("inside onChange", self.minThreshold, self.maxThreshold);
 
               });
 
@@ -842,11 +781,6 @@
         $('#pedigree').on('nodeClick', self.onNodeClick);
         $('#pedigree').on('bgClick', self.onBGClick);
 
-
-
-
-        d3.select("#pedigreeBackground")
-          .on("click", console.log("clicked background"));
       },
 
       buildGenotypes: function () {
@@ -888,7 +822,6 @@
       },
 
       onBGClick: function(e, swag){
-        console.log("onBGClick", swag);
         this.removeHighlight();
       },
 
@@ -936,7 +869,6 @@
 
       highlightAll: function(){
 
-        console.log("inside highlight Family");
         let self = this;
         let parentNodes =
           d3.selectAll(".node").nodes().map(function (d) {
@@ -958,8 +890,6 @@
       },
 
       highlightFamily: function () {
-
-        console.log("inside highlight Family");
         let self = this;
         let parentNodes =
           d3.selectAll(".node").nodes().map(function (d) {
@@ -972,7 +902,6 @@
           if (self.notHighlighted(n.id.toString())) {
             nodeToHightlight.style('opacity', 0.1);
             border.style('opacity', 0.1);
-            console.log("found not highlighted");
             txt.style("opacity", 0.1);
           } else {
 
@@ -1204,37 +1133,6 @@
           }
         },
 
-      //refactor name to styleLinearTableMetrics
-      buildRegressionTable() {
-
-        // let self = this;
-        //
-        //   if(self.familyPVal > 0.05){
-        //     self.familyPColor = "none";
-        //   }
-        //   else{
-        //     let normFamP = 1 - self.familyPVal;
-        //     self.familyPColor  = d3.interpolateRgb("white", "#50c878")(normFamP);
-        //   }
-        //
-        //   d3.select("#familyRow")
-        //     .style("background", self.familyPColor);
-        //
-        // if(self.projectPVal > 0.05){
-        //   self.projectPColor = "none";
-        // }
-        // else{
-        //   let normProjP = 1 - self.projectPVal;
-        //   self.projectPColor  = d3.interpolateRgb("white", "#50c878")(normProjP);
-        // }
-        //
-        // d3.select("#projectRow")
-        //   .style("background", self.projectPColor);
-
-
-
-      },
-
       isolatePedTxt: function (ids) {
         let self = this;
         let txtLines = [];
@@ -1352,8 +1250,6 @@
           self.maxPt = 12;
           self.minThreshold = 0;
           self.maxThreshold = 12;
-
-          console.log("Demo Data");
         }
 
       },
@@ -1363,8 +1259,6 @@
         let self = this;
 
         if(self.selectedPhenotype === null){
-          console.log("null selected phenotype");
-
 
           for (let i = 0; i < self.opts.dataset.length; i++) {
             let id = self.opts.dataset[i].name;
@@ -1390,10 +1284,6 @@
         else {
           self.cachedPhenotypes = {};
 
-          // self.populateThresholds();
-
-          console.log("minThreshold", self.minThreshold);
-          console.log("maxThreshold", self.maxThreshold);
 
           for (let i = 0; i < self.opts.dataset.length; i++) {
             let id = self.opts.dataset[i].name;
@@ -1463,8 +1353,6 @@
                 }
               } else if (this.inverted) {
 
-                console.log("range", this.minThreshold, this.maxThreshold);
-
 
                 if (sens < self.minThreshold) {
                   scaledSens = -1;
@@ -1512,8 +1400,6 @@
 
       buildDemoPhenotypes: function () {
         let self = this;
-
-        console.log("this.minThreshold", this.minThreshold, this.maxThreshold);
 
         self.cachedPhenotypes = {};
         if (self.selectedPhenotype === "PTC Sensitivity") {
@@ -1588,8 +1474,6 @@
                   }
                 } else if (this.inverted) {
 
-                  console.log("range", this.minThreshold, this.maxThreshold);
-
 
                   if (sens < self.minThreshold) {
                     scaledSens = -1;
@@ -1634,7 +1518,6 @@
       buildRegression: function(){
 
         if(this.selectedGenotype === null || this.selectedPhenotype === null){
-          console.log("uhh ohh returning");
           return;
         }
         if(this.displayAffectedAs === "continuous"){
@@ -1918,7 +1801,6 @@
       minThreshold: function(){
         let self = this;
 
-        console.log("change in minThreshhold");
         self.buildPhenotypes();
 
         // self.buildLinearRegression();
@@ -1933,59 +1815,32 @@
       selectedFamily: function () {
         let self = this;
 
-        console.log("self.selectedGT before", self.selectedGenotype);
-        console.log("self.selectedPT before", self.selectedPhenotype);
-
-
-
         let gt = self.selectedGenotype;
         let pt = self.selectedPhenotype;
 
         self.resetValues();
 
-
-
         self.selectedGenotype = gt;
         self.selectedPhenotype = pt;
-
-
-        if(self.launchedFrom === "D") {
-          // self.selectedPhenotype = "PTC Sensitivity";
-          // self.selectedGenotype = "7:141972755_C/T";
-        }
-
 
         self.buildPhenotypes();
         self.populateSampleIds();
         self.buildGenotypes();
         self.buildRegression();
-
         self.buildRegression();
-        console.log("self.sampleIds in watcher", self.sampleIds);
+
         $('#pedigree').on('nodeClick', self.onNodeClick)
         $('#pedigree').on('bgClick', self.onBGClick);
-
-
-
-
-
       },
 
       toggle: function(){
         let self = this;
-
         self.showPed = !self.showPed;
       },
 
       inverted: function(){
-
-        console.log("watcher in inverted", this.inverted);
-
         this.buildPhenotypes();
-
         this.buildRegression();
-
-
       },
 
       isolateFamily: function () {
@@ -2012,9 +1867,6 @@
       selectedPhenotype: function () {
         let self = this;
         self.populateThresholds();
-
-
-        console.log("self.opts inside of selectedPhenotype", self.opts);
         self.buildPhenotypes();
         self.buildSlider();
         self.buildRegression();
@@ -2022,11 +1874,7 @@
       },
       selectedGenotype: function () {
         let self = this;
-
-        console.log("self.selectedGenotype", self.selectedGenotype);
-
-        if(typeof self.selectedGenotype === "undefined"){
-        }
+        if(typeof self.selectedGenotype === "undefined"){}
         else {
           self.buildGenotypes();
           self.buildRegression();
@@ -2041,19 +1889,11 @@
 
         if (self.selectedRegression === "Linear") {
           self.buildLinearRegression();
-
         } else if (self.selectedRegression === "Logistic") {
           self.buildLogisticRegression();
-
-          // self.buildLinearRegression();
         }
-
-
         self.linePoints = self.regression.getLinePoints();
-
-        self.buildRegressionTable();
       }
-
     }
   }
 </script>

@@ -70,19 +70,16 @@ export default class Regression {
 
     this.logJitterMapping = [[0,0], [1,0], [-1, 0], [0,1], [-1, 1], [1,1], [0, -1], [-1, -1], [1, -1]];
 
+    if(typeof this.sampleIds === "undefined" || this.sampleIds === null){
+    }
 
-
-    this.findMinMaxPts();
-    this.processRawData();
-
-    this.populateRawCoords();
-
-    this.populateScatterplotData();
-    // this.populateLogCoords();
-
-    this.calculateProjectCorrelation();
-    this.calculateProjectPVal();
-
+    else {
+      this.processRawData();
+      this.populateRawCoords();
+      this.populateScatterplotData();
+      this.calculateProjectCorrelation();
+      this.calculateProjectPVal();
+    }
   }
 
   populateFamilyClassificationMetrics(y, yPred){
@@ -251,7 +248,6 @@ export default class Regression {
   calculateProjectCorrelation(){
     let self = this;
     self.projectCorrelation = self.pearsonCorrelation([self.xRawP, self.yRawP], 0, 1);
-    console.log("slef.projectcorrelation in calculate", self.projectCorrelation);
   }
 
   calculateProjectPVal(){
@@ -383,7 +379,6 @@ export default class Regression {
     var modelF = logistic.fit(testingDataF);
 
 // === Print the trained model === //
-    console.log(modelF);
 
     let yPredF = [];
 
@@ -438,7 +433,6 @@ export default class Regression {
         predicted = 1;
       }
       else{
-        console.log("prob", prob, maxProb);
         predicted = 0;
       }
 
@@ -638,8 +632,6 @@ export default class Regression {
     let ft = fisherTest(familyCorrelation, self.xRawF.length);
     self.familyPVal = ft.pvalue;
 
-    console.log("self.familyPVal", self.familyPVal);
-
     return [familyCorrelation.toFixed(4), self.familyPVal];
 
   }
@@ -733,19 +725,12 @@ export default class Regression {
 
   }
 
-  findMinMaxPts(){
-
-    console.log("this.raw", this.yRawP);
-
-  }
 
   processRawData(){
     let self = this;
 
-    console.log("self.rawPhenotypes inside regression", self.rawPhenotypes);
 
     self.data = [];
-
 
     for(let i  = 0; i < self.sampleIds.length; i++) {
 
@@ -759,8 +744,6 @@ export default class Regression {
 
       let kiP = Object.keys(self.rawPhenotypes)[0];
       let kiG = Object.keys(self.rawGenotypes)[0];
-
-      console.log("typeofs", typeof key, typeof kiP, typeof kiG);
 
 
       let gt = self.rawGenotypes[key];
@@ -804,7 +787,7 @@ export default class Regression {
           }
           self.data.push(d);
         } else {
-          console.log("did not make data for key, sex, color, x, y", key, sex, color, x, pt);
+          // console.log("did not make data for key, sex, color, x, y", key, sex, color, x, pt);
         }
       }
     }
