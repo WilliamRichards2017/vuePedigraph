@@ -109,13 +109,6 @@ export default class Regression {
     }
 
 
-    self.familyFN.toFixed(4);
-    self.familyFP.toFixed(4);
-    self.familyTN.toFixed(4);
-    self.familyTP.toFixed(4);
-
-
-
     self.familyAccuracy = (self.familyTP + self.familyTN) / y.length;
 
     // Precision = tp / (tp+fp)
@@ -619,8 +612,8 @@ export default class Regression {
     return this.projectCorrelation.toFixed(4);
   }
 
-  getProjectPVal(){
-    return this.projectPVal;
+  getFamilyPVal(){
+    return this.familyPVal;
   }
 
 
@@ -645,19 +638,19 @@ export default class Regression {
 
 
   getFamilyAccuracy(){
-    return this.familyAccuracy;
+    return this.familyAccuracy.toFixed(4);
   }
 
   getFamilyPrecision(){
-    return this.familyPrecision;
+    return this.familyPrecision.toFixed(4);
   }
 
   getFamilyRecall(){
-    return this.familyRecall;
+    return this.familyRecall.toFixed(4);
   }
 
   getFamilyF1(){
-    return this.familyF1;
+    return this.familyF1.toFixed(4);
   }
 
 

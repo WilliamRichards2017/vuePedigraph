@@ -74,7 +74,7 @@
       <!--<div class="flexCol" width="450px" >-->
 
 
-      <div id="container"  style="width: 400px">
+      <div id="container"  style="width: 30%; padding-right: 1px; padding-top: 1px">
 
       <div  class="col" height="100vh">
 
@@ -114,23 +114,19 @@
 
             <table class="gridtable">
               <thead>
-              <th></th> <th style="text-align: left"> Project: </th> <th style="text-align: left"> Family: </th>
+              <th></th> <th style="text-align: left"> Accuracy </th> <th style="text-align: left"> Precision </th> <th style="text-align: left"> Recall </th> <th style="text-align: left"> F1 </th>
               </thead>
               <tbody></tbody>
 
-              <tr class="val">
-                <th class="val"> Accuracy </th> <td id="accuracyP" class="val"> {{projectAccuracy}}</td> <td id="accuracyF" class="val">{{familyAccuracy}}</td>
+
+              <tr>
+                <th>Family</th> <td>{{familyAccuracy}}</td> <td>{{familyPrecision}}</td> <td>{{familyRecall}}</td> <td>{{familyF1}}</td>
               </tr>
 
-              <tr class="val">
-                <th class="val"> Precision </th> <td id="precisonP" class="val"> {{projectPrecision}}</td> <td id="precisionF" class="val">{{familyPrecision}}</td>
+              <tr>
+                <th>Project </th> <td>{{projectAccuracy}}</td> <td>{{projectPrecision}}</td> <td>{{projectRecall}}</td> <td>{{projectF1}}</td>
               </tr>
-              <tr class="val">
-                <th class="val"> Recall </th> <td class="recallP"> {{projectRecall}}</td> <td class="val">{{(familyRecall).toFixed(4)}}</td>
-              </tr>
-              <tr class="val">
-                <th class="val"> F1 </th> <td id="f1P" class="val"> {{projectF1}}</td> <td id="f1F" class="val">{{familyF1}}</td>
-              </tr>
+
             </table>
           </div>
 
@@ -686,8 +682,6 @@
 
             }
 
-            console.log("id/gt", id, allele);
-
             this.fullGTMap[id] = allele;
 
           }
@@ -740,21 +734,17 @@
       },
 
       buildSlider(){
-
-
         let self = this;
 
-        // if(self.displayAffectedAs === "continuous") {
-        //
-        //   d3.select("#slider-axisCuttoff").remove();
-
           d3.select("#slider-axisRange").remove();
+
+          let sliderRange = null;
 
           if(self.displayAffectedAs === "continuous") {
             self.maxThreshold = self.maxPt;
 
 
-            let sliderRange = d3
+            sliderRange = d3
               .sliderVertical()
               .min(self.minPt)
               .max(self.maxPt)
@@ -769,22 +759,13 @@
 
               });
 
-
-            d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
-              .call(sliderRange)
-              .append("text").text(self.selectedPhenotype)
-              .attr("class", "axis-label")
-              .attr("x", -250)
-              .attr("y", -25)
-              .attr("transform", "rotate(-90)");
-
           }
 
           else if(self.displayAffectedAs === "binary"){
 
             self.maxThreshold = self.maxPt/2;
 
-            let sliderRange = d3
+            sliderRange = d3
               .sliderVertical()
               .min(self.minPt)
               .max(self.maxPt)
@@ -793,41 +774,30 @@
               .ticks(0)
               .fill('#2196f3')
               .on('onchange', val => {
-
                 self.minThreshold = val[0];
                 self.maxThreshold = val[1];
-
               });
-
-
-            d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
-              .call(sliderRange)
-              .append("text").text(self.selectedPhenotype);
-
           }
 
-
-
+        d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
+          .call(sliderRange)
+          .append("text").text(self.selectedPhenotype)
+          .attr("class", "axis-label")
+          .attr("x", -250)
+          .attr("y", -25)
+          .attr("transform", "rotate(-90)");
       },
 
       buildLogisticRegression() {
 
 
         let self = this;
-
-        // self.buildDemoPhenotypes();
-
         self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
-
-
         self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex);
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
 
         self.populateLogisticEvaluationMetrics();
-
-
-
       },
 
 
