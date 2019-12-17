@@ -138,6 +138,22 @@
 
         <div id="linearRegression" v-show="displayAffectedAs === 'continuous'">
 
+
+
+          <div style="display: inline-flex">
+
+
+            <v-tooltip>
+              <template v-slot:activator="{ on }">
+                <v-icon v-on="on" color="black">info_outline</v-icon>
+              </template>
+              <span>This will invert the color scale for the Phenotype values</span>
+
+            </v-tooltip>
+
+            <v-btn v-on:click="invertRange()" small>Invert color scale</v-btn>
+          </div>
+
             <div class="tableTitle">Regression Statistics</div>
 
 
@@ -285,6 +301,8 @@
         sampleIds: null,
         idList: null,
         phenotypes: ["PTC Sensitivity"],
+
+        fullGTMap: {},
 
         allIds: null,
 
@@ -497,6 +515,8 @@
 
             let gts = filteredCols.slice(9);
 
+            console.log("gts inside buildGTMapFromVCF", gts);
+
             if(firstTwo === "#C" || firstTwo === "#c"){
               sampleIDs = gts;
             }
@@ -630,7 +650,7 @@
 
           if(typeof cols[1] === "undefined"){}
           else {
-            this.allIds.push(cols[1])
+            this.allIds.push(cols[1].toString())
           }
 
         }
@@ -640,20 +660,22 @@
 
       populateGenotypes(){
 
-        this.fullGTMap = {}
+        this.fullGTMap = {};
 
-        console.log("gtMap", this.genotypeMap);
+
+        console.log("this.idList", this.idList);
+
 
         let gts = this.genotypeMap[this.selectedGenotype];
+
 
         for(let i = 0; i < this.allIds.length; i++) {
 
           let id = this.allIds[i];
 
-          if (this.allIds.includes(id.toString())) {
+          if (this.idList.includes(id)) {
 
-            let index = this.allIds.indexOf(id.toString());
-
+            let index = this.idList.indexOf(id);
             let gtForID = gts[index];
             let allele = " ";
 
@@ -665,7 +687,7 @@
 
             }
 
-            // console.log("id/gt", id, allele);
+            console.log("id/gt", id, allele);
 
             this.fullGTMap[id] = allele;
 
@@ -1661,6 +1683,8 @@
             self.opts = self.addCachedValuesToOpts(opts);
           } else {
 
+
+            //TODO: get this part working for reals
 
             let keys = Object.keys(self.genotypeMap);
 
