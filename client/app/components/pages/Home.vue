@@ -272,9 +272,9 @@
 
 
   import demoTxt from '../../../static/ped.js';
-  import pedTxtBuilder from '../../../js/pedTxtBuilder'
+  import pedTxtBuilder from '../../../js/pedTxtBuilder.js'
 
-  import cephGTs from '../../../static/cephGtS'
+  import cephGTs from '../../../static/cephGts.js'
 
   import PEDHandler from "./../PEDHandler.vue";
   import FileReader from "./../FileReader.vue";

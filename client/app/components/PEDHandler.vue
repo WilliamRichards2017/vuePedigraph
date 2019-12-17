@@ -241,7 +241,6 @@
   import toggle from './toggle.vue'
   import navigation from './navigation.vue'
   import vueScatter from "./scatterplot.vue"
-  import mapToCsv from "../../js/mapToCsv";
   import TAS from "../../static/TAS2R38";
   // import * as d3 from "d3";
 
