@@ -113,7 +113,7 @@
         xAxis
           .call(d3.axisBottom(self.xScale).ticks(3).tickFormat(function (d, i) {
             return ticks[i];
-          }))
+          }));
 
           xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
           .attr("x", 62)
@@ -238,7 +238,7 @@
 
     buildPTLegend() {
 
-      let w = 200
+      let w = 200;
       let h = 50;
 
       let key = d3.select("#legend")
@@ -287,7 +287,7 @@
         .append("text")
         .attr("transform", "rotate(-90)")
         .attr("dy", ".71em")
-        .style("text-anchor", "end")
+        .style("text-anchor", "end");
 
       key.append("text")
         .attr("transform", "translate(0,50)")

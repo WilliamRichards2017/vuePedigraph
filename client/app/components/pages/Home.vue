@@ -48,7 +48,7 @@
 
 
             <label class="headline lighten-2">Upload Pedigree</label>
-            <FileReader class="uploader" @load="uploadedPedTxt = $event;" ></FileReader>
+            <FileReader class="uploader" @load="uploadedPedTxt = $event"></FileReader>
 
             <p>Upload a pedigree file from local storage.  Make sure the file is a valid <a href="https://gatkforums.broadinstitute.org/gatk/discussion/7696/pedigree-ped-files">.ped</a> file</p>
 
@@ -56,14 +56,14 @@
             <br>
 
             <label class="headline lighten-2">Upload VCF</label>
-            <VCFReader class="uploader" @load="uploadedVCF = $event;" ></VCFReader>
+            <VCFReader class="uploader" @load="uploadedVCF = $event"></VCFReader>
 
             <p>Make sure your vcf adheres to the standard <a href="https://www.internationalgenome.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-40/">VCF specifications</a></p>
 
             <br>
 
             <label class="headline lighten-2">Upload Phenotype CSV</label>
-            <FileReader class="uploader" @load="uploadedPTS = $event;" ></FileReader>
+            <FileReader class="uploader" @load="uploadedPTS = $event"></FileReader>
 
             <v-dialog
             width="500"
@@ -397,7 +397,7 @@
     },
 
     buildAllVariants: function(){
-      let self = this
+      let self = this;
       self.variants = [];
 
       self.hubTxt.promiseGetVariantsForProject()
@@ -408,7 +408,7 @@
 
     getProjectSamples: function(){
       let self = this;
-      let samples = []
+      let samples = [];
       self.familySamples = [];
       self.hubTxt.promiseGetProjectSamples()
         .then((data) => {

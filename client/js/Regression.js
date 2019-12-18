@@ -421,7 +421,7 @@ export default class Regression {
 
       for(let k in counts){
         if(counts[k] > maxCount){
-          maxCount = counts[k]
+          maxCount = counts[k];
           maxProb = parseFloat(k);
         }
       }
@@ -781,7 +781,7 @@ export default class Regression {
             opacity: opacity,
             xSource: null,
             ySource: null,
-          }
+          };
           self.data.push(d);
         } else {
           // console.log("did not make data for key, sex, color, x, y", key, sex, color, x, pt);

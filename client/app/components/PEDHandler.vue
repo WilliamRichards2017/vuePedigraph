@@ -5,11 +5,9 @@
     <v-toolbar style="padding-top: 10px" color="#123d53" dark>
 
 
-
       <v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>
 
       <v-spacer></v-spacer>
-
 
 
       <v-select :items="familyIDs"
@@ -65,184 +63,141 @@
     </v-toolbar>
 
     <!--<v-navigation-drawer-->
-      <!--v-model="drawer"-->
-      <!--right-->
+    <!--v-model="drawer"-->
+    <!--right-->
     <!--&gt;-->
     <!--</v-navigation-drawer>-->
 
 
-
-
     <div class="pedWrapper">
 
-    <div class="flex">
+      <div class="flex">
 
-      <div id="pedigrees" v-show="showPed" style="width: 70%;"></div>
+        <div id="pedigrees" v-show="showPed" style="width: 70%;"></div>
 
-      <!--<div class="flexCol" width="450px" >-->
-
-
-      <div id="container"  style="width: 30%; padding-right: 1px; padding-top: 1px">
-
-      <div  class="col">
+        <!--<div class="flexCol" width="450px" >-->
 
 
+        <div id="container" style="width: 30%; padding-right: 1px; padding-top: 1px">
 
-        <v-card>
-        <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts" :regressionType="selectedRegression" :operand="selectedOperand" :cuttoff="affectedCuttoff" :maxPt="maxPt" :minPt="minPt"></vueScatter>
-
-        </v-card>
+          <div class="col">
 
 
-        <v-card style="background-color: #f2f2f2; height: 50vh">
+            <v-card>
+              <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts"
+                          :regressionType="selectedRegression" :operand="selectedOperand" :cuttoff="affectedCuttoff"
+                          :maxPt="maxPt" :minPt="minPt"></vueScatter>
+
+            </v-card>
 
 
-          <div id="logisticRegression" v-show="selectedRegression === 'Logistic'">
+            <v-card style="background-color: #f2f2f2; height: 50vh">
+
+              <div class="d-inline-flex">
+
+                <v-select :items="regressionTypes"
+                          style="width: 175px; padding-right: 75px"
+                          id="regressionSelect" label="Regression Type" v-model="selectedRegression"
+                ></v-select>
+
+                <v-tooltip top>
+                  <template v-slot:activator="{ on }">
+                    <v-icon v-on="on" color="black" dense>info_outline</v-icon>
+                  </template>
+                  <span>This will invert the color scale for the Phenotype values</span>
+
+                </v-tooltip>
+
+                <div style="flex-direction: column">
+                  <div style="height: 10px"></div>
+                  <v-btn v-on:click="invertRange()" small>Invert color scale</v-btn>
+                </div>
+              </div>
 
 
-            <div style="display: inline-flex">
+              <div id="logisticRegression" v-show="selectedRegression === 'Logistic'">
+                <table class="gridtable">
+                  <thead>
+                  <th></th>
+                  <th style="text-align: left"> Accuracy</th>
+                  <th style="text-align: left"> Precision</th>
+                  <th style="text-align: left"> Recall</th>
+                  <th style="text-align: left"> F1</th>
+                  </thead>
+                  <tbody></tbody>
+                  <tr>
+                    <th>Family</th>
+                    <td>{{familyAccuracy}}</td>
+                    <td>{{familyPrecision}}</td>
+                    <td>{{familyRecall}}</td>
+                    <td>{{familyF1}}</td>
+                  </tr>
+                  <tr>
+                    <th>Project</th>
+                    <td>{{projectAccuracy}}</td>
+                    <td>{{projectPrecision}}</td>
+                    <td>{{projectRecall}}</td>
+                    <td>{{projectF1}}</td>
+                  </tr>
 
+                </table>
+              </div>
 
-              <v-spacer></v-spacer>
+              <div id="linearRegression" v-show="selectedRegression === 'Linear'">
 
-              <v-select :items="regressionTypes"
-                        id="regressionSelect" label="Regression Type" v-model="selectedRegression"
-              ></v-select>
+                <div class="tableTitle">Regression Statistics</div>
 
-              <v-tooltip top>
-                <template v-slot:activator="{ on }" style="padding-top: 10px">
-                  <v-icon v-on="on" color="black">info_outline</v-icon>
-                </template>
-                <span>This will invert the color scale for the Phenotype values</span>
+                <div class="d-inline-flex">
+                  <table class="gridtable">
+                    <thead>
+                    <th></th>
+                    <th style="text-align: left"> Pearsons 'r'</th>
+                    <th style="text-align: left"> r^2</th>
+                    <th style="text-align: left"> P-val</th>
+                    <th>Significant</th>
+                    </thead>
+                    <tbody></tbody>
+                    <tr class="val" id="familyRow">
+                      <th class="val">Family</th>
+                      <td id="familyR" class="val">{{familyCorrelation}}</td>
+                      <td>{{(familyCorrelation**2).toFixed(4)}}</td>
+                      <td id="familyP" class="val">{{familyPVal.toExponential(3)}}</td>
+                      <td>
+                        <v-icon dense right color="green" v-show="familyPVal <= 0.05">check_circle</v-icon>
+                      </td>
+                    </tr>
 
-              </v-tooltip>
+                    <tr class="val" id="projectRow">
+                      <th class="val"> Project</th>
+                      <td id="projectR"> {{projectCorrelation}}</td>
+                      <td class="val">{{(projectCorrelation**2).toFixed(4)}}</td>
+                      <td id="projectP" class="val"> {{projectPVal.toExponential(3)}}</td>
+                      <td>
+                        <v-icon dense right color="green" v-show="projectPVal <= 0.05">check_circle</v-icon>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <div id="legend"></div>
+              <div style="height: 300px"></div>
 
-              <v-btn v-on:click="invertRange()" small>Invert color scale</v-btn>
+            </v-card>
 
-
-            </div>
-
-
-            <!--<div style="display: inline-flex">  <div style="margin-top: 10px"> Affected Cuttoff</div>-->
-              <!--<v-select :items="operands" style="width: 50px; margin-top: 0; padding-left:10px; padding-top: 0" outlined dense v-model="selectedOperand"></v-select>-->
-              <!--<strong style="margin-top: 10px; margin-left: 10px">{{affectedCuttoff}} </strong> </div>-->
-
-
-            <table class="gridtable">
-              <thead>
-              <th></th> <th style="text-align: left"> Accuracy </th> <th style="text-align: left"> Precision </th> <th style="text-align: left"> Recall </th> <th style="text-align: left"> F1 </th>
-              </thead>
-              <tbody></tbody>
-
-
-              <tr>
-                <th>Family</th> <td>{{familyAccuracy}}</td> <td>{{familyPrecision}}</td> <td>{{familyRecall}}</td> <td>{{familyF1}}</td>
-              </tr>
-
-              <tr>
-                <th>Project </th> <td>{{projectAccuracy}}</td> <td>{{projectPrecision}}</td> <td>{{projectRecall}}</td> <td>{{projectF1}}</td>
-              </tr>
-
-            </table>
-          </div>
-
-
-
-        <div id="linearRegression" v-show="selectedRegression === 'Linear'">
-
-
-
-          <div class="d-inline-flex">
-
-            <v-select :items="regressionTypes"
-                      style="width: 175px; padding-right: 75px"
-                      id="regressionSelect" label="Regression Type" v-model="selectedRegression"
-            ></v-select>
-
-
-            <v-tooltip top>
-              <template v-slot:activator="{ on }">
-                <v-icon v-on="on" color="black" dense>info_outline</v-icon>
-              </template>
-              <span>This will invert the color scale for the Phenotype values</span>
-
-            </v-tooltip>
-
-            <div style="flex-direction: column">
-              <div style="height: 10px"></div>
-              <v-btn v-on:click="invertRange()" small >Invert color scale</v-btn>
-            </div>
-
-
-
-          </div>
-
-            <div class="tableTitle">Regression Statistics</div>
-
-
-          <div class="d-inline-flex">
-
-
-              <table class="gridtable">
-                <thead>
-                <th></th> <th style="text-align: left"> Pearsons 'r' </th> <th style="text-align: left"> r^2 </th> <th style="text-align: left"> P-val </th> <th>Significant</th>
-                </thead>
-                <tbody></tbody>
-                <tr class="val" id="familyRow">
-                  <th class="val">Family</th>
-
-                <td id="familyR" class="val">{{familyCorrelation}}</td>
-                  <td>{{(familyCorrelation**2).toFixed(4)}}</td>
-                 <td id="familyP" class="val">{{familyPVal.toExponential(3)}}</td>
-                  <td>
-                    <v-icon dense right color="green" v-show="familyPVal <= 0.05">check_circle</v-icon>
-                  </td>
-                </tr>
-
-                <tr></tr>
-
-                <tr class="val" id="projectRow">
-                  <th class="val"> Project</th>
-                  <td id="projectR" > {{projectCorrelation}}</td>
-                  <td class="val">{{(projectCorrelation**2).toFixed(4)}}</td>
-                  <td id="projectP" class="val"> {{projectPVal.toExponential(3)}}</td>
-                  <td>
-                    <v-icon dense right color="green" v-show="projectPVal <= 0.05">check_circle</v-icon>
-                  </td>
-                </tr>
-              </table>
           </div>
         </div>
 
 
+        <!--<div style="height: 300px"></div>-->
 
-          <div id="legend"></div>
+
+        <!--</div>-->
 
 
-          <div style="height: 100px"></div>
-
-        </v-card>
-
-        </div>
       </div>
 
 
-
-
-      <!--<div style="height: 300px"></div>-->
-
-
-      <!--</div>-->
-
-
     </div>
-
-
-
-    </div>
-
-
-
 
 
   </div>
@@ -337,11 +292,10 @@
             sortable: false,
             value: 'name',
           },
-          { text: 'Pearsons R', value: 'Pearsons R' },
-          { text: 'R^2', value: 'R^2' },
-          { text: 'P-Vale', value: 'P-Val' },
+          {text: 'Pearsons R', value: 'Pearsons R'},
+          {text: 'R^2', value: 'R^2'},
+          {text: 'P-Vale', value: 'P-Val'},
         ],
-
 
 
         sliderVal: null,
@@ -371,7 +325,6 @@
         maxThreshold: -1,
 
 
-
         //linear Regression metrics~~~
         projectCorrelation: -1,
         projectPVal: -1,
@@ -383,7 +336,7 @@
         projectAccuracy: -1,
         projectPrecision: -1,
         projectRecall: -1,
-        projectF1 : -1,
+        projectF1: -1,
 
         familyAccuracy: -1,
         familyPrecision: -1,
@@ -392,9 +345,6 @@
 
         ptMap: null,
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
 
 
         tableHeader: null,
@@ -420,7 +370,7 @@
       self.hubSession = new HubSession(self.source);
     },
 
-    beforeDestroy(){
+    beforeDestroy() {
 
     },
 
@@ -449,10 +399,9 @@
         }];
 
 
-
       self.tableData = [
         {name: 'Pearsons r', project: 0.5, family: 1},
-        {name: 'r**2', project:1, family: 1},
+        {name: 'r**2', project: 1, family: 1},
         {name: 'P-val', project: 1, family: 1}
       ];
 
@@ -476,7 +425,7 @@
     methods: {
 
 
-      removeHighlight: function(){
+      removeHighlight: function () {
         let self = this;
 
         console.log("removeHighlight");
@@ -491,7 +440,7 @@
 
       },
 
-      buildGTMapFromVcf(){
+      buildGTMapFromVcf() {
 
         let self = this;
 
@@ -505,32 +454,30 @@
 
         let filteredTxt = "";
 
-        for(let i = 0; i < vcfLines.length; i++){
+        for (let i = 0; i < vcfLines.length; i++) {
 
-          let firstTwo = vcfLines[i].substr(0,2)
+          let firstTwo = vcfLines[i].substr(0, 2);
 
-          if(firstTwo === "##"){
+          if (firstTwo === "##") {
 
-          }
-          else{
+          } else {
 
             let lineCols = vcfLines[i].split('\t');
 
 
             let filteredCols = [];
 
-            for(let j = 0; j < lineCols.length; j++){
-              if(lineCols[j] === ""){
+            for (let j = 0; j < lineCols.length; j++) {
+              if (lineCols[j] === "") {
                 filteredCols.push("");
-              }
-              else{
+              } else {
                 filteredCols.push(lineCols[j]);
               }
             }
 
             // console.log("filteredCols", filteredCols);
 
-            let variant = filteredCols.slice(0,5);
+            let variant = filteredCols.slice(0, 5);
 
             let varText = variant[0] + ':' + variant[1] + "_" + variant[3] + '/' + variant[4];
 
@@ -540,13 +487,11 @@
 
             // console.log("first gts", gts);
 
-            if(firstTwo === "#C" || firstTwo === "#c"){
+            if (firstTwo === "#C" || firstTwo === "#c") {
               sampleIDs = gts;
               // console.log("found first two");
               // console.log("sampleIds", sampleIDs);
-            }
-
-            else{
+            } else {
 
               console.log("made it to else");
               // console.log("gts for var", varText, gts);
@@ -563,13 +508,11 @@
       },
 
 
-
-
-      invertRange(){
+      invertRange() {
         // let min = this.minThreshold;
         // let max = this.maxThreshold;
 
-        this.inverted = ! this.inverted;
+        this.inverted = !this.inverted;
 
         // this.minThreshold = max;
         // this.maxThreshold = min;
@@ -586,13 +529,11 @@
         self.parsedVariants = Object.keys(self.genotypeMap);
 
 
-
         self.populateModel();
         self.populatePTC();
         self.selectedPhenotype = "PTC Sensitivity";
         self.selectedGenotype = "7:141972755_C/T";
         self.selectedFamily = "1463";
-
 
 
         self.selectedRegression = "Linear";
@@ -626,7 +567,7 @@
 
       },
 
-      populatePhenotypes(){
+      populatePhenotypes() {
 
         let lines = this.phenotypeText.split("\n");
 
@@ -639,7 +580,7 @@
 
         this.phenotypes = [];
 
-        for(let i = 1; i < headerCols.length; i++){
+        for (let i = 1; i < headerCols.length; i++) {
           this.phenotypes.push(headerCols[i]);
         }
         this.buildPTMap();
@@ -647,37 +588,37 @@
       },
 
 
-      buildPTMap(){
+      buildPTMap() {
 
         //TODO: refactor for multi-PT csv
         this.ptMap = {};
 
         let lines = this.phenotypeText.split("\n");
 
-        for(let i = 1; i < lines.length; i++){
+        for (let i = 1; i < lines.length; i++) {
 
           let cols = lines[i].split(",");
 
           this.ptMap[cols[0]] = [];
 
-          for(let j = 1; j < cols.length; j++) {
-              this.ptMap[cols[0]].push(cols[j]);
-            }
+          for (let j = 1; j < cols.length; j++) {
+            this.ptMap[cols[0]].push(cols[j]);
           }
+        }
       },
 
-      populateAllSampleIds(){
+      populateAllSampleIds() {
 
 
         this.allIds = [];
 
 
-        for(let i = 1; i < this.txtLines.length; i++){
+        for (let i = 1; i < this.txtLines.length; i++) {
 
           let cols = this.txtLines[i].split(" ");
 
-          if(typeof cols[1] === "undefined"){}
-          else {
+          if (typeof cols[1] === "undefined") {
+          } else {
             this.allIds.push(cols[1].toString())
           }
 
@@ -686,7 +627,7 @@
 
       },
 
-      populateGenotypes(){
+      populateGenotypes() {
 
         this.fullGTMap = {};
 
@@ -694,7 +635,7 @@
         let gts = Object.keys(this.genotypeMap);
 
 
-        for(let i = 0; i < gts.length; i++){
+        for (let i = 0; i < gts.length; i++) {
           let key = gts[i];
 
           let values = this.genotypeMap[key];
@@ -703,7 +644,7 @@
 
           let dict = {};
 
-          for(let i = 0; i < this.idList.length; i++) {
+          for (let i = 0; i < this.idList.length; i++) {
 
             let id = this.idList[i];
             let gtForID = values[i];
@@ -727,7 +668,6 @@
 
 
       buildLinearRegression() {
-
 
 
         let self = this;
@@ -755,59 +695,67 @@
         self.familyPVal = familyCandP[1];
 
         self.linearMetrics = [
-          {name: "family", "Pearsons R": self.familyCorrelation, "R^2" : self.familyCorrelation**2, "P-val" : self.familyPVal},
-          {name: "project", "Pearsons R": self.projectCorrelation, "R^2" : self.projectCorrelation**2, "P-val" : self.projectPVal}
-        ]
+          {
+            name: "family",
+            "Pearsons R": self.familyCorrelation,
+            "R^2": self.familyCorrelation ** 2,
+            "P-val": self.familyPVal
+          },
+          {
+            name: "project",
+            "Pearsons R": self.projectCorrelation,
+            "R^2": self.projectCorrelation ** 2,
+            "P-val": self.projectPVal
+          }
+        ];
 
         self.scatterplotData = self.regression.getScatterplotData();
         self.buildPTLegend();
       },
 
-      buildSlider(){
+      buildSlider() {
         let self = this;
 
-          d3.select("#slider-axisRange").remove();
+        d3.select("#slider-axisRange").remove();
 
-          let sliderRange = null;
+        let sliderRange = null;
 
-          if(self.selectedRegression === "Linear") {
-            self.maxThreshold = self.maxPt;
+        if (self.selectedRegression === "Linear") {
+          self.maxThreshold = self.maxPt;
 
 
-            sliderRange = d3
-              .sliderVertical()
-              .min(self.minPt)
-              .max(self.maxPt)
-              .default([self.minPt, self.maxPt])
-              .height(300)
-              .ticks(0)
-              .fill('#2196f3')
-              .on('onchange', val => {
+          sliderRange = d3
+            .sliderVertical()
+            .min(self.minPt)
+            .max(self.maxPt)
+            .default([self.minPt, self.maxPt])
+            .height(300)
+            .ticks(0)
+            .fill('#2196f3')
+            .on('onchange', val => {
 
-                self.minThreshold = val[0];
-                self.maxThreshold = val[1];
+              self.minThreshold = val[0];
+              self.maxThreshold = val[1];
 
-              });
+            });
 
-          }
+        } else if (self.selectedRegression === "Logistic") {
 
-          else if(self.selectedRegression === "Logistic"){
+          self.maxThreshold = self.maxPt / 2;
 
-            self.maxThreshold = self.maxPt/2;
-
-            sliderRange = d3
-              .sliderVertical()
-              .min(self.minPt)
-              .max(self.maxPt)
-              .default([self.minPt, self.maxPt/2])
-              .height(300)
-              .ticks(0)
-              .fill('#2196f3')
-              .on('onchange', val => {
-                self.minThreshold = val[0];
-                self.maxThreshold = val[1];
-              });
-          }
+          sliderRange = d3
+            .sliderVertical()
+            .min(self.minPt)
+            .max(self.maxPt)
+            .default([self.minPt, self.maxPt / 2])
+            .height(300)
+            .ticks(0)
+            .fill('#2196f3')
+            .on('onchange', val => {
+              self.minThreshold = val[0];
+              self.maxThreshold = val[1];
+            });
+        }
 
         d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
           .call(sliderRange)
@@ -828,6 +776,7 @@
         self.linePoints = self.regression.getLinePoints();
 
         self.populateLogisticEvaluationMetrics();
+        self.buildLogisticRegressionLegend();
       },
 
 
@@ -855,8 +804,7 @@
           self.buildDemoPhenotypes();
         } else if (self.launchedFrom === 'H') {
           self.buildHubPhenotypes();
-        }
-        else if(self.launchedFrom === "U"){
+        } else if (self.launchedFrom === "U") {
           self.buildUploadPhenotypes();
         }
 
@@ -867,7 +815,7 @@
 
       buildGenotypes: function () {
 
-        let self = this
+        let self = this;
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
         self.cachedGenotypes = {};
@@ -903,7 +851,7 @@
         self.highlightFamily();
       },
 
-      onBGClick: function(e, swag){
+      onBGClick: function (e, swag) {
         this.removeHighlight();
       },
 
@@ -949,7 +897,7 @@
         }
       },
 
-      highlightAll: function(){
+      highlightAll: function () {
 
         let self = this;
         let parentNodes =
@@ -961,7 +909,7 @@
           let border = d3.select(n.previousSibling);
           let txt = d3.select(n.nextSibling.nextSibling.nextSibling.nextSibling);
 
-          nodeToHightlight.style('opacity', 1)
+          nodeToHightlight.style('opacity', 1);
           border.style('opacity', 1);
           txt.style('opacity', 1);
 
@@ -993,7 +941,7 @@
               border.style('opacity', 0.5);
               txt.style('opacity', 1);
             } else {
-              nodeToHightlight.style('opacity', 1)
+              nodeToHightlight.style('opacity', 1);
 
               border.style('opacity', 1);
               txt.style('opacity', 1);
@@ -1005,19 +953,14 @@
         self.highlightGTs();
       },
 
-      buildLinearRegressionLegend(){
-
+      buildLinearRegressionLegend() {
         let self = this;
-
         let w = 200, h = 50;
-
-
         let key = d3.select("#legend")
           .append("svg")
           .attr("id", "legendSvg")
           .attr("width", 220)
           .attr("height", 100);
-
         let legend = key.append("defs")
           .append("svg:linearGradient")
           .attr("id", "gradient")
@@ -1026,49 +969,36 @@
           .attr("x2", "100%")
           .attr("y2", "100%")
           .attr("spreadMethod", "pad");
-
-        if(self.inverted) {
-
+        if (self.inverted) {
           legend.append("stop")
             .attr("offset", "0%")
             .attr("stop-color", self.purple)
             .attr("stop-opacity", 1);
-
-
           legend.append("stop")
             .attr("offset", "100%")
             .attr("stop-color", "#F9F9F9")
             .attr("stop-opacity", 1);
-        }
-
-        else if (!self.inverted) {
+        } else if (!self.inverted) {
           legend.append("stop")
             .attr("offset", "0%")
             .attr("stop-color", "#F9F9F9")
             .attr("stop-oepacity", 1);
-
-
           legend.append("stop")
             .attr("offset", "100%")
             .attr("stop-color", self.purple)
             .attr("stop-opacity", 1);
-
         }
-
         key.append("rect")
           .attr("width", w + 1)
           .attr("height", h - 30)
           .style("fill", "url(#gradient)")
           .attr("transform", "translate(5,60)");
-
         let lScale = d3.scaleLinear()
           .range([w, 0])
           .domain([self.maxThreshold, self.minThreshold]);
-
         let lAxis = d3.axisBottom()
           .scale(lScale)
           .ticks(5);
-
         key.append("g")
           .attr("class", "y axis")
           .attr("transform", "translate(5,80)")
@@ -1076,143 +1006,97 @@
           .append("text")
           .attr("transform", "rotate(-90)")
           .attr("dy", ".71em")
-          .style("text-anchor", "end")
-
+          .style("text-anchor", "end");
         key.append("text")
           .attr("transform", "translate(0,50)")
           .text("Less affected <----> More affected");
       },
 
-      buildLogisticRegressionLegend(){
-
+      buildLogisticRegressionLegend() {
         let self = this;
-
-
+        d3.select("#legend").remove();
         let w = 200, h = 50;
-
         let lScale = d3.scaleLinear()
           .range([0, w])
           .domain([self.minPt, self.maxPt]);
-
         let key = d3.select("#legend")
           .append('svg')
           .attr("id", "legendSvg")
           .append("svg")
           .attr("width", 220)
           .attr("height", 100);
-
         key.append("rect")
           .attr("width", w)
-          .attr("height", h-30)
+          .attr("height", h - 30)
           .style("fill", "white")
           .style("stroke", "black")
           .attr("transform", "translate(5,60)");
-
-        if(!self.inverted) {
-
-
+        if (!self.inverted) {
           key.append("rect")
-            .attr("width", lScale(self.maxThreshold-self.minThreshold))
+            .attr("width", lScale(self.maxThreshold - self.minThreshold))
             .attr("x", lScale(self.minThreshold))
             .attr("height", h - 30)
             .style("fill", self.purple)
             .style("stroke", "black")
             .attr("transform", "translate(5,60)");
-        }
-
-
-
-        else if(self.inverted) {
-
-
+        } else if (self.inverted) {
           key.append("rect")
-            .attr("width", lScale(12-self.maxThreshold))
+            .attr("width", lScale(12 - self.maxThreshold))
             .attr("x", lScale(self.maxThreshold))
             .attr("height", h - 30)
             .style("fill", self.purple)
             .style("stroke", "black")
             .attr("transform", "translate(5,60)");
-
-
           key.append("rect")
             .attr("width", lScale(self.minThreshold))
             .attr("height", h - 30)
             .style("fill", self.purple)
             .style("stroke", "black")
             .attr("transform", "translate(5,60)");
-
         }
-
-
         let lAxis = d3.axisBottom()
           .scale(lScale)
           .ticks(12);
-
         key.append("g")
           .attr("class", "y axis")
           .attr("transform", "translate(5,80)")
           .call(lAxis)
           .attr("dy", ".71em")
-          .style("text-anchor", "end")
-
-
-        if(!self.inverted){
-
+          .style("text-anchor", "end");
+        if (!self.inverted) {
           key.append("text")
             .attr("transform", "translate(20,50)")
             .text("Affected <----> Un-affected");
-        }
-        else if(self.inverted){
+        } else if (self.inverted) {
           key.append("text")
             .attr("transform", "translate(20,50)")
             .text("Un-affected <----> Affected");
         }
-
       },
 
       buildPTLegend() {
-
         let self = this;
-
         d3.select("#legendSvg").remove();
-
-
-        if(self.selectedRegression === "Linear") {
-
-
-           this.buildLinearRegressionLegend();
-
-        }
-        else if(self.selectedRegression === "Logistic") {
-
+        if (self.selectedRegression === "Linear") {
+          this.buildLinearRegressionLegend();
+        } else if (self.selectedRegression === "Logistic") {
           this.buildLogisticRegressionLegend()
         }
-
-
       },
 
-      highlightGTs: function(){
-
+      highlightGTs: function () {
         let self = this;
-
-        for(let i = 0; i < self.cachedNulls.length; i++){
-
+        for (let i = 0; i < self.cachedNulls.length; i++) {
           let node = self.getNodeById(self.cachedNulls[i]);
-
-
-          if(!self.highlightedSampleIDs.includes(self.cachedNulls[i].toString())) {
-
+          if (!self.highlightedSampleIDs.includes(self.cachedNulls[i].toString())) {
             node.selectAll("rect")
               .attr("opacity", 0.05);
-
-          }
-          else{
+          } else {
             node.selectAll("rect")
               .attr("opacity", 0.5);
-
           }
-          }
-        },
+        }
+      },
 
       isolatePedTxt: function (ids) {
         let self = this;
@@ -1297,59 +1181,40 @@
       },
 
 
-      populateThresholds: function(){
-
+      populateThresholds: function () {
         let self = this;
-
-
-        if(this.launchedFrom === "U") {
+        if (this.launchedFrom === "U") {
           self.minPt = Math.min();
           self.maxPt = Math.max();
-
           for (let i = 0; i < self.opts.dataset.length; i++) {
             let id = self.opts.dataset[i].name;
             let pts = self.ptMap[id];
-
             self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
             let sens = parseFloat(pts[self.PTIndex]);
-
             if (sens < this.minPt) {
               this.minPt = sens;
             } else if (sens > this.maxPt) {
               this.maxPt = sens;
             }
-
           }
-
           self.minThreshold = self.minPt;
           self.maxThreshold = self.maxPt;
-
-        }
-
-        else if(this.launchedFrom === "D"){
+        } else if (this.launchedFrom === "D") {
           self.minPt = 0;
           self.maxPt = 12;
           self.minThreshold = 0;
           self.maxThreshold = 12;
         }
-
       },
 
-      buildUploadPhenotypes: function(){
-
+      buildUploadPhenotypes: function () {
         let self = this;
-
-        if(self.selectedPhenotype === null){
-
+        if (self.selectedPhenotype === null) {
           for (let i = 0; i < self.opts.dataset.length; i++) {
             let id = self.opts.dataset[i].name;
-
             self.opts.dataset[i].affected = 0;
-            // console.log("color", color);
             self.opts.dataset[i].col = "none";
             self.opts.dataset[i].opac = 0;
-
-
             self.cachedPhenotypes[id] = 0;
             self.cachedColors[id] = "none";
             self.cachedOpacity[id] = 0;
@@ -1358,23 +1223,96 @@
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
           self.drawGenotypeBars();
-
-        }
-
-
-        else {
+        } else {
           self.cachedPhenotypes = {};
-
-
           for (let i = 0; i < self.opts.dataset.length; i++) {
             let id = self.opts.dataset[i].name;
             let pts = self.ptMap[id];
-
             self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
-
             let sens = pts[self.PTIndex];
+            let scaledSens = -1;
+            let opacity = 1;
+            if (typeof sens === 'undefined' || sens === 'nan') {
+              self.opts.dataset[i].NA = true;
+              self.cachedNulls.push(id);
+            } else if (typeof sens === 'string') {
+              if (sens.includes('>') || sens.includes('<')) {
+                sens = sens.slice(-1);
+              }
+            }
+            sens = parseInt(sens);
+            self.opts.dataset[i].sens = sens;
+            let aff = 0;
+            let color = "white";
+            if (typeof sens === "undefined" || isNaN(parseInt(sens))) {
+              color = "none";
+            } else if (self.selectedRegression === "Logistic") {
+              if (!self.inverted) {
+                if (sens >= self.minThreshold && sens <= self.maxThreshold) {
+                  aff = 2;
+                  color = self.purple;
+                }
+              } else if (self.inverted) {
+                if (sens <= self.minThreshold || sens >= self.maxThreshold) {
+                  aff = 2;
+                  color = self.purple;
+                }
+              }
+            } else if (self.selectedRegression === "Linear") {
+              if (!this.inverted) {
+                if (sens < self.minThreshold) {
+                  scaledSens = -1;
+                  opacity = 0.4;
+                } else if (sens > self.maxThreshold) {
+                  scaledSens = -1;
+                  opacity = 0.4;
+                } else {
+                  scaledSens = (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
+                }
+                if (scaledSens === -1) {
+                  color = "gray";
+                } else {
+                  color = d3.interpolateRgb("white", self.purple)(scaledSens);
+                }
+              } else if (this.inverted) {
+                if (sens < self.minThreshold) {
+                  scaledSens = -1;
+                  opacity = 0.4;
+                } else if (sens > self.maxThreshold) {
+                  scaledSens = -1;
+                  opacity = 0.4;
+                } else {
+                  scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
+                }
+                if (scaledSens === -1) {
+                  color = "gray";
+                } else {
+                  color = d3.interpolateRgb("white", self.purple)(scaledSens);
+                }
+              }
+            }
+            self.opts.dataset[i].affected = aff;
+            self.opts.dataset[i].col = color;
+            self.opts.dataset[i].opac = opacity;
+            self.cachedPhenotypes[id] = aff;
+            self.cachedColors[id] = color;
+            self.cachedOpacity[id] = opacity;
+            // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
+          }
+          self.opts = self.addCachedValuesToOpts(self.opts);
+          self.opts = ptree.build(self.opts);
+          self.drawGenotypeBars();
+        }
+      },
 
+      buildDemoPhenotypes: function () {
+        let self = this;
 
+        self.cachedPhenotypes = {};
+        if (self.selectedPhenotype === "PTC Sensitivity") {
+          for (let i = 0; i < self.opts.dataset.length; i++) {
+            let id = self.opts.dataset[i].name;
+            let sens = self.PTCPhenotypes[id];
             let scaledSens = -1;
             let opacity = 1;
 
@@ -1413,10 +1351,8 @@
                 }
               }
 
-            } else if (self.selectedRegression=== "Linear") {
-
+            } else if (self.selectedRegression === "Linear") {
               if (!this.inverted) {
-
                 if (sens < self.minThreshold) {
                   scaledSens = -1;
                   opacity = 0.4;
@@ -1426,23 +1362,18 @@
                 } else {
                   scaledSens = (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
                 }
-
                 if (scaledSens === -1) {
                   color = "gray";
                 } else {
                   color = d3.interpolateRgb("white", self.purple)(scaledSens);
                 }
               } else if (this.inverted) {
-
-
                 if (sens < self.minThreshold) {
                   scaledSens = -1;
                   opacity = 0.4;
-
                 } else if (sens > self.maxThreshold) {
                   scaledSens = -1;
                   opacity = 0.4;
-
                 } else {
                   scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
                 }
@@ -1452,16 +1383,10 @@
                   color = d3.interpolateRgb("white", self.purple)(scaledSens);
                 }
               }
-
             }
-
-
             self.opts.dataset[i].affected = aff;
-            // console.log("color", color);
             self.opts.dataset[i].col = color;
             self.opts.dataset[i].opac = opacity;
-
-
             self.cachedPhenotypes[id] = aff;
             self.cachedColors[id] = color;
             self.cachedOpacity[id] = opacity;
@@ -1470,152 +1395,25 @@
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
           self.drawGenotypeBars();
-
         }
-
       },
 
+      buildRegression: function () {
 
-
-
-
-      buildDemoPhenotypes: function () {
-        let self = this;
-
-        self.cachedPhenotypes = {};
-        if (self.selectedPhenotype === "PTC Sensitivity") {
-
-
-            for (let i = 0; i < self.opts.dataset.length; i++) {
-              let id = self.opts.dataset[i].name;
-              let sens = self.PTCPhenotypes[id];
-              let scaledSens = -1;
-              let opacity = 1;
-
-
-
-              if (typeof sens === 'undefined' || sens === 'nan') {
-                self.opts.dataset[i].NA = true;
-
-                self.cachedNulls.push(id);
-              } else if (typeof sens === 'string') {
-                if (sens.includes('>') || sens.includes('<')) {
-                  sens = sens.slice(-1);
-                }
-              }
-
-              sens = parseInt(sens);
-
-              self.opts.dataset[i].sens = sens;
-
-              let aff = 0;
-
-              let color = "white";
-
-              if(typeof sens === "undefined" || isNaN(parseInt(sens))){
-                color = "none";
-              }
-
-              else if (self.selectedRegression === "Logistic") {
-
-                if (!self.inverted) {
-                  if (sens  >= self.minThreshold && sens <= self.maxThreshold) {
-                    aff = 2;
-                    color = self.purple;
-                  }
-                } else if (self.inverted) {
-                  if (sens <= self.minThreshold || sens >= self.maxThreshold) {
-                    aff = 2;
-                    color = self.purple;
-                  }
-                }
-
-              }
-
-
-            else if (self.selectedRegression === "Linear") {
-
-                if (!this.inverted) {
-
-                  if (sens < self.minThreshold) {
-                    scaledSens = -1;
-                    opacity = 0.4;
-                  } else if (sens > self.maxThreshold) {
-                    scaledSens = -1;
-                    opacity = 0.4;
-                  } else {
-                    scaledSens = (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
-                  }
-
-                  if(scaledSens === -1){
-                    color = "gray";
-                  }
-                  else {
-                    color = d3.interpolateRgb("white", self.purple)(scaledSens);
-                  }
-                } else if (this.inverted) {
-
-
-                  if (sens < self.minThreshold) {
-                    scaledSens = -1;
-                    opacity = 0.4;
-
-                  } else if (sens > self.maxThreshold) {
-                    scaledSens = -1;
-                    opacity = 0.4;
-
-                  } else {
-                    scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
-                  }
-                  if(scaledSens === -1){
-                    color = "gray";
-                  }
-                  else {
-                    color = d3.interpolateRgb("white", self.purple)(scaledSens);
-                  }
-                }
-
-              }
-
-
-
-              self.opts.dataset[i].affected = aff;
-              // console.log("color", color);
-              self.opts.dataset[i].col = color;
-              self.opts.dataset[i].opac = opacity;
-
-
-              self.cachedPhenotypes[id] = aff;
-              self.cachedColors[id] = color;
-              self.cachedOpacity[id] = opacity;
-              // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
-            }
-            self.opts = self.addCachedValuesToOpts(self.opts);
-            self.opts = ptree.build(self.opts);
-            self.drawGenotypeBars();
-          }
-      },
-
-      buildRegression: function(){
-
-        if(this.selectedGenotype === null || this.selectedPhenotype === null){
+        if (this.selectedGenotype === null || this.selectedPhenotype === null) {
           return;
         }
-        if(this.selectedRegression === "Linear"){
+        if (this.selectedRegression === "Linear") {
           this.buildLinearRegression();
-        }
-        else if(this.selectedRegression === "Logistic"){
+        } else if (this.selectedRegression === "Logistic") {
           this.buildLogisticRegression()
         }
       },
 
-
-
-      buildHubPhenotypes: function(){
+      buildHubPhenotypes: function () {
         let self = this;
         self.promisePhenotypes()
           .then((pts) => {
-
             for (let i = 0; i < self.opts.dataset.length; i++) {
               let sampleId = parseInt(self.opts.dataset[i].name);
               if (pts.hasOwnProperty(sampleId)) {
@@ -1634,13 +1432,13 @@
             self.opts = ptree.build(self.opts);
           })
       },
-      promisePhenotypes: function(){
+      promisePhenotypes: function () {
         return new Promise((resolve, reject) => {
           let self = this;
           let pts = {};
           let promises = [];
-          // console.log("typeof selectedPhenotype", typeof self.selectedPhenotype);
-          if(typeof self.selectedPhenotype === "object"){
+          // console.log(typeof selectedPhenotype", typeof self.selectedPhenotype);
+          if (typeof self.selectedPhenotype === "object") {
             self.selectedPhenotype = "affected_status";
           }
           self.populateSampleIds();
@@ -1651,13 +1449,13 @@
                 let samplePhenotype = data.metrics[pt];
                 let sampleId = self.sampleIds[i];
                 pts[sampleId] = samplePhenotype;
-              })
+              });
             promises.push(metP);
           }
           Promise.all(promises)
             .then(() => {
               resolve(pts)
-            }).catch( (e) => {
+            }).catch((e) => {
             console.log("error", e);
             reject(e);
           });
@@ -1665,106 +1463,63 @@
       },
       addNewGenotypesToOpts: function (opts) {
         let self = this;
-
-
-        if(self.selectedGenotype === null){
-
-        }
-        else {
-
-
-            let keys = Object.keys(self.genotypeMap);
-
-
-            let gts = self.genotypeMap[self.selectedGenotype];
-
-
-            for (let i = 0; i < opts.dataset.length; i++) {
-              let id = parseInt(opts.dataset[i].name)
-
-
-              if (self.idList.includes(id.toString())) {
-
-
-                let index = self.idList.indexOf(id.toString());
-                let gtForID = gts[index];
-                let allele = " ";
-
-                if(typeof  gtForID === "undefined"){
-
-                }
-                else {
-
-                  allele = gtForID.substr(0, 3);
-
-                }
-
-                self.cachedGenotypes[id] = allele;
-
+        //todo - remove this type of null checking from all code
+        if (self.selectedGenotype === null) {
+        } else {
+          let keys = Object.keys(self.genotypeMap);
+          let gts = self.genotypeMap[self.selectedGenotype];
+          for (let i = 0; i < opts.dataset.length; i++) {
+            let id = parseInt(opts.dataset[i].name);
+            if (self.idList.includes(id.toString())) {
+              let index = self.idList.indexOf(id.toString());
+              let gtForID = gts[index];
+              let allele = " ";
+              if (typeof gtForID === "undefined") {
+              } else {
+                allele = gtForID.substr(0, 3);
               }
+              self.cachedGenotypes[id] = allele;
             }
-
           }
-
+        }
         opts = self.addCachedValuesToOpts(opts);
-
         return opts.dataset;
-
       },
 
-
-      getNodeById: function(id){
-        let node = d3.select('[id="'+ id +'"]');
-
-        let p1 = node.select(function() {
+      getNodeById: function (id) {
+        let node = d3.select('[id="' + id + '"]');
+        let p1 = node.select(function () {
           return this.parentNode;
         });
-
-
         return p1;
       },
 
-      populateLogisticEvaluationMetrics(){
+      populateLogisticEvaluationMetrics() {
         let self = this;
         self.familyAccuracy = self.regression.getFamilyAccuracy();
         self.familyPrecision = self.regression.getFamilyPrecision();
         self.familyRecall = self.regression.getFamilyRecall();
         self.familyF1 = self.regression.getFamilyF1();
-
         self.projectAccuracy = self.regression.getProjectAccuracy();
         self.projectPrecision = self.regression.getProjectPrecision();
         self.projectRecall = self.regression.getProjectRecall();
         self.projectF1 = self.regression.getProjectF1();
       },
 
-      drawGenotypeBars: function(){
+      drawGenotypeBars: function () {
         let self = this;
-
         let blue = " #e6e6e6";
         let red = "#595959";
-
         let w = "6px";
         let h = "13px";
-
-        // console.log("cachedGenotypes inside draw bars", self.cachedGenotypes);
-
-        for(let key in self.cachedGenotypes){
+        for (let key in self.cachedGenotypes) {
           let node = self.getNodeById(key);
-
-
           let gt = self.cachedGenotypes[key];
-
           let opacity = 1.0;
-
-          if(self.cachedNulls.includes(parseInt(key))){
-
+          if (self.cachedNulls.includes(parseInt(key))) {
             opacity = 0.5
-
           }
-
-
-          if(gt === "0/1") {
-
+          if (gt === "0/1") {
             node.append("rect")
               .attr("width", w)
               .attr('height', h)
@@ -1774,7 +1529,6 @@
               .attr("fill", blue)
               .style("stroke", "black")
               .style("stroke-width", 1);
-
             node.append("rect")
               .attr("width", "5px")
               .attr('height', "13px")
@@ -1782,11 +1536,9 @@
               .attr("y", "25")
               .attr("opacity", opacity)
               .style("stroke", "black")
-              .style("stroke-width",1)
+              .style("stroke-width", 1)
               .attr("fill", red);
-          }
-
-            else if (gt === "0/0"){
+          } else if (gt === "0/0") {
             node.append("rect")
               .attr("width", "5px")
               .attr('height', "13px")
@@ -1796,7 +1548,6 @@
               .style("stroke", "black")
               .style("stroke-width", 1)
               .attr("fill", blue);
-
             node.append("rect")
               .attr("width", w)
               .attr('height', h)
@@ -1806,8 +1557,7 @@
               .style("stroke", "black")
               .style("stroke-width", 1)
               .attr("fill", blue);
-            }
-          else if (gt === "1/1"){
+          } else if (gt === "1/1") {
             node.append("rect")
               .attr("width", w)
               .attr('height', h)
@@ -1817,7 +1567,6 @@
               .style("stroke", "black")
               .style("stroke-width", 1)
               .attr("fill", red);
-
             node.append("rect")
               .attr("width", w)
               .attr('height', h)
@@ -1833,64 +1582,52 @@
     },
     watch: {
 
-      affectedCuttoff: function(){
-
+      affectedCuttoff: function () {
         let self = this;
         self.populateSampleIds();
         self.buildPhenotypes();
-        // self.buildLogisticRegression();
 
       },
 
-      selectedOperand: function(){
+      selectedOperand: function () {
         let self = this;
         self.populateSampleIds();
         self.buildPhenotypes();
-        // self.buildLogisticRegression();
       },
 
-
-      minThreshold: function(){
+      minThreshold: function () {
         let self = this;
-
         self.buildPhenotypes();
-
-        // self.buildLinearRegression();
         self.buildRegression();
       },
 
-      maxThreshold: function(){
+      maxThreshold: function () {
         this.buildPhenotypes();
         this.buildRegression();
       },
 
       selectedFamily: function () {
         let self = this;
-
         let gt = self.selectedGenotype;
         let pt = self.selectedPhenotype;
-
         self.resetValues();
-
         self.selectedGenotype = gt;
         self.selectedPhenotype = pt;
-
         self.buildPhenotypes();
         self.populateSampleIds();
         self.buildGenotypes();
         self.buildRegression();
         self.buildRegression();
-
-        $('#pedigree').on('nodeClick', self.onNodeClick)
+        $('#pedigree').on('nodeClick', self.onNodeClick);
         $('#pedigree').on('bgClick', self.onBGClick);
       },
 
-      toggle: function(){
+      toggle: function () {
         let self = this;
         self.showPed = !self.showPed;
       },
 
-      inverted: function(){
+      inverted: function () {
         this.buildPhenotypes();
         this.buildRegression();
       },
@@ -1911,8 +1648,6 @@
           self.removeHighlight();
           $('#pedigree').on('nodeClick', self.onNodeClick);
           $('#pedigree').on('bgClick', self.onBGClick);
-
-
         }
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
@@ -1924,17 +1659,17 @@
         self.buildRegression();
 
       },
+
       selectedGenotype: function () {
         let self = this;
-        if(typeof self.selectedGenotype === "undefined"){}
-        else {
+        if (typeof self.selectedGenotype === "undefined") {
+        } else {
           self.buildGenotypes();
           self.buildRegression();
         }
-
-
       },
-      selectedRegression: function() {
+
+      selectedRegression: function () {
         let self = this;
         self.populateSampleIds();
         self.buildSlider();
@@ -1947,31 +1682,15 @@
 </script>
 
 <style>
-  #pedigrees svg > rect {
 
-  }
   #pedigrees svg {
-    height:96vh;
-    /*height: -webkit-fill-available;  !* Mozilla-based browsers will ignore this. *!*/
-    /*height: fill-available;*/
+    height: 96vh;
   }
 
-  #legend{
+  #legend {
     height: 100px;
     width: 220px;
     justify-content: center;
-  }
-
-  .phenotypeNA{
-  stroke-dasharray: 5,5;
-  }
-
-  .btn{
-    height: 50px;
-  }
-
-  .operand {
-    width: 100px;
   }
 
   .flex {
@@ -1980,73 +1699,32 @@
     height: 100%;
   }
 
-
-
-  #container{
+  #container {
     display: flex;
     flex-direction: column;
     height: 100%;
   }
 
-
-
-  .col{
-
+  .col {
     flex-grow: 1;
     overflow: auto;
     height: 96vh;
   }
 
-  .flexCol{
-    display: flex;
-    flex-direction: column;
-    align-content: flex-start;
-
+  .v-input v-text-field v-select v-input--is-label-active v-input--is-dirty theme--light {
+    max-height: 100px;
 
   }
-
-
-
-  .v-input v-text-field v-select v-input--is-label-active v-input--is-dirty theme--light{
-    max-height:100px;
-
-  }
-
-  .radioGroup{
-    display: flex;
-    flex-direction: column;
-    /*align-content: flex-start;*/
-    text-align: center;
-    max-height:100px;
-
-    display: inline-block;
-    vertical-align: top;
-  }
-
-
-  .radioContainer{
-
-    text-align: left;
-    vertical-align: top;
-
-  }
-  .selectRegressionType{
-
-  }
-
-  .text-center{
-    text-align: center;
-  }
-
 
   table.gridtable {
-    font-family: verdana,arial,sans-serif;
-    font-size:11px;
-    color:#333333;
+    font-family: verdana, arial, sans-serif;
+    font-size: 11px;
+    color: #333333;
     border-width: 1px;
     border-color: #666666;
     border-collapse: collapse;
   }
+
   table.gridtable th {
     border-width: 1px;
     padding: 8px;
@@ -2054,6 +1732,7 @@
     border-color: #666666;
     background-color: #dedede;
   }
+
   table.gridtable td {
     border-width: 1px;
     padding: 8px;
@@ -2066,19 +1745,7 @@
     visibility: hidden;
   }
 
-
-  /*td .val{*/
-    /*text-align: left;*/
-  /*}*/
-  /*th .val{*/
-    /*text-align: center;*/
-    /*color: grey;*/
-  /*}*/
-
-  /*tr:nth-child(odd).val {background-color: #f2f2f2;}*/
-
   .tableTitle {
-    /*text-decoration: underline;*/
     text-align: left;
     font-size: 16px;
     font-style: normal;
@@ -2086,32 +1753,13 @@
     margin: 5px;
   }
 
-
   text {
-    /*color: white;*/
     fill: black;
     text-shadow: 2px 2px 11px white;
-
   }
 
-  .pedWrapper{
+  .pedWrapper {
     height: 96vh;
-
   }
-
-  .axis-label {
-
-    fill: black;
-    font-size: 14px;
-    font-weight: bold;
-  }
-
-
-
-  /*<v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>*/
-
-
-
-
 
 </style>

@@ -8,7 +8,7 @@ import VueAxios from 'vue-axios'
 
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-Vue.use(VueAxios, axios)
+Vue.use(VueAxios, axios);
 
 
 import App from './App.vue'
