@@ -4,7 +4,13 @@
 
     <v-toolbar style="padding-top: 10px" color="#123d53" dark>
 
+
+
+      <v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>
+
       <v-spacer></v-spacer>
+
+
 
       <v-select :items="familyIDs"
                 id='selectFamily'
@@ -17,6 +23,15 @@
 
       <v-spacer></v-spacer>
 
+      <v-tooltip top style="padding-left: 10px" v-show="launchedFrom === 'D'">
+        <template v-slot:activator="{ on }">
+          <v-icon v-on="on" color="white">info_outline</v-icon>
+        </template>
+        <span>Interesting Correlations</span>
+        <div>PTC Sensitivity - 7:141672604</div>
+
+      </v-tooltip>
+
       <!--TODO: phenotypes shouldnt be passed in as prop most likely-->
       <v-select :items="phenotypes"
                 id="selectPhenotype" label="Select Phenotype" v-model="selectedPhenotype" clearable
@@ -27,13 +42,6 @@
 
       <v-select :items="parsedVariants"
                 id="selectGenotype" label="Select Genotype" v-model="selectedGenotype" clearable
-      ></v-select>
-
-
-      <v-spacer></v-spacer>
-
-      <v-select :items="affectedStatuses"
-                id="selectAffectedStatus" label="Display affected status as" v-model="displayAffectedAs"
       ></v-select>
 
 
@@ -76,7 +84,7 @@
 
       <div id="container"  style="width: 30%; padding-right: 1px; padding-top: 1px">
 
-      <div  class="col" height="100vh">
+      <div  class="col">
 
 
 
@@ -86,17 +94,23 @@
         </v-card>
 
 
-        <v-card style="background-color: #f2f2f2;">
+        <v-card style="background-color: #f2f2f2; height: 50vh">
 
 
-          <div id="logisticRegression" v-show="displayAffectedAs === 'binary'">
+          <div id="logisticRegression" v-show="selectedRegression === 'Logistic'">
 
 
             <div style="display: inline-flex">
 
 
-              <v-tooltip>
-                <template v-slot:activator="{ on }">
+              <v-spacer></v-spacer>
+
+              <v-select :items="regressionTypes"
+                        id="regressionSelect" label="Regression Type" v-model="selectedRegression"
+              ></v-select>
+
+              <v-tooltip top>
+                <template v-slot:activator="{ on }" style="padding-top: 10px">
                   <v-icon v-on="on" color="black">info_outline</v-icon>
                 </template>
                 <span>This will invert the color scale for the Phenotype values</span>
@@ -104,6 +118,8 @@
               </v-tooltip>
 
               <v-btn v-on:click="invertRange()" small>Invert color scale</v-btn>
+
+
             </div>
 
 
@@ -132,22 +148,33 @@
 
 
 
-        <div id="linearRegression" v-show="displayAffectedAs === 'continuous'">
+        <div id="linearRegression" v-show="selectedRegression === 'Linear'">
 
 
 
-          <div style="display: inline-flex">
+          <div class="d-inline-flex">
+
+            <v-select :items="regressionTypes"
+                      style="width: 175px; padding-right: 75px"
+                      id="regressionSelect" label="Regression Type" v-model="selectedRegression"
+            ></v-select>
 
 
-            <v-tooltip>
+            <v-tooltip top>
               <template v-slot:activator="{ on }">
-                <v-icon v-on="on" color="black">info_outline</v-icon>
+                <v-icon v-on="on" color="black" dense>info_outline</v-icon>
               </template>
               <span>This will invert the color scale for the Phenotype values</span>
 
             </v-tooltip>
 
-            <v-btn v-on:click="invertRange()" small>Invert color scale</v-btn>
+            <div style="flex-direction: column">
+              <div style="height: 10px"></div>
+              <v-btn v-on:click="invertRange()" small >Invert color scale</v-btn>
+            </div>
+
+
+
           </div>
 
             <div class="tableTitle">Regression Statistics</div>
@@ -237,8 +264,7 @@
   import toggle from './toggle.vue'
   import navigation from './navigation.vue'
   import vueScatter from "./scatterplot.vue"
-  import TAS from "../../static/TAS2R38";
-  import OR7D4 from '../../static/smelling'
+
   // import * as d3 from "d3";
 
   export default {
@@ -275,7 +301,6 @@
         txtDict: {},
         pedDict: {},
         PTCPhenotypes: {},
-        TASGenotypes: TAS,
         cachedPhenotypes: {},
         cachedColors: {},
         cachedGenotypes: {},
@@ -338,7 +363,6 @@
 
 
         //user unputs
-        displayAffectedAs: "continuous",
         operands: [">", "<", ">=", "<="],
         selectedRegression: null,
         showPed: true,
@@ -719,15 +743,7 @@
 
         self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
 
-
-        if(self.launchedFrom === "U") {
-          //TODO: pass in all genotypes, not jjust family
-          self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex, "U");
-        }
-        else if(self.launchedFrom === "D"){
-          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
-
-        }
+        self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
 
         self.linePoints = self.regression.getLinePoints();
         self.projectCorrelation = self.regression.getProjectCorrelation();
@@ -754,7 +770,7 @@
 
           let sliderRange = null;
 
-          if(self.displayAffectedAs === "continuous") {
+          if(self.selectedRegression === "Linear") {
             self.maxThreshold = self.maxPt;
 
 
@@ -775,7 +791,7 @@
 
           }
 
-          else if(self.displayAffectedAs === "binary"){
+          else if(self.selectedRegression === "Logistic"){
 
             self.maxThreshold = self.maxPt/2;
 
@@ -1161,15 +1177,15 @@
         d3.select("#legendSvg").remove();
 
 
-        if(self.displayAffectedAs === "continuous") {
+        if(self.selectedRegression === "Linear") {
 
 
-       // this.buildLinearRegressionLegend();
+           this.buildLinearRegressionLegend();
 
         }
-        else if(self.displayAffectedAs === "binary") {
+        else if(self.selectedRegression === "Logistic") {
 
-
+          this.buildLogisticRegressionLegend()
         }
 
 
@@ -1383,7 +1399,7 @@
 
             if (typeof sens === "undefined" || isNaN(parseInt(sens))) {
               color = "none";
-            } else if (self.displayAffectedAs === "binary") {
+            } else if (self.selectedRegression === "Logistic") {
 
               if (!self.inverted) {
                 if (sens >= self.minThreshold && sens <= self.maxThreshold) {
@@ -1397,7 +1413,7 @@
                 }
               }
 
-            } else if (self.displayAffectedAs === "continuous") {
+            } else if (self.selectedRegression=== "Linear") {
 
               if (!this.inverted) {
 
@@ -1500,7 +1516,7 @@
                 color = "none";
               }
 
-              else if (self.displayAffectedAs === "binary") {
+              else if (self.selectedRegression === "Logistic") {
 
                 if (!self.inverted) {
                   if (sens  >= self.minThreshold && sens <= self.maxThreshold) {
@@ -1517,7 +1533,7 @@
               }
 
 
-            else if (self.displayAffectedAs === "continuous") {
+            else if (self.selectedRegression === "Linear") {
 
                 if (!this.inverted) {
 
@@ -1585,10 +1601,10 @@
         if(this.selectedGenotype === null || this.selectedPhenotype === null){
           return;
         }
-        if(this.displayAffectedAs === "continuous"){
+        if(this.selectedRegression === "Linear"){
           this.buildLinearRegression();
         }
-        else if(this.displayAffectedAs=== "binary"){
+        else if(this.selectedRegression === "Logistic"){
           this.buildLogisticRegression()
         }
       },
@@ -1656,25 +1672,6 @@
         }
         else {
 
-          if (self.selectedGenotype === '') {
-            for (let i = 0; i < opts.dataset.length; i++) {
-              let id = parseInt(opts.dataset[i].name);
-              let allele = self.TASGenotypes[id].split(";")[0];
-              // opts.dataset[i].alleles = allele;
-              self.cachedGenotypes[id] = allele;
-            }
-            self.opts = self.addCachedValuesToOpts(opts);
-          }
-          else if(self.selectedGenotype === "14:"){
-            for (let i = 0; i < opts.dataset.length; i++) {
-              let id = parseInt(opts.dataset[i].name);
-              let allele = OR7D4[id].split(";")[0];
-              // opts.dataset[i].alleles = allele;
-              self.cachedGenotypes[id] = allele;
-            }
-            self.opts = self.addCachedValuesToOpts(opts);
-          }
-          else {
 
             let keys = Object.keys(self.genotypeMap);
 
@@ -1708,7 +1705,7 @@
             }
 
           }
-        }
+
         opts = self.addCachedValuesToOpts(opts);
 
         return opts.dataset;
@@ -1853,25 +1850,6 @@
       },
 
 
-      displayAffectedAs: function(){
-        let self = this;
-
-        self.buildSlider();
-
-        if(self.displayAffectedAs === "continuous"){
-          self.selectedRegression = "Linear";
-        }
-        else if(self.displayAffectedAs === "binary"){
-          self.selectedRegression === "Logistic";
-        }
-        self.buildPhenotypes();
-
-        self.populateSampleIds();
-
-        self.buildRegression();
-
-      },
-
       minThreshold: function(){
         let self = this;
 
@@ -1958,14 +1936,10 @@
       },
       selectedRegression: function() {
         let self = this;
-
         self.populateSampleIds();
-
-        if (self.selectedRegression === "Linear") {
-          self.buildLinearRegression();
-        } else if (self.selectedRegression === "Logistic") {
-          self.buildLogisticRegression();
-        }
+        self.buildSlider();
+        self.buildPhenotypes();
+        self.buildRegression();
         self.linePoints = self.regression.getLinePoints();
       }
     }
