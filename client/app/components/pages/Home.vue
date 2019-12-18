@@ -307,7 +307,7 @@
       variants: null,
 
       demoPhenotypes: ["PTC Sensitivity"],
-      demoVariants: ["7:141972755_C/T"],
+      demoVariants: ["7:141972755_C/T", "14:93388386_G/A"],
 
       file: '',
       uploadedPedTxt: null,

@@ -236,9 +236,6 @@ export default class Regression {
         }
       }
     }
-
-    console.log("self.xRawP", self.xRawP);
-    console.log("self.xRawF", self.xRawF);
   }
 
   calculateProjectCorrelation(){

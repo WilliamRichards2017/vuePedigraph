@@ -238,6 +238,7 @@
   import navigation from './navigation.vue'
   import vueScatter from "./scatterplot.vue"
   import TAS from "../../static/TAS2R38";
+  import OR7D4 from '../../static/smelling'
   // import * as d3 from "d3";
 
   export default {
@@ -401,7 +402,6 @@
 
     mounted() {
 
-
       let self = this;
 
       self.tableHeader = [
@@ -451,6 +451,7 @@
     ,
     methods: {
 
+
       removeHighlight: function(){
         let self = this;
 
@@ -491,16 +492,19 @@
 
             let lineCols = vcfLines[i].split('\t');
 
+
             let filteredCols = [];
 
             for(let j = 0; j < lineCols.length; j++){
               if(lineCols[j] === ""){
-
+                filteredCols.push("");
               }
               else{
                 filteredCols.push(lineCols[j]);
               }
             }
+
+            // console.log("filteredCols", filteredCols);
 
             let variant = filteredCols.slice(0,5);
 
@@ -510,23 +514,24 @@
 
             let gts = filteredCols.slice(9);
 
-            console.log("gts inside buildGTMapFromVCF", gts);
+            // console.log("first gts", gts);
 
             if(firstTwo === "#C" || firstTwo === "#c"){
               sampleIDs = gts;
+              // console.log("found first two");
+              // console.log("sampleIds", sampleIDs);
             }
 
             else{
 
+              console.log("made it to else");
+              // console.log("gts for var", varText, gts);
+
               gtMap[varText] = gts;
             }
 
-            filteredTxt = filteredTxt + vcfLines[i] + "\n";
           }
         }
-
-        console.log("sampleIds", sampleIDs);
-
         self.idList = sampleIDs;
 
         return gtMap;
@@ -552,7 +557,11 @@
 
 
         self.genotypeMap = self.buildGTMapFromVcf();
+        console.log("self.gtMap after build", self.genotypeMap);
+
         self.parsedVariants = Object.keys(self.genotypeMap);
+
+
 
         self.populateModel();
         self.populatePTC();
@@ -658,20 +667,22 @@
         this.fullGTMap = {};
 
 
-        console.log("this.idList", this.idList);
+        let gts = Object.keys(this.genotypeMap);
 
 
-        let gts = this.genotypeMap[this.selectedGenotype];
+        for(let i = 0; i < gts.length; i++){
+          let key = gts[i];
 
+          let values = this.genotypeMap[key];
 
-        for(let i = 0; i < this.allIds.length; i++) {
+          console.log("values[800]", key, values[800]);
 
-          let id = this.allIds[i];
+          let dict = {};
 
-          if (this.idList.includes(id)) {
+          for(let i = 0; i < this.idList.length; i++) {
 
-            let index = this.idList.indexOf(id);
-            let gtForID = gts[index];
+            let id = this.idList[i];
+            let gtForID = values[i];
             let allele = " ";
 
             if (typeof gtForID === "undefined") {
@@ -682,10 +693,10 @@
 
             }
 
-            this.fullGTMap[id] = allele;
+            dict[id] = allele;
 
           }
-
+          this.fullGTMap[key] = dict;
         }
 
       },
@@ -701,7 +712,9 @@
         //TODO - implement this
         self.populateGenotypes();
 
+        let gts = self.fullGTMap[self.selectedGenotype];
 
+        console.log("self.selectedGenotype", self.selectedGenotype);
 
 
         self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
@@ -712,7 +725,8 @@
           self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex, "U");
         }
         else if(self.launchedFrom === "D"){
-          self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
+          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
+
         }
 
         self.linePoints = self.regression.getLinePoints();
@@ -1642,7 +1656,7 @@
         }
         else {
 
-          if (self.selectedGenotype === '7:141972755_C/T') {
+          if (self.selectedGenotype === '') {
             for (let i = 0; i < opts.dataset.length; i++) {
               let id = parseInt(opts.dataset[i].name);
               let allele = self.TASGenotypes[id].split(";")[0];
@@ -1650,10 +1664,17 @@
               self.cachedGenotypes[id] = allele;
             }
             self.opts = self.addCachedValuesToOpts(opts);
-          } else {
-
-
-            //TODO: get this part working for reals
+          }
+          else if(self.selectedGenotype === "14:"){
+            for (let i = 0; i < opts.dataset.length; i++) {
+              let id = parseInt(opts.dataset[i].name);
+              let allele = OR7D4[id].split(";")[0];
+              // opts.dataset[i].alleles = allele;
+              self.cachedGenotypes[id] = allele;
+            }
+            self.opts = self.addCachedValuesToOpts(opts);
+          }
+          else {
 
             let keys = Object.keys(self.genotypeMap);
 
