@@ -56,6 +56,12 @@
 
 
 
+        var tooltip = d3.select("body")
+          .append("div")
+          .style("position", "absolute")
+          .style("z-index", "10")
+          .style("visibility", "hidden")
+
         console.log("change in raw data, inside buildPlot");
 
         let M = [];
@@ -131,37 +137,45 @@
           .style("stroke-width", 1)
           .attr("fill", blue);
 
-        let highlightCircle = function(d, i) {
-
-          console.log("d", d);
-
+        let highlightCircle = function(d) {
           d3.select(this).attr("r", 15);
 
-
-          d3.select("#plot").append("text")
-            .attr("class", "highlightText")
-            .attr("x", self.xScale(d.xSource) - 10)
-            .attr("y", self.yScale(d.ySource))
-            .style("text-shadow", "2px 2px 11px white")
-            .style("font-size", "10px")
-            .style("font-weight", "bold")
-            .text(d.id);
-
-
-          d3.select("#tooltip").html(d.id + "<br/>")
-            .style("left", (d3.event.pageX) + "px")
-            .style("top", (d3.event.pageY - 28) + "px");
+          tooltip.style("visibility", "visible").text(d.id)
+            .style("font-size", 12)
+            .style("font-weight", "bold");
 
         };
 
-        let unhighlightCircle = function(d, i) {
 
-          d3.selectAll(".highlightText").remove();
+        let highlightSquare = function(d) {
 
-          console.log("this", this);
+          d3.select(this).attr("width", 30)
+            .attr("height", 30)
+            .attr("x", self.xScale(d.xSource) - 15)
+            .attr("y", self.yScale(d.ySource) - 15);
+
+          tooltip.style("visibility", "visible").text(d.id)
+            .style("font-size", 12)
+            .style("font-weight", "bold");
+
+        };
+
+        let unhighlightCircle = function() {
+
+          tooltip.style("visibility", "hidden");
 
           d3.select(this).attr("r", 10);
 
+        };
+
+        let unhighlightSquare = function(d) {
+
+          tooltip.style("visibility", "hidden");
+
+          d3.select(this).attr("width", 20)
+            .attr("height", 20)
+            .attr("x", self.xScale(d.xSource) - 10)
+            .attr("y", self.yScale(d.ySource) - 10);
         };
 
 
@@ -208,8 +222,9 @@
           .attr("height", 20)
           .style("fill", d => d.color)
           .style("opacity", d => d.opacity)
-          .on("mouseover", );
-
+          .on("mouseover", highlightSquare)
+          .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX + 5)+"px");})
+          .on("mouseout", unhighlightSquare)
 
         // let squareText = d3.select("#plot").selectAll('text.sq')
         //   .data(M).join("text")
@@ -228,7 +243,8 @@
           .style("fill", d => d.color)
           .style("opacity", d => d.opacity)
           .on("mouseover", highlightCircle)
-          .on("mouseout", unhighlightCircle);
+          .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX + 5)+"px");})
+          .on("mouseout", unhighlightCircle)
 
 
         // let circleText = d3.select("#plot").selectAll('text.circ')
