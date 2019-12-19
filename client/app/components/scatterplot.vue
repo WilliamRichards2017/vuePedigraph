@@ -54,6 +54,8 @@
       buildPlot: function () {
         let self = this;
 
+
+
         console.log("change in raw data, inside buildPlot");
 
         let M = [];
@@ -129,6 +131,39 @@
           .style("stroke-width", 1)
           .attr("fill", blue);
 
+        let highlightCircle = function(d, i) {
+
+          console.log("d", d);
+
+          d3.select(this).attr("r", 15);
+
+
+          d3.select("#plot").append("text")
+            .attr("class", "highlightText")
+            .attr("x", self.xScale(d.xSource) - 10)
+            .attr("y", self.yScale(d.ySource))
+            .style("text-shadow", "2px 2px 11px white")
+            .style("font-size", "10px")
+            .style("font-weight", "bold")
+            .text(d.id);
+
+
+          d3.select("#tooltip").html(d.id + "<br/>")
+            .style("left", (d3.event.pageX) + "px")
+            .style("top", (d3.event.pageY - 28) + "px");
+
+        };
+
+        let unhighlightCircle = function(d, i) {
+
+          d3.selectAll(".highlightText").remove();
+
+          console.log("this", this);
+
+          d3.select(this).attr("r", 10);
+
+        };
+
 
 
 
@@ -173,15 +208,17 @@
           .attr("height", 20)
           .style("fill", d => d.color)
           .style("opacity", d => d.opacity)
-          .on("click", d => console.log("(x,y): ", d.x, d.y));
-        let squareText = d3.select("#plot").selectAll('text.sq')
-          .data(M).join("text")
-          .style("text-shadow", "2px 2px 11px white")
-          .classed("sq", true);
-        squareText
-          .attr("x", d => self.xScale(d.xSource) - 10)
-          .attr("y", d => self.yScale(d.ySource))
-          .text(d => d.id);
+          .on("mouseover", );
+
+
+        // let squareText = d3.select("#plot").selectAll('text.sq')
+        //   .data(M).join("text")
+        //   .style("text-shadow", "2px 2px 11px white")
+        //   .classed("sq", true);
+        // squareText
+        //   .attr("x", d => self.xScale(d.xSource) - 10)
+        //   .attr("y", d => self.yScale(d.ySource))
+        //   .text(d => d.id);
         let circles = d3.select("#plot").selectAll('circle')
           .data(F).join("circle");
         circles
@@ -190,17 +227,23 @@
           .attr("r", 10)
           .style("fill", d => d.color)
           .style("opacity", d => d.opacity)
-          .on("click", d => console.log("(x,y): ", d.x, d.y));
-        let circleText = d3.select("#plot").selectAll('text.circ')
-          .data(F).join("text")
-          .style("text-shadow", "2px 2px 11px white")
-          .classed("circ", true);
-        circleText
-          .attr("x", d => self.xScale(d.xSource) -10)
-          .attr("y", d => self.yScale(d.ySource))
-          .text(d => d.id);
+          .on("mouseover", highlightCircle)
+          .on("mouseout", unhighlightCircle);
 
-    },
+
+        // let circleText = d3.select("#plot").selectAll('text.circ')
+        //   .data(F).join("text")
+        //   .style("text-shadow", "2px 2px 11px white")
+        //   .classed("circ", true);
+        // circleText
+        //   .attr("x", d => self.xScale(d.xSource) -10)
+        //   .attr("y", d => self.yScale(d.ySource))
+        //   .text(d => d.id);
+
+
+
+        console.log("mouseover triggered");
+      },
 
       buildRegressionLine(){
 
@@ -364,6 +407,20 @@
     position: absolute;
     top: 10px;
     left: 0;
+  }
+
+
+  .tooltip {
+    position: absolute;
+    text-align: center;
+    width: 60px;
+    height: 28px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
   }
 
   .axis-label {

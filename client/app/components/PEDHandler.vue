@@ -50,8 +50,6 @@
         :nudge-width="200"
         offset-x
       >
-
-
       </v-menu>
 
       <v-spacer></v-spacer>
@@ -59,42 +57,21 @@
       <v-switch label="'Isolate family'"
                 v-model="isolateFamily"></v-switch>
 
-
     </v-toolbar>
 
-    <!--<v-navigation-drawer-->
-    <!--v-model="drawer"-->
-    <!--right-->
-    <!--&gt;-->
-    <!--</v-navigation-drawer>-->
-
-
     <div class="pedWrapper">
-
       <div class="flex">
-
         <div id="pedigrees" v-show="showPed" style="width: 70%;"></div>
-
-        <!--<div class="flexCol" width="450px" >-->
-
-
         <div id="container" style="width: 30%; padding-right: 1px; padding-top: 1px">
-
           <div class="col">
-
-
             <v-card>
               <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts"
                           :regressionType="selectedRegression" :operand="selectedOperand" :cuttoff="affectedCuttoff"
                           :maxPt="maxPt" :minPt="minPt"></vueScatter>
-
             </v-card>
 
-
-            <v-card style="background-color: #f2f2f2; height: 50vh">
-
+            <v-card style="background-color: #f2f2f2; height: 60vh">
               <div class="d-inline-flex">
-
                 <v-select :items="regressionTypes"
                           style="width: 175px; padding-right: 75px"
                           id="regressionSelect" label="Regression Type" v-model="selectedRegression"
@@ -180,7 +157,6 @@
                 </div>
               </div>
               <div id="legend"></div>
-              <div style="height: 300px"></div>
 
             </v-card>
 
@@ -668,23 +644,13 @@
 
 
       buildLinearRegression() {
-
-
         let self = this;
-
-
         //TODO - implement this
         self.populateGenotypes();
-
         let gts = self.fullGTMap[self.selectedGenotype];
-
         console.log("self.selectedGenotype", self.selectedGenotype);
-
-
         self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
-
         self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
-
         self.linePoints = self.regression.getLinePoints();
         self.projectCorrelation = self.regression.getProjectCorrelation();
         self.projectPVal = self.regression.getProjectPVal();
@@ -1702,7 +1668,7 @@
   #container {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: 95vh;
   }
 
   .col {
@@ -1713,7 +1679,6 @@
 
   .v-input v-text-field v-select v-input--is-label-active v-input--is-dirty theme--light {
     max-height: 100px;
-
   }
 
   table.gridtable {
