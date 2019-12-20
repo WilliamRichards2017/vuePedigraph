@@ -457,6 +457,8 @@
 
             let varText = variant[0] + ':' + variant[1] + "_" + variant[3] + '/' + variant[4];
 
+
+
             varText = varText.replace(/\s/g, '');
 
             let gts = filteredCols.slice(9);
@@ -472,7 +474,14 @@
               console.log("made it to else");
               // console.log("gts for var", varText, gts);
 
-              gtMap[varText] = gts;
+
+              if(varText === ":undefined_undefined/undefined"){
+
+              }
+              else{
+                gtMap[varText] = gts;
+
+              }
             }
 
           }
@@ -502,7 +511,7 @@
         self.genotypeMap = self.buildGTMapFromVcf();
         console.log("self.gtMap after build", self.genotypeMap);
 
-        self.parsedVariants = Object.keys(self.genotypeMap);
+        self.parsedVariants = Object.keys(self.genotypeMap).filter(Boolean);
 
 
         self.populateModel();
@@ -802,7 +811,12 @@
         self.parsedVariants = [];
         for (let i = 0; i < self.variants.length; i++) {
           let parsedVariant = self.variants[i].chr + ":" + self.variants[i].pos + "_" + self.variants[i].ref + "/" + self.variants[i].alt;
-          self.parsedVariants.push(parsedVariant);
+          if(typeof parsedVariant === "undefined"){
+
+          }
+          else {
+            self.parsedVariants.push(parsedVariant);
+          }
         }
       },
       resetValues: function () {
@@ -1128,12 +1142,18 @@
         let self = this;
         for (let key in self.pedDict) {
           if (self.pedDict.hasOwnProperty(key)) {
-            self.familyIDs.push(key);
+            console.log("key", key);
+            if(key === ""){}
+            else {
+              self.familyIDs.push(key);
+            }
             let pedLines = self.pedDict[key];
             let fam = new family(key, pedLines);
             self.families[fam.familyID] = fam;
           }
         }
+
+        self.familyIDs.filter(Boolean);
       },
       getDataByFamilyID: function (id) {
         let self = this;
