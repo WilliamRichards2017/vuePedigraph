@@ -658,8 +658,19 @@
         self.populateGenotypes();
         let gts = self.fullGTMap[self.selectedGenotype];
         console.log("self.selectedGenotype", self.selectedGenotype);
-        self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
-        self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0, "D");
+        console.log('selectedPhenotype', "." + self.selectedPhenotype +".");
+        if(self.launchedFrom === "D") {
+          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0);
+        }
+        else{
+          if(self.selectedPhenotype === " PTC Sensitivity") {
+            console.log("PTC sens");
+            self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0);
+          }
+          else{
+            self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 1);
+          }
+        }
         self.linePoints = self.regression.getLinePoints();
         self.projectCorrelation = self.regression.getProjectCorrelation();
         self.projectPVal = self.regression.getProjectPVal();
@@ -685,6 +696,7 @@
         ];
 
         self.scatterplotData = self.regression.getScatterplotData();
+        console.log()
         self.buildPTLegend();
       },
 
@@ -738,16 +750,19 @@
           .append("text").text(self.selectedPhenotype)
           .attr("class", "axis-label")
           .attr("x", -250)
-          .attr("y", -25)
+          .attr("y", -30)
           .attr("transform", "rotate(-90)");
       },
 
       buildLogisticRegression() {
-
-
         let self = this;
         self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
-        self.regression = new Regression(self.cachedGenotypes, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex);
+
+        self.populateGenotypes();
+        let gts = self.fullGTMap[self.selectedGenotype];
+
+
+        self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex, "D");
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
 
@@ -1394,6 +1409,8 @@
         } else if (this.selectedRegression === "Logistic") {
           this.buildLogisticRegression()
         }
+        console.log("self.scatterplotData", self.scatterplotData)
+
       },
 
       buildHubPhenotypes: function () {

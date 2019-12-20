@@ -74,6 +74,8 @@
           }
         }
 
+        console.log("minPT, maxPT", self.minPt, self.maxPt);
+
         // Set up the scales
         self.xScale = d3.scaleLinear()
           .domain([-0.2, 1.2])
@@ -375,6 +377,7 @@
 
     rawData: function () {
 
+      console.log("watcher in rawData", this.rawData);
       this.buildPlot();
       // this.buildPTLegend();
     }
