@@ -1028,7 +1028,8 @@ function mouseout() {
     var svg = d3.select("#"+opts.targetDiv)
       .append("svg:svg")
       .attr("width", "100%")
-      .attr("height", "96vh");
+      .attr("height", "96vh")
+      .attr("id", "pedSvg");
 
 
 

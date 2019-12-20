@@ -140,7 +140,7 @@
                       <td>{{(familyCorrelation**2).toFixed(4)}}</td>
                       <td id="familyP" class="val">{{familyPVal.toExponential(3)}}</td>
                       <td>
-                        <v-icon dense right color="green" v-show="familyPVal <= 0.05">check_circle</v-icon>
+                        <v-icon dense right color="green" v-show="familyPVal <= 0.05 && familyPVal >= 0">check_circle</v-icon>
                       </td>
                     </tr>
 
@@ -150,7 +150,7 @@
                       <td class="val">{{(projectCorrelation**2).toFixed(4)}}</td>
                       <td id="projectP" class="val"> {{projectPVal.toExponential(3)}}</td>
                       <td>
-                        <v-icon dense right color="green" v-show="projectPVal <= 0.05">check_circle</v-icon>
+                        <v-icon dense right color="green" v-show="projectPVal <= 0.05  && projectPVal >= 0">check_circle</v-icon>
                       </td>
                     </tr>
                   </table>
@@ -520,6 +520,19 @@
 
       },
 
+      buildFromUpload() {
+        let self = this;
+        self.pedTxt = self.txt;
+        self.populateModel();
+        self.selectedRegression = "Linear";
+        self.selectedFamily = self.txt.split(" ")[0];
+        self.genotypeMap = self.buildGTMapFromVcf();
+        self.parsedVariants = Object.keys(self.genotypeMap);
+
+        self.populatePhenotypes();
+
+      },
+
 
       buildFromHub() {
         let self = this;
@@ -529,19 +542,6 @@
         self.selectedFamily = self.family_id;
       },
 
-
-      buildFromUpload() {
-        let self = this;
-        self.pedTxt = self.txt;
-        self.populateModel();
-        self.selectedFamily = self.txt.split(" ")[0];
-
-        self.genotypeMap = self.buildGTMapFromVcf();
-        self.parsedVariants = Object.keys(self.genotypeMap);
-
-        self.populatePhenotypes();
-
-      },
 
       populatePhenotypes() {
 
@@ -723,6 +723,7 @@
             });
         }
 
+
         d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
           .call(sliderRange)
           .append("text").text(self.selectedPhenotype)
@@ -789,7 +790,6 @@
         self.opts.dataset = io.readLinkage(self.pedTxt);
         self.opts.dataset = self.addNewGenotypesToOpts(self.opts);
         self.opts = ptree.build(self.opts);
-
         self.drawGenotypeBars();
 
         $('#pedigree').on('nodeClick', self.onNodeClick);
@@ -1582,7 +1582,6 @@
         self.buildPhenotypes();
         self.populateSampleIds();
         self.buildGenotypes();
-        self.buildRegression();
         self.buildRegression();
         $('#pedigree').on('nodeClick', self.onNodeClick);
         $('#pedigree').on('bgClick', self.onBGClick);

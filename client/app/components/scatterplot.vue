@@ -140,9 +140,9 @@
         let highlightCircle = function(d) {
           d3.select(this).attr("r", 15);
 
-          tooltip.style("visibility", "visible").text(d.id)
-            .style("font-size", 12)
-            .style("font-weight", "bold");
+          // tooltip.style("visibility", "visible").text(d.id)
+          //   .style("font-size", 12)
+          //   .style("font-weight", "bold");
 
         };
 
@@ -154,9 +154,9 @@
             .attr("x", self.xScale(d.xSource) - 15)
             .attr("y", self.yScale(d.ySource) - 15);
 
-          tooltip.style("visibility", "visible").text(d.id)
-            .style("font-size", 12)
-            .style("font-weight", "bold");
+          // tooltip.style("visibility", "visible").text(d.id)
+          //   .style("font-size", 12)
+          //   .style("font-weight", "bold");
 
         };
 
@@ -226,14 +226,14 @@
           .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX + 5)+"px");})
           .on("mouseout", unhighlightSquare)
 
-        // let squareText = d3.select("#plot").selectAll('text.sq')
-        //   .data(M).join("text")
-        //   .style("text-shadow", "2px 2px 11px white")
-        //   .classed("sq", true);
-        // squareText
-        //   .attr("x", d => self.xScale(d.xSource) - 10)
-        //   .attr("y", d => self.yScale(d.ySource))
-        //   .text(d => d.id);
+        let squareText = d3.select("#plot").selectAll('text.sq')
+          .data(M).join("text")
+          .style("text-shadow", "2px 2px 11px white")
+          .classed("sq", true);
+        squareText
+          .attr("x", d => self.xScale(d.xSource) - 10)
+          .attr("y", d => self.yScale(d.ySource))
+          .text(d => d.id);
         let circles = d3.select("#plot").selectAll('circle')
           .data(F).join("circle");
         circles
@@ -244,17 +244,17 @@
           .style("opacity", d => d.opacity)
           .on("mouseover", highlightCircle)
           .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX + 5)+"px");})
-          .on("mouseout", unhighlightCircle)
+          .on("mouseout", unhighlightCircle);
 
 
-        // let circleText = d3.select("#plot").selectAll('text.circ')
-        //   .data(F).join("text")
-        //   .style("text-shadow", "2px 2px 11px white")
-        //   .classed("circ", true);
-        // circleText
-        //   .attr("x", d => self.xScale(d.xSource) -10)
-        //   .attr("y", d => self.yScale(d.ySource))
-        //   .text(d => d.id);
+        let circleText = d3.select("#plot").selectAll('text.circ')
+          .data(F).join("text")
+          .style("text-shadow", "2px 2px 11px white")
+          .classed("circ", true);
+        circleText
+          .attr("x", d => self.xScale(d.xSource) -10)
+          .attr("y", d => self.yScale(d.ySource))
+          .text(d => d.id);
 
 
 
@@ -279,6 +279,10 @@
           var xScale = d3.scaleLinear()
             .domain([0, 1])
             .range([0, self.width]);
+
+
+
+
           var yScale = d3.scaleLinear()
             .domain([this.minPt, this.maxPt])
             .range([self.height, 0]);
