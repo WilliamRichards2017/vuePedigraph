@@ -659,17 +659,15 @@
         let gts = self.fullGTMap[self.selectedGenotype];
         console.log("self.selectedGenotype", self.selectedGenotype);
         console.log('selectedPhenotype', "." + self.selectedPhenotype +".");
+
+
+        console.log("index for selected phenotype", self.ptIndex);
+
         if(self.launchedFrom === "D") {
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0);
         }
         else{
-          if(self.selectedPhenotype === " PTC Sensitivity") {
-            console.log("PTC sens");
-            self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0);
-          }
-          else{
-            self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 1);
-          }
+          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
         }
         self.linePoints = self.regression.getLinePoints();
         self.projectCorrelation = self.regression.getProjectCorrelation();
@@ -1655,8 +1653,14 @@
       },
       selectedPhenotype: function () {
         let self = this;
+
         self.populateThresholds();
         self.buildPhenotypes();
+
+        console.log("self.phenotypes", self.phenotypes, self.selectedPhenotype);
+
+        self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
+
         self.buildSlider();
         self.buildRegression();
 
