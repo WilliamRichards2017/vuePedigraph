@@ -247,7 +247,7 @@ export default class Regression {
 
     let self = this;
     let ft = fisherTest(self.projectCorrelation, self.xRawP.length);
-    self.familyPVal = ft.pvalue;
+    self.projectPVal = ft.pvalue;
   }
 
 
@@ -623,7 +623,11 @@ export default class Regression {
 
     let self = this;
 
+    console.log("self.xRawF, self.yRawF", self.xRawF, self.yRawF);
+
     let familyCorrelation = self.pearsonCorrelation([self.xRawF,self.yRawF], 0, 1);
+
+    console.log("familyCorrelation", familyCorrelation);
 
     //where family correlation is rho
     let ft = fisherTest(familyCorrelation, self.xRawF.length);

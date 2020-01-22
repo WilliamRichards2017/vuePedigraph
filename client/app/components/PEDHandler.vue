@@ -252,7 +252,7 @@
         hubSession: null,
         sampleIds: null,
         idList: null,
-        phenotypes: ["PTC Sensitivity"],
+        phenotypes: ["PTC Sensitivity", "Androstenone Sensitivity", "Asparagus Sensitivity"],
 
         fullGTMap: {},
 
@@ -352,6 +352,8 @@
 
     mounted() {
 
+      this.readTextFile();
+
       let self = this;
 
       self.tableHeader = [
@@ -376,7 +378,7 @@
 
 
       self.tableData = [
-        {name: 'Pearsons r', project: 0.5, family: 1},
+        {name: 'Pearsons r', project: 0.5, family: 0},
         {name: 'r**2', project: 1, family: 1},
         {name: 'P-val', project: 1, family: 1}
       ];
@@ -400,6 +402,92 @@
     ,
     methods: {
 
+      buildLinkIdMap(){
+
+      },
+
+      formatJson: function(json){
+        //{"UGRP_PED":"3","UGRP_IND":"4","GENDER":"F","THRESHOLD_TRIAL_1":">10","THRESHOLD_TRIAL_2":">12","FINAL_AVERAGE_THRESHOLD\r":">11\r"},
+
+        let ret = {};
+
+        console.log("asparagus json", json)
+        for(let i = 0; i < json.length; i++){
+
+          console.log("json keys", Object.keys(json[i]));
+          let key = json[i]["LINK_ID"];
+
+          console.log("jsonLine", json[i]);
+
+          let v = json[i]["CEPH_ID"] + "-" + json[i]["UGRP_PED"];
+          ret[key] = v;
+        }
+
+        return ret;
+
+      },
+
+
+      csvToJson: function(csv){
+
+        var lines=csv.split("\n");
+
+        var result = [];
+
+        // NOTE: If your columns contain commas in their values, you'll need
+        // to deal with those before doing the next step
+        // (you might convert them to &&& or something, then covert them back later)
+        // jsfiddle showing the issue https://jsfiddle.net/
+        var headers=lines[0].split(",");
+
+        for(var i=1;i<lines.length;i++){
+
+          var obj = {};
+          var currentline=lines[i].split(",");
+
+          for(var j=0;j<headers.length;j++){
+            obj[headers[j]] = currentline[j];
+          }
+
+          result.push(obj);
+
+        }
+
+        //return result; //JavaScript object
+        return result;
+        //return JSON.stringify(result); //JSON
+
+      },
+
+      readTextFile: function()
+      {
+
+        let self = this;
+
+    console.log("inside readTextFile");
+    let file = "./../static/linkIds.csv"
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function ()
+    {
+      if(rawFile.readyState === 4)
+      {
+        if(rawFile.status === 200 || rawFile.status == 0)
+        {
+          var allText = rawFile.responseText;
+          let json = self.csvToJson(allText);
+          console.log("json", json);
+          // console.log("smellTextData", allText);
+
+          let ret = self.formatJson(json);
+          console.log("linkIdMap", JSON.stringify(ret));
+
+        }
+      }
+    }
+    rawFile.send(null);
+  }
+,
 
       removeHighlight: function () {
         let self = this;
@@ -439,8 +527,6 @@
           } else {
 
             let lineCols = vcfLines[i].split('\t');
-
-
             let filteredCols = [];
 
             for (let j = 0; j < lineCols.length; j++) {
@@ -494,13 +580,7 @@
 
 
       invertRange() {
-        // let min = this.minThreshold;
-        // let max = this.maxThreshold;
-
         this.inverted = !this.inverted;
-
-        // this.minThreshold = max;
-        // this.maxThreshold = min;
       },
 
       buildFromDemo() {
@@ -524,7 +604,10 @@
         self.selectedRegression = "Linear";
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
-        self.ptMap = self.PTCPhenotypes;
+        self.ptMap = PHandler.replacedIDs;
+
+        console.log("ptMap", self.ptMap);
+
         self.selectedGenotype = self.parsedVariants[0];
 
       },
@@ -624,9 +707,6 @@
           let key = gts[i];
 
           let values = this.genotypeMap[key];
-
-          console.log("values[800]", key, values[800]);
-
           let dict = {};
 
           for (let i = 0; i < this.idList.length; i++) {
@@ -657,14 +737,19 @@
         //TODO - implement this
         self.populateGenotypes();
         let gts = self.fullGTMap[self.selectedGenotype];
-        console.log("self.selectedGenotype", self.selectedGenotype);
-        console.log('selectedPhenotype', "." + self.selectedPhenotype +".");
+        self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
 
-
-        console.log("index for selected phenotype", self.ptIndex);
 
         if(self.launchedFrom === "D") {
-          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0);
+
+          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
+
+          // if(self.selectedPhenotype === "PTC Sensitivity") {
+          //   self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0);
+          // }
+          // else{
+          //   self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 1);
+          // }
         }
         else{
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
@@ -694,7 +779,6 @@
         ];
 
         self.scatterplotData = self.regression.getScatterplotData();
-        console.log()
         self.buildPTLegend();
       },
 
@@ -760,7 +844,7 @@
         let gts = self.fullGTMap[self.selectedGenotype];
 
 
-        self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex, "D");
+        self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex);
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
 
@@ -1155,7 +1239,6 @@
         let self = this;
         for (let key in self.pedDict) {
           if (self.pedDict.hasOwnProperty(key)) {
-            console.log("key", key);
             if(key === ""){}
             else {
               self.familyIDs.push(key);
@@ -1199,10 +1282,25 @@
           self.minThreshold = self.minPt;
           self.maxThreshold = self.maxPt;
         } else if (this.launchedFrom === "D") {
-          self.minPt = 0;
-          self.maxPt = 12;
-          self.minThreshold = 0;
-          self.maxThreshold = 12;
+          console.log("self.selectedPhenotype");
+          if(self.selectedPhenotype === "PTC Sensitivity") {
+            self.minPt = 0;
+            self.maxPt = 12;
+            self.minThreshold = 0;
+            self.maxThreshold = 12;
+          }
+          else if(self.selectedPhenotype === "Androstenone Sensitivity"){
+            self.minPt = 0;
+            self.maxPt = 12;
+            self.minThreshold = 0;
+            self.maxThreshold = 12;
+          }
+          else if(self.selectedPhenotype === "Asparagus Sensitivity"){
+            self.minPt = 0;
+            self.maxPt = 2;
+            self.minThreshold = 0;
+            self.maxThreshold = 2;
+          }
         }
       },
 
@@ -1307,11 +1405,16 @@
       buildDemoPhenotypes: function () {
         let self = this;
 
+        self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
+
+
         self.cachedPhenotypes = {};
-        if (self.selectedPhenotype === "PTC Sensitivity") {
           for (let i = 0; i < self.opts.dataset.length; i++) {
             let id = self.opts.dataset[i].name;
-            let sens = self.PTCPhenotypes[id];
+            let sens = "nan";
+            if(self.PTCPhenotypes.hasOwnProperty(id)) {
+              sens = self.PTCPhenotypes[id][self.ptIndex];
+            }
             let scaledSens = -1;
             let opacity = 1;
 
@@ -1394,7 +1497,6 @@
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
           self.drawGenotypeBars();
-        }
       },
 
       buildRegression: function () {
@@ -1407,7 +1509,6 @@
         } else if (this.selectedRegression === "Logistic") {
           this.buildLogisticRegression()
         }
-        console.log("self.scatterplotData", self.scatterplotData)
 
       },
 
@@ -1654,11 +1755,8 @@
       selectedPhenotype: function () {
         let self = this;
 
-        self.populateThresholds();
         self.buildPhenotypes();
-
-        console.log("self.phenotypes", self.phenotypes, self.selectedPhenotype);
-
+        self.populateThresholds();
         self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
 
         self.buildSlider();
