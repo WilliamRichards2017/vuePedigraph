@@ -352,8 +352,6 @@
 
     mounted() {
 
-      this.readTextFile();
-
       let self = this;
 
       self.tableHeader = [
@@ -407,22 +405,20 @@
       },
 
       formatJson: function(json){
-        //{"UGRP_PED":"3","UGRP_IND":"4","GENDER":"F","THRESHOLD_TRIAL_1":">10","THRESHOLD_TRIAL_2":">12","FINAL_AVERAGE_THRESHOLD\r":">11\r"},
 
         let ret = {};
 
         console.log("asparagus json", json)
         for(let i = 0; i < json.length; i++){
-
-          console.log("json keys", Object.keys(json[i]));
           let key = json[i]["LINK_ID"];
-
-          console.log("jsonLine", json[i]);
-
           let v = json[i]["CEPH_ID"] + "-" + json[i]["UGRP_PED"];
+          if(ret.hasOwnProperty(key)){
+            console.log("double key for key", key);
+          }
           ret[key] = v;
         }
 
+        console.log("ret.length", Object.keys(ret).length, Object.keys(json).length);
         return ret;
 
       },
@@ -477,8 +473,6 @@
           var allText = rawFile.responseText;
           let json = self.csvToJson(allText);
           console.log("json", json);
-          // console.log("smellTextData", allText);
-
           let ret = self.formatJson(json);
           console.log("linkIdMap", JSON.stringify(ret));
 
@@ -604,7 +598,7 @@
         self.selectedRegression = "Linear";
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
-        self.ptMap = PHandler.replacedIDs;
+        self.ptMap = self.PTCPhenotypes;
 
         console.log("ptMap", self.ptMap);
 
@@ -838,13 +832,11 @@
 
       buildLogisticRegression() {
         let self = this;
-        self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
-
         self.populateGenotypes();
         let gts = self.fullGTMap[self.selectedGenotype];
 
 
-        self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex);
+        self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex, "D");
         self.scatterplotData = self.regression.getScatterplotData();
         self.linePoints = self.regression.getLinePoints();
 

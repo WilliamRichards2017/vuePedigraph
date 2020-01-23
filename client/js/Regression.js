@@ -244,10 +244,9 @@ export default class Regression {
   }
 
   calculateProjectPVal(){
-
     let self = this;
     let ft = fisherTest(self.projectCorrelation, self.xRawP.length);
-    self.projectPVal = ft.pvalue;
+    self.familyPVal = ft.pvalue;
   }
 
 
@@ -837,7 +836,7 @@ export default class Regression {
 
     let rho = this.projectCorrelation;
 
-    let ft = fisherTest(rho, this.xRawF.length);
+    let ft = fisherTest(rho, this.xRawP.length);
 
     this.projectPVal = ft.pvalue;
 
