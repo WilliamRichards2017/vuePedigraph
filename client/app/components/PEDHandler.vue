@@ -354,6 +354,8 @@
 
       let self = this;
 
+      self.readTextFile();
+
       self.tableHeader = [
         {
           text: ' ',
@@ -411,14 +413,13 @@
         console.log("asparagus json", json)
         for(let i = 0; i < json.length; i++){
           let key = json[i]["LINK_ID"];
-          let v = json[i]["CEPH_ID"] + "-" + json[i]["UGRP_PED"];
+          let v = json[i]["LAB"];
           if(ret.hasOwnProperty(key)){
-            console.log("double key for key", key);
           }
           ret[key] = v;
         }
 
-        console.log("ret.length", Object.keys(ret).length, Object.keys(json).length);
+        console.log("linkIDMap", JSON.stringify(ret));
         return ret;
 
       },
