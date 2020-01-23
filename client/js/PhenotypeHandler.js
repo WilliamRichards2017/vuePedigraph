@@ -55,14 +55,12 @@ export default class PhenotypeHandler {
          }
       }
 
-      console.log("new key from linkIdMap", newKey);
-
       if(self.replacedIDs.hasOwnProperty(newKey)) {
 
         let val = self.asparagus[key];
 
         if(val === "Yes"){
-          val = 2;
+          val = 1.99;
         }
         else if(val === "No"){
           val = 0.01;
