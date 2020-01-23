@@ -25,8 +25,10 @@
         <template v-slot:activator="{ on }">
           <v-icon v-on="on" color="white">info_outline</v-icon>
         </template>
-        <span>Interesting Correlations</span>
-        <div>PTC Sensitivity - 7:141672604</div>
+        <span style="font-weight: bold; text-decoration: underline">Interesting Correlations: </span>
+        <div>PTC Taste Sensitivity - 7:141672604</div>
+        <div>Androstrenone Smelling Sensitivity - 19:9325116</div>
+        <div>Asparagus Smelling Sensitivity - 1:248496863</div>
 
       </v-tooltip>
 
@@ -354,8 +356,6 @@
 
       let self = this;
 
-      self.readTextFile();
-
       self.tableHeader = [
         {
           text: ' ',
@@ -410,7 +410,6 @@
 
         let ret = {};
 
-        console.log("asparagus json", json)
         for(let i = 0; i < json.length; i++){
           let key = json[i]["LINK_ID"];
           let v = json[i]["LAB"];
@@ -418,8 +417,6 @@
           }
           ret[key] = v;
         }
-
-        console.log("linkIDMap", JSON.stringify(ret));
         return ret;
 
       },
@@ -461,7 +458,6 @@
 
         let self = this;
 
-    console.log("inside readTextFile");
     let file = "./../static/linkIds.csv"
     var rawFile = new XMLHttpRequest();
     rawFile.open("GET", file, false);
@@ -473,9 +469,7 @@
         {
           var allText = rawFile.responseText;
           let json = self.csvToJson(allText);
-          console.log("json", json);
           let ret = self.formatJson(json);
-          console.log("linkIdMap", JSON.stringify(ret));
 
         }
       }
@@ -486,8 +480,6 @@
 
       removeHighlight: function () {
         let self = this;
-
-        console.log("removeHighlight");
 
         self.opts.dataset = io.readLinkage(self.pedTxt);
         self.opts = self.addCachedValuesToOpts(self.opts);
@@ -552,7 +544,6 @@
               // console.log("sampleIds", sampleIDs);
             } else {
 
-              console.log("made it to else");
               // console.log("gts for var", varText, gts);
 
 
@@ -584,8 +575,6 @@
 
 
         self.genotypeMap = self.buildGTMapFromVcf();
-        console.log("self.gtMap after build", self.genotypeMap);
-
         self.parsedVariants = Object.keys(self.genotypeMap).filter(Boolean);
 
 
@@ -600,9 +589,6 @@
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
         self.ptMap = self.PTCPhenotypes;
-
-        console.log("ptMap", self.ptMap);
-
         self.selectedGenotype = self.parsedVariants[0];
 
       },
@@ -1275,7 +1261,6 @@
           self.minThreshold = self.minPt;
           self.maxThreshold = self.maxPt;
         } else if (this.launchedFrom === "D") {
-          console.log("self.selectedPhenotype");
           if(self.selectedPhenotype === "PTC Sensitivity") {
             self.minPt = 0;
             self.maxPt = 12;

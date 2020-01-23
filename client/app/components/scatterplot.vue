@@ -62,8 +62,6 @@
           .style("z-index", "10")
           .style("visibility", "hidden")
 
-        console.log("change in raw data, inside buildPlot");
-
         let M = [];
         let F = [];
         for (let i = 0; i < self.rawData.length; i++) {
@@ -73,8 +71,6 @@
             F.push(self.rawData[i]);
           }
         }
-
-        console.log("minPT, maxPT", self.minPt, self.maxPt);
 
         // Set up the scales
         self.xScale = d3.scaleLinear()
@@ -110,8 +106,6 @@
 
         }
         else if (self.regressionType === "Linear"){
-
-          console.log("self.linePoints", self.linePoints);
 
         }
 
@@ -258,9 +252,6 @@
           .attr("y", d => self.yScale(d.ySource))
           .text(d => d.id);
 
-
-
-        console.log("mouseover triggered");
       },
 
       buildRegressionLine(){
@@ -377,7 +368,6 @@
 
     rawData: function () {
 
-      console.log("watcher in rawData", this.rawData);
       this.buildPlot();
       // this.buildPTLegend();
     }

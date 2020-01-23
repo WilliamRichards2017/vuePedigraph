@@ -347,11 +347,7 @@ export default class Regression {
 
 
   populateLogisticProjectMetrics(xF,yF){
-    //
 
-
-    console.log("xF.length", xF.length);
-    console.log("xY.length", yF.length);
 
     let self = this;
 
@@ -622,11 +618,7 @@ export default class Regression {
 
     let self = this;
 
-    console.log("self.xRawF, self.yRawF", self.xRawF, self.yRawF);
-
     let familyCorrelation = self.pearsonCorrelation([self.xRawF,self.yRawF], 0, 1);
-
-    console.log("familyCorrelation", familyCorrelation);
 
     //where family correlation is rho
     let ft = fisherTest(familyCorrelation, self.xRawF.length);
