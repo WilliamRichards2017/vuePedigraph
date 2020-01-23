@@ -230,7 +230,7 @@
         </div>
 
         <div class="column">
-          <v-btn raised color="primary" large v-on:click="launchedFrom ='H'" class="welcome-button">Launch from mosaic</v-btn>
+          <v-btn raised color="primary" large v-on:click="launchMosaic" class="welcome-button">Launch from mosaic</v-btn>
           <p>Launch pedigree.iobio with mosaic hosted data. <a href="https://frameshift.io/">Click here</a> to learn more about mosaic, a collaborative platform for organizing, understanding, and visualizing genomic data.</p>
         </div>
 
@@ -352,6 +352,12 @@
   },
 
   methods: {
+
+
+    launchMosaic(){
+      window.open("https://mosaic.frameshift.io","_self")
+    },
+
     buildTxt: function () {
       let self = this;
       self.hubTxt.promiseGetPedTxt()
