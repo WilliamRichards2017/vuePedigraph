@@ -5,7 +5,7 @@ export default class HubSession {
     this.samples = null;
     this.url = null;
     this.source = source;
-    this.api = source + '/apiv1';
+    this.api = source + '/api/v1';
   }
 
   promiseInit(sampleId, source, isPedigree, projectId ) {
@@ -278,7 +278,7 @@ export default class HubSession {
   getSample(project_id, sample_id) {
     let self = this;
     return $.ajax({
-      url: self.api + '/projects/' + project_id + '/samples/' + sample_id,
+      url: self.api + '/projects/' + project_id + '/samples/' + sample_id + '/pedigree',
       type: 'GET',
       contentType: 'application/json',
       headers: {

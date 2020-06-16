@@ -19,6 +19,11 @@ export default class pedTxtBuilder {
 
 
   sampleToPedTxt(sample) {
+
+    if(!sample.pedigree["maternal_id"]){
+      return -1;
+    }
+
     let maternalId = sample.pedigree["maternal_id"];
     let paternalId = sample.pedigree["paternal_id"];
     if (typeof maternalId === "object") {
@@ -34,14 +39,17 @@ export default class pedTxtBuilder {
   promiseGetPedTxt() {
     let self = this;
     let pedTxt = "";
+
     return new Promise((resolve, reject) => {
       self.hubSession.promiseGetProjectSamples(self.projectId)
         .then((data) => {
-          // console.log("sample raw data", data);
+
           const samples = data.data;
           for (let i = 0; i < samples.length; i++) {
             let pedLine = self.sampleToPedTxt(samples[i]);
-            pedTxt = pedTxt + pedLine;
+            if(pedLine !== -1) {
+              pedTxt = pedTxt + pedLine;
+            }
           }
           resolve(pedTxt);
         }).catch((e) => {

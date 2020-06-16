@@ -216,6 +216,7 @@
       variants: null,
       family_id: null,
       vcfTxt: null,
+      phenotypesProp: null,
       phenotypeText: null,
     },
     components: {
@@ -353,8 +354,13 @@
     },
 
     mounted() {
-
       let self = this;
+
+
+      console.log("mounted swag");
+      console.log("self.phenotypes on mounted", self.phenotypesProp);
+
+      self.phenotypes = self.phenotypesProp;
 
       self.tableHeader = [
         {
@@ -490,7 +496,6 @@
         self.drawGenotypeBars();
 
       },
-
       buildGTMapFromVcf() {
 
         let self = this;
@@ -595,10 +600,14 @@
 
       buildFromUpload() {
         let self = this;
-        self.pedTxt = self.txt;
+
+        self.pedTxt= self.validatePedFile(self.txt);
+
+        // console.log("self.pedTxt after validation", self.pedTxt);
+
         self.populateModel();
         self.selectedRegression = "Linear";
-        self.selectedFamily = self.txt.split(" ")[0];
+        self.selectedFamily = self.pedTxt.split(" ")[0];
         self.genotypeMap = self.buildGTMapFromVcf();
         self.parsedVariants = Object.keys(self.genotypeMap);
 
@@ -610,9 +619,146 @@
       buildFromHub() {
         let self = this;
         self.pedTxt = self.txt;
-        self.selectedPhenotype = "affected_status";
+        // self.selectedPhenotype = "affected_status";
         self.populateModel();
-        self.selectedFamily = self.family_id;
+
+        self.selectedFamily = self.families[Object.keys(self.families)[0]];
+      },
+
+      buildPedFromTxt(txt) {
+        let pedLines = txt.split('\n');
+        let pedObject = {};
+
+        for (let i = 0; i < pedLines.length; i++) {
+          let splitLine = pedLines[i].split("\t");
+          let sample = {
+            kindred_id: splitLine[0],
+            individual_id: splitLine[1],
+            paternal_id: splitLine[2],
+            maternal_id: splitLine[3],
+            sex: splitLine[4],
+            affection_status: splitLine[5]
+          }
+          pedObject[i] = sample;
+        }
+        return pedObject
+      },
+
+      promiseGetPedigreeForSample(project_id, sample_id) {
+        let self = this;
+
+        return new Promise(function(resolve, reject) {
+          // Get pedigree for sample
+          self.getPedigreeForSample(project_id, sample_id)
+            .done(rawPedigree => {
+              const rawPedigreeOrig = $.extend({}, rawPedigree);
+              let pedigree = self.parsePedigree(rawPedigree, sample_id)
+              if (pedigree) {
+                console.log("------");
+                console.log("pedigree", pedigree);
+                console.log("rawPedigree", rawPedigreeOrig);
+                console.log("------");
+                resolve({pedigree: pedigree, rawPedigree: rawPedigreeOrig});
+              } else {
+                reject("Error parsing pedigree");
+              }
+            })
+            .fail(error => {
+              reject("Error getting pedigree for sample " + sample_id + ": " + error);
+            })
+        })
+      },
+
+      validatePedFile(txt){
+        let pedLines = txt.split('\n');
+        let pedTxt = "";
+
+        let newPedLines = [];
+
+        let allSampleIds = [];
+        let allMaternalIds = [];
+        let allPaternalIds = [];
+
+        //todo: double check genders are correct
+        for(let i = 0; i < pedLines.length; i++){
+          let splitLine = pedLines[i].split("\t");
+
+          let pedLine = pedLines[i];
+
+          let maternalId = splitLine[3];
+          let paternalId = splitLine[2];
+
+          if(maternalId === "0" && paternalId !== "0"){
+            maternalId = "undefinedMaternal" + i.toString();
+            pedLine = splitLine[0] + '\t' + splitLine[1] + '\t' + paternalId + '\t' + maternalId + "\t" + splitLine[4];
+          }
+          else if(maternalId !== "0" && paternalId === "0"){
+            paternalId = "undefinedPaternal" + i.toString();
+            pedLine = splitLine[0] + '\t' + splitLine[1] + '\t' + paternalId + '\t' + maternalId + "\t" + splitLine[4];
+          }
+
+          newPedLines.push(pedLine);
+
+          allSampleIds.push(splitLine[1]);
+          allMaternalIds.push(maternalId);
+          allPaternalIds.push(paternalId);
+        }
+
+        let familyId = this.getFamilyIdFromPedLine(pedLines[0]);
+
+        for(let  i = 0; i < allMaternalIds.length; i++){
+          if(!allSampleIds.includes(allMaternalIds[i])){
+            if(allMaternalIds !== "0") {
+              let nullPedLine = this.buildNullPedLine(familyId, allMaternalIds[i], "M");
+              newPedLines.push(nullPedLine);
+            }
+          }
+        }
+        for(let  i = 0; i < allPaternalIds.length; i++){
+          if(!allSampleIds.includes(allPaternalIds[i])){
+            if(allPaternalIds[i] !== "0") {
+              let nullPedLine = this.buildNullPedLine(familyId, allPaternalIds[i], "P");
+              newPedLines.push(nullPedLine);
+            }
+          }
+        }
+
+
+        pedTxt = this.linesToText(newPedLines);
+        return pedTxt;
+      },
+
+      linesToText(lines){
+
+        let txt = "";
+
+        for(let i = 0; i < lines.length; i++){
+          txt = txt + lines[i] + '\n';
+        }
+
+        return txt;
+
+      },
+
+      getFamilyIdFromPedLine(pedLine){
+        let splitLine = pedLine.split('\t')
+        return splitLine[0];
+
+      },
+
+      buildNullPedLine(familyId, id, gender){
+
+        let sex = 0;
+
+        if(gender === "M"){
+          sex = 2;
+        }
+        else if(gender === "P"){
+          sex = 1;
+        }
+        let nullPedLine = familyId + "\t" + id + '\t0\t0\t' + sex;
+        console.log("nullPedLine", nullPedLine);
+        return nullPedLine;
       },
 
 
@@ -672,7 +818,7 @@
           }
 
         }
-        //console.log("allIds", this.allIds);
+        console.log("allIds", this.allIds);
 
       },
 
@@ -855,7 +1001,8 @@
         if (self.launchedFrom === 'D') {
           self.buildDemoPhenotypes();
         } else if (self.launchedFrom === 'H') {
-          self.buildHubPhenotypes();
+          // self.buildHubPhenotypes();
+            self.phenotypes = self.phenotypesProp;
         } else if (self.launchedFrom === "U") {
           self.buildUploadPhenotypes();
         }
@@ -1186,6 +1333,9 @@
         for (let i = 0; i < self.txtLines.length; i++) {
           let line = self.txtLines[i];
           let familyID = line.replace(/ .*/, '');
+          // let splitLine = line.split('\t');
+          // let familyID = splitLine[0];
+
           if (self.pedDict[familyID]) {
             this.pedDict[familyID].push(line);
           } else {
@@ -1227,6 +1377,8 @@
             self.families[fam.familyID] = fam;
           }
         }
+
+        console.log("self.families", self.families);
 
         self.familyIDs.filter(Boolean);
       },

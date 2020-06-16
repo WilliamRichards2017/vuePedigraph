@@ -239,8 +239,8 @@
 
 
       <PEDHandler
-      v-if="launchedFrom === 'H' && typeof pedTxt === 'string' && typeof familyId === 'string'"
-      :txt="pedTxt" :launchedFrom="launchedFrom" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants" :family_id="familyId"
+      v-if="launchedFrom === 'H' && typeof pedTxt === 'string'"
+      :txt="pedTxt" :launchedFrom="launchedFrom" :phenotypesProp="phenotypes" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants" :family_id="familyId"
   />
 
     <PEDHandler
@@ -260,7 +260,7 @@
         class="grey darken-3 justify-center"
       >
 
-          {{ new Date().getFullYear() }} —  <strong>Pedigree.iobio</strong>
+        <strong>Pedigree.iobio</strong>
       </v-footer>
 
     </div>
@@ -308,6 +308,7 @@
 
       demoPhenotypes: ["PTC Sensitivity"],
       demoVariants: ["7:141972755_C/T", "14:93388386_G/A"],
+      metrics: null,
 
       file: '',
       uploadedPedTxt: null,
@@ -355,7 +356,8 @@
 
 
     launchMosaic(){
-      window.open("https://mosaic.frameshift.io","_self")
+      // window.open("https://mosaic.frameshift.io","_self")
+      this.launchedFrom = "H";
     },
 
     buildTxt: function () {
@@ -383,10 +385,13 @@
       let self = this;
       self.phenotypes = [];
 
+      console.log("self.metrics in metrics to phenotypes", self.metrics);
+
       for(let i = 0; i < self.metrics.length; i++){
         let pt = self.metrics[i].uid;
         self.phenotypes.push(pt);
       }
+      console.log("self.phenotypes in metrics to phenotypes", self.phenotypes);
     },
 
 
