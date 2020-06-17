@@ -239,8 +239,8 @@
 
 
       <PEDHandler
-      v-if="launchedFrom === 'H' && typeof pedTxt === 'string'"
-      :txt="pedTxt" :launchedFrom="launchedFrom" :phenotypesProp="phenotypes" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants" :family_id="familyId"
+      v-if="launchedFrom === 'H' && typeof pedTxt === 'string' && metrics.length > 0"
+      :txt="pedTxt" :launchedFrom="launchedFrom" :phenotypesProp="phenotypes" :metrics="metrics" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants" :family_id="familyId"
   />
 
     <PEDHandler
@@ -385,13 +385,10 @@
       let self = this;
       self.phenotypes = [];
 
-      console.log("self.metrics in metrics to phenotypes", self.metrics);
-
       for(let i = 0; i < self.metrics.length; i++){
         let pt = self.metrics[i].uid;
         self.phenotypes.push(pt);
       }
-      console.log("self.phenotypes in metrics to phenotypes", self.phenotypes);
     },
 
 

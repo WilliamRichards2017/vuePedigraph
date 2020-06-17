@@ -466,6 +466,7 @@ export default class HubSession {
     })
   }
 
+
   getSignedUrlForFile (project_id, sample_id, file) {
     let self = this;
     return $.ajax({
@@ -509,8 +510,8 @@ export default class HubSession {
   getMetricsForSample(projectId, sampleId) {
     let self = this;
 
-    console.log("self.api inside getProjectSamples", self.api);
 
+    console.log("projectId, sampleId", projectId, sampleId);
     return $.ajax({
       url: self.api + '/projects/' + projectId + '/samples/' + sampleId + '/metrics/',
       type: 'GET',
@@ -520,8 +521,4 @@ export default class HubSession {
       }
     });
   }
-
-
-
-
 }

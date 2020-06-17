@@ -214,10 +214,10 @@
       source: null,
       launchedFrom: null,
       variants: null,
-      family_id: null,
       vcfTxt: null,
-      phenotypesProp: null,
+      metrics: null,
       phenotypeText: null,
+      phenotypesProp: null,
     },
     components: {
       navigation,
@@ -357,12 +357,6 @@
     mounted() {
       let self = this;
 
-
-      console.log("mounted swag");
-      console.log("self.phenotypes on mounted", self.phenotypesProp);
-
-      self.phenotypes = self.phenotypesProp;
-
       self.tableHeader = [
         {
           text: ' ',
@@ -408,8 +402,36 @@
     }
     ,
     methods: {
+      populateHubPhenotypes(){
 
-      buildLinkIdMap(){
+        let self = this;
+
+
+        self.phenotypes = [];
+         self.hubSession.promiseGetMetricsForSample(self.project_id, self.sample_id)
+            .then((data) => {
+              console.log("self.metrics", self.metrics);
+              console.log("sample metrics", data);
+
+              for(let key in data.metrics){
+                console.log("key", key);
+                let match = self.metrics.filter(d => {
+                 return d.name === key;
+                });
+
+                if(match && match.length === 1){
+                  let val = data.metrics[key];
+                  console.log("val", val);
+                  if (!isNaN(val)){
+                    self.phenotypes.push(match[0].name);
+                  }
+
+                }
+              }
+            });
+
+          self.selectedPhenotype = self.phenotypes[0];
+          console.log("self.phenotypes after filter", self.phenotypes);
 
       },
 
@@ -624,6 +646,8 @@
         self.populateModel();
 
         self.selectedFamily = Object.keys(self.families)[0];
+        self.populateHubPhenotypes();
+
       },
 
       buildPedFromTxt(txt) {
@@ -1656,20 +1680,33 @@
             if(self.noVariants) {
               self.selectedRegression = "Linear";
 
-
               self.minThreshold = Math.min.apply(null, keys.map(function (x) {
-                return pts[x]
+                if(isNaN(pts[x])){
+                  return Infinity
+                }
+                else {
+                  return pts[x]
+                }
               }));
               self.maxThreshold = Math.max.apply(null, keys.map(function (x) {
-                return pts[x]
+                if(isNaN(pts[x])){
+                  return -Infinity
+                }
+                else {
+                  return pts[x]
+                }
               }));
             }
+
+            console.log("self.minThreshold", self.minThreshold)
+            console.log("self.maxThreshold", self.maxThreshold);
 
             for (let i = 0; i < self.opts.dataset.length; i++) {
               let id = self.opts.dataset[i].name;
               let sens = "nan";
               if(pts.hasOwnProperty(id)) {
                 sens = pts[id];
+                console.log("sens before parse", sens);
               }
               let scaledSens = -1;
               let opacity = 1;
@@ -1685,7 +1722,7 @@
                 }
               }
 
-              sens = parseInt(sens);
+              sens = parseFloat(sens);
 
               self.opts.dataset[i].sens = sens;
 
@@ -1950,6 +1987,10 @@
         self.selectedPhenotype = pt;
         self.buildPhenotypes();
         self.populateSampleIds();
+
+        // if(self.launchedFrom === "H"){
+        //   self.populateHubPhenotypes();
+        // }
         self.buildGenotypes();
         self.buildRegression();
         $('#pedigree').on('nodeClick', self.onNodeClick);
