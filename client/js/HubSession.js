@@ -278,7 +278,7 @@ export default class HubSession {
   getSample(project_id, sample_id) {
     let self = this;
     return $.ajax({
-      url: self.api + '/projects/' + project_id + '/samples/' + sample_id + '/pedigree',
+      url: self.api + '/projects/' + project_id + '/samples/' + sample_id,
       type: 'GET',
       contentType: 'application/json',
       headers: {

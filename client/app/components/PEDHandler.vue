@@ -258,6 +258,7 @@
         phenotypes: ["PTC Sensitivity", "Androstenone Sensitivity", "Asparagus Sensitivity"],
 
         fullGTMap: {},
+        noVariants: true,
 
         allIds: null,
 
@@ -300,8 +301,8 @@
         selectedRegression: null,
         showPed: true,
         affectedCuttoff: "7",
-        minThreshold: -1,
-        maxThreshold: -1,
+        minThreshold:  null,
+        maxThreshold: null,
 
 
         //linear Regression metrics~~~
@@ -622,7 +623,7 @@
         // self.selectedPhenotype = "affected_status";
         self.populateModel();
 
-        self.selectedFamily = self.families[Object.keys(self.families)[0]];
+        self.selectedFamily = Object.keys(self.families)[0];
       },
 
       buildPedFromTxt(txt) {
@@ -1001,8 +1002,7 @@
         if (self.launchedFrom === 'D') {
           self.buildDemoPhenotypes();
         } else if (self.launchedFrom === 'H') {
-          // self.buildHubPhenotypes();
-            self.phenotypes = self.phenotypesProp;
+          self.buildHubPhenotypes();
         } else if (self.launchedFrom === "U") {
           self.buildUploadPhenotypes();
         }
@@ -1385,6 +1385,8 @@
       getDataByFamilyID: function (id) {
         let self = this;
         let fam = self.families[id];
+        console.log("id", id);
+        console.log("fam", fam);
         let data = '';
         for (let key in fam.pedLines) {
           let line = fam.pedLines[key].line + '\n';
@@ -1644,22 +1646,118 @@
 
       buildHubPhenotypes: function () {
         let self = this;
+        self.cachedPhenotypes = {};
+
         self.promisePhenotypes()
           .then((pts) => {
+
+            let keys   = Object.keys(pts);
+
+            if(self.noVariants) {
+              self.selectedRegression = "Linear";
+
+
+              self.minThreshold = Math.min.apply(null, keys.map(function (x) {
+                return pts[x]
+              }));
+              self.maxThreshold = Math.max.apply(null, keys.map(function (x) {
+                return pts[x]
+              }));
+            }
+
             for (let i = 0; i < self.opts.dataset.length; i++) {
-              let sampleId = parseInt(self.opts.dataset[i].name);
-              if (pts.hasOwnProperty(sampleId)) {
-                // console.log(sampleId, pts[sampleId]);
-                let pt = pts[sampleId];
-                if (pt === "Affected" || pt === "affected") {
-                  self.opts.dataset[i].affected = 2;
-                  self.cachedPhenotypes[sampleId] = 2;
-                } else if (pt === "Unaffected" || pt === "unaffected") {
-                  self.opts.dataset[i].affected = 0;
-                  self.cachedPhenotypes[sampleId] = 0;
+              let id = self.opts.dataset[i].name;
+              let sens = "nan";
+              if(pts.hasOwnProperty(id)) {
+                sens = pts[id];
+              }
+              let scaledSens = -1;
+              let opacity = 1;
+
+
+              if (typeof sens === 'undefined' || sens === 'nan') {
+                self.opts.dataset[i].NA = true;
+
+                self.cachedNulls.push(id);
+              } else if (typeof sens === 'string') {
+                if (sens.includes('>') || sens.includes('<')) {
+                  sens = sens.slice(-1);
                 }
               }
+
+              sens = parseInt(sens);
+
+              self.opts.dataset[i].sens = sens;
+
+              let aff = 0;
+
+              let color = "white";
+
+              if (typeof sens === "undefined" || isNaN(parseInt(sens))) {
+                color = "none";
+              } else if (self.selectedRegression === "Logistic") {
+
+                if (!self.inverted) {
+                  if (sens >= self.minThreshold && sens <= self.maxThreshold) {
+                    aff = 2;
+                    color = self.purple;
+                  }
+                } else if (self.inverted) {
+                  if (sens <= self.minThreshold || sens >= self.maxThreshold) {
+                    aff = 2;
+                    color = self.purple;
+                  }
+                }
+
+              } else if (self.selectedRegression === "Linear") {
+                if (!this.inverted) {
+                  if (sens < self.minThreshold) {
+                    scaledSens = -1;
+                    opacity = 0.4;
+                  } else if (sens > self.maxThreshold) {
+                    scaledSens = -1;
+                    opacity = 0.4;
+                  } else {
+                    scaledSens = (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
+                  }
+                  if (scaledSens === -1) {
+                    color = "gray";
+                  } else {
+                    color = d3.interpolateRgb("white", self.purple)(scaledSens);
+                  }
+                } else if (this.inverted) {
+                  if (sens < self.minThreshold) {
+                    scaledSens = -1;
+                    opacity = 0.4;
+                  } else if (sens > self.maxThreshold) {
+                    scaledSens = -1;
+                    opacity = 0.4;
+                  } else {
+                    scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
+                  }
+                  if (scaledSens === -1) {
+                    color = "gray";
+                  } else {
+                    color = d3.interpolateRgb("white", self.purple)(scaledSens);
+                  }
+                }
+              }
+
+
+              self.opts.dataset[i].affected = aff;
+              self.opts.dataset[i].col = color;
+              self.opts.dataset[i].opac = opacity;
+              self.cachedPhenotypes[id] = aff;
+              self.cachedColors[id] = color;
+              self.cachedOpacity[id] = opacity;
             }
+
+
+
+
+            self.opts = self.addCachedValuesToOpts(self.opts);
+            self.opts = ptree.build(self.opts);
+
             self.opts = self.addCachedValuesToOpts(self.opts);
             self.opts = ptree.build(self.opts);
           })
@@ -1673,7 +1771,7 @@
           if (typeof self.selectedPhenotype === "object") {
             self.selectedPhenotype = "affected_status";
           }
-          self.populateSampleIds();
+
           for (let i = 0; i < self.sampleIds.length; i++) {
             let metP = self.hubSession.promiseGetMetricsForSample(self.project_id, self.sampleIds[i])
               .then((data) => {
@@ -1829,13 +1927,18 @@
 
       minThreshold: function () {
         let self = this;
-        self.buildPhenotypes();
-        self.buildRegression();
+        if(!self.noVariants) {
+          self.buildPhenotypes();
+          self.buildRegression();
+        }
       },
 
       maxThreshold: function () {
-        this.buildPhenotypes();
-        this.buildRegression();
+        let self = this
+        if(!self.noVariants) {
+          self.buildPhenotypes();
+          self.buildRegression();
+        }
       },
 
       selectedFamily: function () {
@@ -1889,8 +1992,8 @@
         self.populateThresholds();
         self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
 
-        self.buildSlider();
-        self.buildRegression();
+        // self.buildSlider();
+        // self.buildRegression();
 
       },
 
