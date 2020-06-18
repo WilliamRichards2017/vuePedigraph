@@ -326,6 +326,8 @@
         ptMap: null,
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+        binaryVals: ['Affected', 'affected', 'Unaffected', 'unaffected', 'Yes', 'yes', 'No', 'no', "Positive", 'positive', "Pos", 'pos', 'Negative', 'negavite', 'Neg', 'neg'],
+        binaryType: null,
 
         tableHeader: null,
         tableData: null,
@@ -357,6 +359,7 @@
     mounted() {
       let self = this;
 
+
       self.tableHeader = [
         {
           text: ' ',
@@ -386,6 +389,7 @@
 
 
       if (self.launchedFrom === "H") {
+        self.populateHubPhenotypes();
         self.buildFromHub();
       }
       if (self.launchedFrom === "D") {
@@ -410,20 +414,18 @@
         self.phenotypes = [];
          self.hubSession.promiseGetMetricsForSample(self.project_id, self.sample_id)
             .then((data) => {
-              console.log("self.metrics", self.metrics);
-              console.log("sample metrics", data);
-
               for(let key in data.metrics){
-                console.log("key", key);
                 let match = self.metrics.filter(d => {
-                 return d.name === key;
+                 return d.uid === key;
                 });
 
                 if(match && match.length === 1){
                   let val = data.metrics[key];
-                  console.log("val", val);
                   if (!isNaN(val)){
-                    self.phenotypes.push(match[0].name);
+                    self.phenotypes.push(match[0].uid);
+                  }
+                  else if(self.isBinary(val)){
+                    self.phenotypes.push(match[0].uid);
                   }
 
                 }
@@ -431,9 +433,18 @@
             });
 
           self.selectedPhenotype = self.phenotypes[0];
-          console.log("self.phenotypes after filter", self.phenotypes);
-
       },
+
+      isBinary(val){
+        if(this.binaryVals.includes(val)){
+          return true
+        }
+        else{
+          console.log("excluded val", val);
+          return false
+        }
+      },
+
 
       formatJson: function(json){
 
@@ -646,7 +657,6 @@
         self.populateModel();
 
         self.selectedFamily = Object.keys(self.families)[0];
-        self.populateHubPhenotypes();
 
       },
 
@@ -679,10 +689,6 @@
               const rawPedigreeOrig = $.extend({}, rawPedigree);
               let pedigree = self.parsePedigree(rawPedigree, sample_id)
               if (pedigree) {
-                console.log("------");
-                console.log("pedigree", pedigree);
-                console.log("rawPedigree", rawPedigreeOrig);
-                console.log("------");
                 resolve({pedigree: pedigree, rawPedigree: rawPedigreeOrig});
               } else {
                 reject("Error parsing pedigree");
@@ -782,7 +788,6 @@
           sex = 1;
         }
         let nullPedLine = familyId + "\t" + id + '\t0\t0\t' + sex;
-        console.log("nullPedLine", nullPedLine);
         return nullPedLine;
       },
 
@@ -843,8 +848,6 @@
           }
 
         }
-        console.log("allIds", this.allIds);
-
       },
 
       populateGenotypes() {
@@ -1401,16 +1404,11 @@
             self.families[fam.familyID] = fam;
           }
         }
-
-        console.log("self.families", self.families);
-
         self.familyIDs.filter(Boolean);
       },
       getDataByFamilyID: function (id) {
         let self = this;
         let fam = self.families[id];
-        console.log("id", id);
-        console.log("fam", fam);
         let data = '';
         for (let key in fam.pedLines) {
           let line = fam.pedLines[key].line + '\n';
@@ -1668,13 +1666,47 @@
 
       },
 
+      parseBinary(sens){
+        if(!isNaN(sens)){
+          this.binaryType = 'Number';
+          return parseFloat(sens);
+        }
+        if( sens === 'Positive' || sens === 'positive' || sens === 'Pos' || sens === 'pos'){
+         this.binaryType = 'Positive';
+         return 1;
+        }
+        else if( sens === 'Negative' || sens === 'negative' || sens === 'Neg' || sens === 'neg'){
+          this.binaryType = 'Positive';
+          return 0
+        }
+        else if(sens === 'Yes' || sens === 'yes'){
+          this.binaryType = 'Yes';
+          return 1;
+        }
+        else if(sens === 'No' || sens === 'no'){
+          this.binaryType = 'Yes';
+          return 0;
+        }
+        else if(sens === 'Affected' || sens === 'affected'){
+          this.binaryType = 'Affected';
+          return 1;
+        }
+        else if(sens === 'Unaffected' || sens === 'unaffected'){
+          this.binaryType = 'Affected';
+          return 0;
+        }
+        else{
+          this.binaryType = 'unknown';
+          return null;
+        }
+      },
+
       buildHubPhenotypes: function () {
         let self = this;
         self.cachedPhenotypes = {};
 
         self.promisePhenotypes()
           .then((pts) => {
-
             let keys   = Object.keys(pts);
 
             if(self.noVariants) {
@@ -1698,15 +1730,12 @@
               }));
             }
 
-            console.log("self.minThreshold", self.minThreshold)
-            console.log("self.maxThreshold", self.maxThreshold);
-
             for (let i = 0; i < self.opts.dataset.length; i++) {
               let id = self.opts.dataset[i].name;
               let sens = "nan";
               if(pts.hasOwnProperty(id)) {
-                sens = pts[id];
-                console.log("sens before parse", sens);
+                let pt = pts[id];
+                sens = self.parseBinary(pt);
               }
               let scaledSens = -1;
               let opacity = 1;
@@ -1716,13 +1745,7 @@
                 self.opts.dataset[i].NA = true;
 
                 self.cachedNulls.push(id);
-              } else if (typeof sens === 'string') {
-                if (sens.includes('>') || sens.includes('<')) {
-                  sens = sens.slice(-1);
-                }
               }
-
-              sens = parseFloat(sens);
 
               self.opts.dataset[i].sens = sens;
 
@@ -1730,9 +1753,16 @@
 
               let color = "white";
 
-              if (typeof sens === "undefined" || isNaN(parseInt(sens))) {
+              if (self.binaryType === "unknown") {
                 color = "none";
-              } else if (self.selectedRegression === "Logistic") {
+              } else if(self.binaryType !== 'Number' || (self.minThreshold === 0 && self.maxThreshold === 0) || (self.minThreshold === 1 && self.maxThreshold === 1)){
+                if(sens === 1){
+                  color = self.purple;
+                }
+                else{
+                  color = "white";
+                }
+              }else if (self.selectedRegression === "Logistic") {
 
                 if (!self.inverted) {
                   if (sens >= self.minThreshold && sens <= self.maxThreshold) {
@@ -1987,10 +2017,6 @@
         self.selectedPhenotype = pt;
         self.buildPhenotypes();
         self.populateSampleIds();
-
-        // if(self.launchedFrom === "H"){
-        //   self.populateHubPhenotypes();
-        // }
         self.buildGenotypes();
         self.buildRegression();
         $('#pedigree').on('nodeClick', self.onNodeClick);
