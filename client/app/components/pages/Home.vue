@@ -288,6 +288,7 @@
   props: {
     sample_id: null,
     project_id: null,
+    variant_set_id: null,
     access_token: null,
     token_type: null,
     expires_in: null,
@@ -323,7 +324,7 @@
 
   mounted(){
     let self = this;
-    self.hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.source);
+    self.hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.variant_set_id, self.source);
 
   },
 
@@ -337,6 +338,7 @@
         self.getMetricsForProject();
         self.buildTxt();
         self.buildVariantsFromSet();
+
         // self.buildAllVariants();
       }
       else if (self.launchedFrom === "D"){

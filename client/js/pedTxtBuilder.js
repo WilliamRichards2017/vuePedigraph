@@ -3,10 +3,11 @@ import HubSession from './HubSession.js'
 
 
 export default class pedTxtBuilder {
-  constructor(launchedFrom, sampleId, projectId, source) {
+  constructor(launchedFrom, sampleId, projectId, variantSetId, source) {
     this.launchedFrom = launchedFrom;
     this.sampleId = sampleId;
     this.projectId = projectId;
+    this.variantSetId = variantSetId
     this.source = source;
     this.hubSession = null;
     this.initHubSession();
@@ -20,16 +21,16 @@ export default class pedTxtBuilder {
 
   sampleToPedTxt(sample) {
 
-    if(!sample.pedigree["maternal_id"]){
+    if(!sample.pedigree["sample_id"]){
       return -1;
     }
 
     let maternalId = sample.pedigree["maternal_id"];
     let paternalId = sample.pedigree["paternal_id"];
-    if (typeof maternalId === "object") {
+    if (typeof maternalId === "object" || maternalId === null) {
       maternalId = "0";
     }
-    if (typeof paternalId === "object") {
+    if (typeof paternalId === "object" || paternalId === null) {
       paternalId = "0";
     }
     let pedLine = sample.pedigree["kindred_id"] + " " + sample.pedigree["sample_id"] + " " + paternalId + " " + maternalId + " " + sample.pedigree["sex"] + "\n";
@@ -43,6 +44,9 @@ export default class pedTxtBuilder {
     return new Promise((resolve, reject) => {
       self.hubSession.promiseGetProjectSamples(self.projectId)
         .then((data) => {
+
+
+          console.log("data", data);
 
           const samples = data.data;
           for (let i = 0; i < samples.length; i++) {
@@ -60,8 +64,9 @@ export default class pedTxtBuilder {
 
   promiseGetVariantSets(){
     let self = this;
+    console.log("self.variantSetId", self.variantSetId);
     return new Promise((resolve, reject) => {
-      self.hubSession.promiseGetVariantSets(self.projectId)
+      self.hubSession.promiseGetVariantSets(self.projectId, self.variantSetId)
         .then((data) => {
           // const variantSets = data;
           // console.log("variant sets", variantSets);

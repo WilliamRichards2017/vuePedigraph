@@ -599,6 +599,8 @@
         }
         self.idList = sampleIDs;
 
+        console.log("GTMap", gtMap);
+
         return gtMap;
 
       },
@@ -653,12 +655,44 @@
       buildFromHub() {
         let self = this;
         self.pedTxt = self.txt;
+        console.log("self.pedTxt", self.pedTxt);
         // self.selectedPhenotype = "affected_status";
         self.populateModel();
 
-        self.selectedFamily = Object.keys(self.families)[0];
 
       },
+
+      buildGTMapFromHub(){
+        let self = this;
+        console.log("self.sampleIds in buildGTMapFromHub", this.sampleIds);
+        console.log("self.variatns in buildGTMapFromHub", this.parsedVariants);
+
+        let gtMap = {};
+
+        for(let i = 0; i < self.variants.length; i++){
+          console.log("variant", self.variants[i]);
+          let varText = self.variants[i].chr + ":" + self.variants[i].pos + "_" + self.variants[i].ref + "/" + self.variants[i].alt;
+          let gts = {};
+          gtMap[varText] = gts;
+          for(let j = 0; j < this.sampleIds.length; j++){
+            let sampleId = self.sampleIds[j];
+            console.log("sampleId", self.sampleIds[j]);
+            console.log("sampleIds", self.variants[i].sample_ids);
+            if(self.variants[i].sample_ids.includes(self.sampleIds[j])){
+              console.log("found variant for sample id");
+              gtMap[varText][sampleId] = "1/1";
+            }
+            else{
+              gtMap[varText][sampleId] = "0/0";
+            }
+          }
+        }
+        console.log("gtMap", gtMap);
+
+        self.genotypeMap = gtMap;
+
+      },
+
 
       buildPedFromTxt(txt) {
         let pedLines = txt.split('\n');
@@ -1014,10 +1048,20 @@
         self.populatePedDict();
         self.populateFamilies();
         self.rebuildPedDict();
+        console.log("self.pedDict", self.pedDict);
         self.highlightFamily();
+        if(self.launchedFrom === "H"){
+          self.parseVariants();
+          self.selectedFamily = Object.keys(self.families)[0];
+
+          self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+          self.opts.dataset = io.readLinkage(self.pedTxt);
+          self.populateSampleIds();
+          self.buildGTMapFromHub();
+        }
         if (self.launchedFrom !== "U") {
           // self.parseVariants();
-          // console.log("self.parsedVariants inside populateModel", self.parsedVariants);
+          console.log("self.parsedVariants inside populateModel", self.parsedVariants);
         }
       },
       buildPhenotypes: function () {
@@ -1047,7 +1091,13 @@
         self.cachedGenotypes = {};
         self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
         self.opts.dataset = io.readLinkage(self.pedTxt);
-        self.opts.dataset = self.addNewGenotypesToOpts(self.opts);
+        if(self.launchedFrom === "H"){
+          self.opts.dataset = self.addHubGenotypesToOpts(self.opts);
+
+        }
+        else{
+          self.opts.dataset = self.addNewGenotypesToOpts(self.opts);
+        }
         self.opts = ptree.build(self.opts);
         self.drawGenotypeBars();
 
@@ -1858,6 +1908,31 @@
           });
         })
       },
+
+      addHubGenotypesToOpts: function(opts){
+
+        let self = this;
+        console.log("self.genotypeMap", self.genotypeMap);
+        if (self.selectedGenotype === null) {
+        } else {
+          let gts = self.genotypeMap[self.selectedGenotype];
+          for (let i = 0; i < opts.dataset.length; i++) {
+            let id = parseInt(opts.dataset[i].name).toString();
+
+            let gtForID = gts[id];
+              let allele = " ";
+              if (typeof gtForID === "undefined") {
+              } else {
+                allele = gtForID.substr(0, 3);
+              }
+              self.cachedGenotypes[id] = allele;
+            }
+          }
+
+        opts = self.addCachedValuesToOpts(opts);
+        return opts.dataset;
+      },
+
       addNewGenotypesToOpts: function (opts) {
         let self = this;
         //todo - remove this type of null checking from all code

@@ -6,6 +6,7 @@ export default class HubSession {
     this.url = null;
     this.source = source;
     this.api = source + '/api/v1';
+    this.apiDepricated = source + '/apiv1';
   }
 
   promiseInit(sampleId, source, isPedigree, projectId ) {
@@ -185,14 +186,13 @@ export default class HubSession {
     })
   }
 
-  promiseGetVariantSets(project_id) {
+  promiseGetVariantSets(project_id, variant_set_id) {
     let self = this;
 
     return new Promise(function(resolve, reject) {
       // Get pedigree for sample
-      self.getVariantSets(project_id)
+      self.getVariantSets(project_id, variant_set_id)
         .done(data => {
-          console.log("variants inside promise", data);
           resolve(data)
         })
         .fail(error => {
@@ -288,10 +288,12 @@ export default class HubSession {
   }
 
 
-  getVariantSets(project_id) {
+  getVariantSets(project_id, variant_set_id) {
     let self = this;
     return $.ajax({
-      url: self.api + '/projects/' + project_id + '/variants/sets/1',
+      // url: self.api + '/projects/' + project_id + '/variants/sets/' + variant_set_id + '?include_variant_data=true',
+      url: self.apiDepricated + '/projects/' + project_id + '/variants?variant_set_id=' + variant_set_id + "&include_variant_data=true",
+
       type: 'GET',
       contentType: 'application/json',
       headers: {

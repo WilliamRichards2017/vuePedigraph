@@ -32,7 +32,8 @@ const routes = [
       token_type: route.query.token_type,
       expires_in: route.query.expires_in,
       is_pedigree: route.query.is_pedigree,
-      source: route.query.source
+      source: route.query.source,
+      variant_set_id: route.query.variant_set_id
     })
   }
 ];
