@@ -218,6 +218,7 @@
       metrics: null,
       phenotypeText: null,
       phenotypesProp: null,
+      ptIdMap: null,
     },
     components: {
       navigation,
@@ -406,6 +407,18 @@
     }
     ,
     methods: {
+
+      initSelectedFamily() {
+
+        let self = this;
+
+
+        self.hubSession.promiseGetPedigreeForSample(self.project_id, self.sample_id).then((data) => {
+          self.selectedFamily = data.pedigree.proband.pedigree.kindred_id;
+        })
+
+      },
+
       populateHubPhenotypes(){
 
         let self = this;
@@ -422,10 +435,10 @@
                 if(match && match.length === 1){
                   let val = data.metrics[key];
                   if (!isNaN(val)){
-                    self.phenotypes.push(match[0].uid);
+                    self.phenotypes.push(match[0].name);
                   }
                   else if(self.isBinary(val)){
-                    self.phenotypes.push(match[0].uid);
+                    self.phenotypes.push(match[0].name);
                   }
 
                 }
@@ -440,7 +453,6 @@
           return true
         }
         else{
-          console.log("excluded val", val);
           return false
         }
       },
@@ -563,8 +575,6 @@
               }
             }
 
-            // console.log("filteredCols", filteredCols);
-
             let variant = filteredCols.slice(0, 5);
 
             let varText = variant[0] + ':' + variant[1] + "_" + variant[3] + '/' + variant[4];
@@ -575,19 +585,10 @@
 
             let gts = filteredCols.slice(9);
 
-            // console.log("first gts", gts);
-
             if (firstTwo === "#C" || firstTwo === "#c") {
               sampleIDs = gts;
-              // console.log("found first two");
-              // console.log("sampleIds", sampleIDs);
             } else {
-
-              // console.log("gts for var", varText, gts);
-
-
               if(varText === ":undefined_undefined/undefined"){
-
               }
               else{
                 gtMap[varText] = gts;
@@ -598,9 +599,6 @@
           }
         }
         self.idList = sampleIDs;
-
-        console.log("GTMap", gtMap);
-
         return gtMap;
 
       },
@@ -634,13 +632,16 @@
 
       },
 
+      ptNameToId(pt){
+        if(this.ptIdMap.hasOwnProperty(pt)){
+          return this.ptIdMap[pt];
+        }
+      },
+
       buildFromUpload() {
         let self = this;
 
         self.pedTxt= self.validatePedFile(self.txt);
-
-        // console.log("self.pedTxt after validation", self.pedTxt);
-
         self.populateModel();
         self.selectedRegression = "Linear";
         self.selectedFamily = self.pedTxt.split(" ")[0];
@@ -655,31 +656,20 @@
       buildFromHub() {
         let self = this;
         self.pedTxt = self.txt;
-        console.log("self.pedTxt", self.pedTxt);
-        // self.selectedPhenotype = "affected_status";
         self.populateModel();
-
-
       },
 
       buildGTMapFromHub(){
         let self = this;
-        console.log("self.sampleIds in buildGTMapFromHub", this.sampleIds);
-        console.log("self.variatns in buildGTMapFromHub", this.parsedVariants);
-
         let gtMap = {};
 
         for(let i = 0; i < self.variants.length; i++){
-          console.log("variant", self.variants[i]);
           let varText = self.variants[i].chr + ":" + self.variants[i].pos + "_" + self.variants[i].ref + "/" + self.variants[i].alt;
           let gts = {};
           gtMap[varText] = gts;
           for(let j = 0; j < this.sampleIds.length; j++){
             let sampleId = self.sampleIds[j];
-            console.log("sampleId", self.sampleIds[j]);
-            console.log("sampleIds", self.variants[i].sample_ids);
             if(self.variants[i].sample_ids.includes(self.sampleIds[j])){
-              console.log("found variant for sample id");
               gtMap[varText][sampleId] = "1/1";
             }
             else{
@@ -687,8 +677,6 @@
             }
           }
         }
-        console.log("gtMap", gtMap);
-
         self.genotypeMap = gtMap;
 
       },
@@ -1047,21 +1035,11 @@
         self.populateTxtDict();
         self.populatePedDict();
         self.populateFamilies();
+        self.initSelectedFamily();
         self.rebuildPedDict();
-        console.log("self.pedDict", self.pedDict);
         self.highlightFamily();
-        if(self.launchedFrom === "H"){
-          self.parseVariants();
-          self.selectedFamily = Object.keys(self.families)[0];
-
-          self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
-          self.opts.dataset = io.readLinkage(self.pedTxt);
-          self.populateSampleIds();
-          self.buildGTMapFromHub();
-        }
         if (self.launchedFrom !== "U") {
           // self.parseVariants();
-          console.log("self.parsedVariants inside populateModel", self.parsedVariants);
         }
       },
       buildPhenotypes: function () {
@@ -1892,7 +1870,7 @@
           for (let i = 0; i < self.sampleIds.length; i++) {
             let metP = self.hubSession.promiseGetMetricsForSample(self.project_id, self.sampleIds[i])
               .then((data) => {
-                let pt = self.selectedPhenotype;
+                let pt = self.ptNameToId(self.selectedPhenotype);
                 let samplePhenotype = data.metrics[pt];
                 let sampleId = self.sampleIds[i];
                 pts[sampleId] = samplePhenotype;
@@ -1912,7 +1890,6 @@
       addHubGenotypesToOpts: function(opts){
 
         let self = this;
-        console.log("self.genotypeMap", self.genotypeMap);
         if (self.selectedGenotype === null) {
         } else {
           let gts = self.genotypeMap[self.selectedGenotype];
@@ -2087,6 +2064,16 @@
         let self = this;
         let gt = self.selectedGenotype;
         let pt = self.selectedPhenotype;
+
+        if(self.launchedFrom === "H"){
+          self.parseVariants();
+          self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+          self.opts.dataset = io.readLinkage(self.pedTxt);
+          self.populateSampleIds();
+          self.buildGTMapFromHub();
+        }
+
+
         self.resetValues();
         self.selectedGenotype = gt;
         self.selectedPhenotype = pt;

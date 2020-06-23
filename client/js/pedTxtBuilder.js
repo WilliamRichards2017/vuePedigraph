@@ -44,10 +44,6 @@ export default class pedTxtBuilder {
     return new Promise((resolve, reject) => {
       self.hubSession.promiseGetProjectSamples(self.projectId)
         .then((data) => {
-
-
-          console.log("data", data);
-
           const samples = data.data;
           for (let i = 0; i < samples.length; i++) {
             let pedLine = self.sampleToPedTxt(samples[i]);
@@ -64,7 +60,6 @@ export default class pedTxtBuilder {
 
   promiseGetVariantSets(){
     let self = this;
-    console.log("self.variantSetId", self.variantSetId);
     return new Promise((resolve, reject) => {
       self.hubSession.promiseGetVariantSets(self.projectId, self.variantSetId)
         .then((data) => {

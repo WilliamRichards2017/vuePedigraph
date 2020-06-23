@@ -36,8 +36,6 @@ export default class HubSession {
           let rawPedigree = data.rawPedigree;
 
 
-          console.log("rawPedigree inside hub session", rawPedigree);
-
           let promises = [];
 
           // Let's get the proband info first
