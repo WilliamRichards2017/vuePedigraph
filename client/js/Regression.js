@@ -215,10 +215,6 @@ export default class Regression {
           pt = parseFloat(self.rawPhenotypes[key]);
         }
 
-        console.log("gt", gt);
-        console.log("pt", pt);
-
-
         if (pt > self.maxPt) {
           self.maxPt = pt;
         } else if (pt < this.minPt) {
@@ -795,7 +791,7 @@ export default class Regression {
           };
           self.data.push(d);
         } else {
-          // console.log("did not make data for key, sex, color, x, y", key, sex, color, x, pt);
+          console.log("did not make data for key, sex, color, x, y", key, sex, color, x, pt);
         }
       }
     }
@@ -865,7 +861,6 @@ export default class Regression {
   }
 
   getColorFromSampleId(id){
-
     for(let i = 0; i < this.dataset.length; i++){
       if(this.dataset[i].name === id.toString()){
         return this.dataset[i].col;

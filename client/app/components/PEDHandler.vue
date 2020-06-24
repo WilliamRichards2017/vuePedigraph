@@ -628,7 +628,6 @@
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
         self.ptMap = self.PTCPhenotypes;
-        console.log("self.ptMap", self.ptMap);
         self.selectedGenotype = self.parsedVariants[0];
 
       },
@@ -931,14 +930,8 @@
         }
         else if(self.launchedFrom === "H"){
 
-          console.log("self.genotypeMap", self.genotypeMap);
-          console.log("self.phenotypeMap", self.ptMap);
-          console.log("self.sampleIds", self.sampleIds);
 
           gts = self.genotypeMap[self.selectedGenotype];
-          console.log("self.minThreshold", self.minThreshold);
-          console.log("self.maxThreshold", self.maxThreshold);
-
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, -1);
 
         }
@@ -1479,24 +1472,52 @@
           self.minThreshold = self.minPt;
           self.maxThreshold = self.maxPt;
         } else if (this.launchedFrom === "D") {
-          if(self.selectedPhenotype === "PTC Sensitivity") {
+          if (self.selectedPhenotype === "PTC Sensitivity") {
             self.minPt = 0;
             self.maxPt = 12;
             self.minThreshold = 0;
             self.maxThreshold = 12;
-          }
-          else if(self.selectedPhenotype === "Androstenone Sensitivity"){
+          } else if (self.selectedPhenotype === "Androstenone Sensitivity") {
             self.minPt = 0;
             self.maxPt = 12;
             self.minThreshold = 0;
             self.maxThreshold = 12;
-          }
-          else if(self.selectedPhenotype === "Asparagus Sensitivity"){
+          } else if (self.selectedPhenotype === "Asparagus Sensitivity") {
             self.minPt = 0;
             self.maxPt = 2;
             self.minThreshold = 0;
             self.maxThreshold = 2;
           }
+        }
+          else if(self.launchedFrom === "H") {
+
+
+          self.promisePhenotypes()
+            .then((pts) => {
+              let keys = Object.keys(pts);
+              self.minPT = Math.min.apply(null, keys.map(function (x) {
+                if (isNaN(pts[x])) {
+                  return Infinity
+                } else {
+                  return pts[x]
+                }
+              }));
+
+                self.minThreshold = self.minPt;
+
+
+              self.maxPt = Math.max.apply(null, keys.map(function (x) {
+                if (isNaN(pts[x])) {
+                  return -Infinity
+                } else {
+                  return pts[x]
+                }
+              }));
+
+                self.maxThreshold = self.maxPt;
+              self.buildSlider();
+
+            })
         }
       },
 
@@ -1749,35 +1770,10 @@
 
         self.promisePhenotypes()
           .then((pts) => {
-            let keys   = Object.keys(pts);
-
             self.ptMap = pts;
              self.selectedRegression = "Linear";
 
-              self.minThreshold = Math.min.apply(null, keys.map(function (x) {
-                if(isNaN(pts[x])){
-                  return Infinity
-                }
-                else {
-                  return pts[x]
-                }
-              }));
 
-              self.minPt = self.minThreshold;
-
-              self.maxThreshold = Math.max.apply(null, keys.map(function (x) {
-                if(isNaN(pts[x])){
-                  return -Infinity
-                }
-                else {
-                  return pts[x]
-                }
-              }));
-
-              self.maxPt = self.maxThreshold;
-
-              console.log("self.minthreshold", self.minThreshold);
-              console.log("self.maxThreshold", self.maxThreshold);
 
             for (let i = 0; i < self.opts.dataset.length; i++) {
               let id = self.opts.dataset[i].name;
@@ -1868,14 +1864,14 @@
               self.cachedOpacity[id] = opacity;
             }
 
-
-
-
             self.opts = self.addCachedValuesToOpts(self.opts);
             self.opts = ptree.build(self.opts);
 
             self.opts = self.addCachedValuesToOpts(self.opts);
             self.opts = ptree.build(self.opts);
+            self.buildRegression();
+
+
           })
 
 
@@ -2069,16 +2065,16 @@
 
       minThreshold: function () {
         let self = this;
-        if(!self.noVariants) {
           self.buildPhenotypes();
-          self.buildRegression();
-        }
+          if(self.launchedFrom !== "H") {
+            self.buildRegression();
+          }
       },
 
       maxThreshold: function () {
         let self = this
-        if(!self.noVariants) {
           self.buildPhenotypes();
+        if(self.launchedFrom !== "H") {
           self.buildRegression();
         }
       },
@@ -2140,11 +2136,12 @@
       selectedPhenotype: function () {
         let self = this;
 
-        self.buildPhenotypes();
         self.populateThresholds();
+        self.buildPhenotypes();
+        self.buildSlider();
+
         self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
 
-        self.buildSlider();
         self.buildRegression();
 
       },
