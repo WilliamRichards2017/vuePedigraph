@@ -628,6 +628,7 @@
         let PHandler = new PhenotypeHandler();
         self.PTCPhenotypes = PHandler.replacedIDs;
         self.ptMap = self.PTCPhenotypes;
+        console.log("self.ptMap", self.ptMap);
         self.selectedGenotype = self.parsedVariants[0];
 
       },
@@ -912,21 +913,34 @@
       buildLinearRegression() {
         let self = this;
         //TODO - implement this
-        self.populateGenotypes();
+
+        if(self.launchedFrom === "H"){
+          self.buildGTMapFromHub();
+        }
+        else{
+          self.populateGenotypes();
+        }
         let gts = self.fullGTMap[self.selectedGenotype];
-        self.PTIndex = self.phenotypes.indexOf(self.selectedPhenotype);
+        self.PTIndex = self.phenotypes.indexOf(self.ptNameToId(self.selectedPhenotype));
 
 
         if(self.launchedFrom === "D") {
 
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
 
-          // if(self.selectedPhenotype === "PTC Sensitivity") {
-          //   self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 0);
-          // }
-          // else{
-          //   self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, 1);
-          // }
+        }
+        else if(self.launchedFrom === "H"){
+
+          console.log("self.genotypeMap", self.genotypeMap);
+          console.log("self.phenotypeMap", self.ptMap);
+          console.log("self.sampleIds", self.sampleIds);
+
+          gts = self.genotypeMap[self.selectedGenotype];
+          console.log("self.minThreshold", self.minThreshold);
+          console.log("self.maxThreshold", self.maxThreshold);
+
+          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, -1);
+
         }
         else{
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
@@ -1737,8 +1751,8 @@
           .then((pts) => {
             let keys   = Object.keys(pts);
 
-            if(self.noVariants) {
-              self.selectedRegression = "Linear";
+            self.ptMap = pts;
+             self.selectedRegression = "Linear";
 
               self.minThreshold = Math.min.apply(null, keys.map(function (x) {
                 if(isNaN(pts[x])){
@@ -1748,6 +1762,9 @@
                   return pts[x]
                 }
               }));
+
+              self.minPt = self.minThreshold;
+
               self.maxThreshold = Math.max.apply(null, keys.map(function (x) {
                 if(isNaN(pts[x])){
                   return -Infinity
@@ -1756,7 +1773,11 @@
                   return pts[x]
                 }
               }));
-            }
+
+              self.maxPt = self.maxThreshold;
+
+              console.log("self.minthreshold", self.minThreshold);
+              console.log("self.maxThreshold", self.maxThreshold);
 
             for (let i = 0; i < self.opts.dataset.length; i++) {
               let id = self.opts.dataset[i].name;
@@ -1856,6 +1877,8 @@
             self.opts = self.addCachedValuesToOpts(self.opts);
             self.opts = ptree.build(self.opts);
           })
+
+
       },
       promisePhenotypes: function () {
         return new Promise((resolve, reject) => {
@@ -2121,8 +2144,8 @@
         self.populateThresholds();
         self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
 
-        // self.buildSlider();
-        // self.buildRegression();
+        self.buildSlider();
+        self.buildRegression();
 
       },
 

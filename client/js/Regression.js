@@ -211,6 +211,14 @@ export default class Regression {
         let gt = self.rawGenotypes[key];
         let pt = parseFloat(self.rawPhenotypes[key][this.ptIndex]);
 
+        if(this.ptIndex === -1) {
+          pt = parseFloat(self.rawPhenotypes[key]);
+        }
+
+        console.log("gt", gt);
+        console.log("pt", pt);
+
+
         if (pt > self.maxPt) {
           self.maxPt = pt;
         } else if (pt < this.minPt) {
@@ -723,6 +731,7 @@ export default class Regression {
 
 
     self.data = [];
+    console.log("self.rawGenotypes", self.rawGenotypes);
 
     for(let i  = 0; i < self.sampleIds.length; i++) {
 
@@ -737,6 +746,7 @@ export default class Regression {
       let kiP = Object.keys(self.rawPhenotypes)[0];
       let kiG = Object.keys(self.rawGenotypes)[0];
 
+      console.log("key", key)
 
       let gt = self.rawGenotypes[key];
 
@@ -756,7 +766,13 @@ export default class Regression {
       let pt = 0;
 
       if (self.rawPhenotypes.hasOwnProperty(key)) {
-        pt = parseFloat(self.rawPhenotypes[key][this.ptIndex]);
+
+        if(this.ptIndex === -1){
+          pt = parseFloat(self.rawPhenotypes[key]);
+        }
+        else {
+          pt = parseFloat(self.rawPhenotypes[key][this.ptIndex]);
+        }
 
 
         let x = af;
