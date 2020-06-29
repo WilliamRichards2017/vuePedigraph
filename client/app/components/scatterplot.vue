@@ -38,6 +38,7 @@
 
     props: {
 
+      noVariants: null,
       rawData: null,
       linePoints: null,
       opts: null,
@@ -108,11 +109,21 @@
         // let yRightAxis = d3.select("#yRight-axis")
         let xAxis = d3.select("#x-axis");
 
-        xAxis.append("text")
-          .attr("class", "axis-label")
-          .attr("id", "xlabel")
-          .attr("transform", "translate(150, 37)")
-          .text("Alternate Allele Frequency (GT)");
+
+        if(!this.noVariants) {
+          xAxis.append("text")
+            .attr("class", "axis-label")
+            .attr("id", "xlabel")
+            .attr("transform", "translate(150, 37)")
+            .text("Alternate Allele Frequency (GT)");
+        }
+        else{
+          xAxis.append("text")
+            .attr("class", "axis-label")
+            .attr("id", "xlabel")
+            .attr("transform", "translate(100, 37)")
+            .text("Genotype N/A");
+        }
 
 
         d3.select("#ylabel")
@@ -139,24 +150,59 @@
         let blue = " #e6e6e6";
         let red = "#595959";
 
-        xAxis
-          .call(d3.axisBottom(self.xScale).ticks(3).tickFormat(function (d, i) {
-            return ticks[i];
-          }));
+
+        if(!this.noVariants) {
+          xAxis
+            .call(d3.axisBottom(self.xScale).ticks(3).tickFormat(function (d, i) {
+              return ticks[i];
+            }));
+
 
           xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 62)
-          .attr("y", 5)
+            .attr("x", 172)
+            .attr("y", 5)
             .style("stroke", "black")
             .style("stroke-width", 1)
-          .attr("fill", blue);
+            .attr("fill", blue);
 
-        xAxis.append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 73)
-          .attr("y", 5)
-          .style("stroke", "black")
-          .style("stroke-width", 1)
-          .attr("fill", blue);
+          xAxis.append("rect").attr("width", "5px").attr('height', "13px")
+            .attr("x", 182)
+            .attr("y", 5)
+            .style("stroke", "black")
+            .style("stroke-width", 1)
+            .attr("fill", red);
+
+
+
+          xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
+            .attr("x", 277)
+            .attr("y", 5)
+            .style("stroke", "black")
+            .style("stroke-width", 1)
+            .attr("fill", red);
+
+          xAxis.append("rect").attr("width", "5px").attr('height', "13px")
+            .attr("x", 287)
+            .attr("y", 5)
+            .style("stroke", "black")
+            .style("stroke-width", 1)
+            .attr("fill", red);
+
+          xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
+            .attr("x", 62)
+            .attr("y", 5)
+            .style("stroke", "black")
+            .style("stroke-width", 1)
+            .attr("fill", blue);
+
+          xAxis.append("rect").attr("width", "5px").attr('height', "13px")
+            .attr("x", 73)
+            .attr("y", 5)
+            .style("stroke", "black")
+            .style("stroke-width", 1)
+            .attr("fill", blue);
+
+        }
 
         let highlightCircle = function(d) {
           d3.select(this).attr("r", 15);
@@ -198,39 +244,6 @@
             .attr("x", self.xScale(d.xSource) - 10)
             .attr("y", self.yScale(d.ySource) - 10);
         };
-
-
-
-
-        xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 172)
-          .attr("y", 5)
-          .style("stroke", "black")
-          .style("stroke-width", 1)
-          .attr("fill", blue);
-
-        xAxis.append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 182)
-          .attr("y", 5)
-          .style("stroke", "black")
-          .style("stroke-width", 1)
-          .attr("fill", red);
-
-
-
-        xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 277)
-          .attr("y", 5)
-          .style("stroke", "black")
-          .style("stroke-width", 1)
-          .attr("fill", red);
-
-        xAxis.append("rect").attr("width", "5px").attr('height', "13px")
-          .attr("x", 287)
-          .attr("y", 5)
-          .style("stroke", "black")
-          .style("stroke-width", 1)
-          .attr("fill", red);
 
 
 
@@ -394,6 +407,9 @@
 
 
     rawData: function () {
+
+      console.log("rawData", this.rawData);
+      console.log("this.noVariants", this.noVariants);
 
       this.buildPlot();
       // this.buildPTLegend();

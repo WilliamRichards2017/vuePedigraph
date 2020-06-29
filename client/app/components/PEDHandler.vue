@@ -67,7 +67,7 @@
         <div id="container" style="width: 30%; padding-right: 1px; padding-top: 1px">
           <div class="col">
             <v-card>
-              <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts"
+              <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts" :noVariants="noVariants"
                           :regressionType="selectedRegression" :operand="selectedOperand" :cuttoff="affectedCuttoff"
                           :maxPt="maxPt" :minPt="minPt"></vueScatter>
             </v-card>
@@ -94,7 +94,9 @@
               </div>
 
 
-              <div id="logisticRegression" v-show="selectedRegression === 'Logistic'">
+              <div id="logisticRegression" v-show="selectedRegression === 'Logistic' && !noVariants">
+                <div class="tableTitle" v-if="!noVariants">Regression Statistics</div>
+
                 <table class="gridtable">
                   <thead>
                   <th></th>
@@ -122,9 +124,7 @@
                 </table>
               </div>
 
-              <div id="linearRegression" v-show="selectedRegression === 'Linear'">
-
-                <div class="tableTitle">Regression Statistics</div>
+              <div id="linearRegression" v-show="selectedRegression === 'Linear' && !noVariants">
 
                 <div class="d-inline-flex">
                   <table class="gridtable">
@@ -943,6 +943,7 @@
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
         }
         self.linePoints = self.regression.getLinePoints();
+        self.noVariants = self.regression.getNoVariants();
         self.projectCorrelation = self.regression.getProjectCorrelation();
         self.projectPVal = self.regression.getProjectPVal();
 
@@ -1059,6 +1060,7 @@
 
         self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex, "D");
         self.scatterplotData = self.regression.getScatterplotData();
+        self.noVariants = self.regression.getNoVariants();
         self.linePoints = self.regression.getLinePoints();
 
         self.populateLogisticEvaluationMetrics();

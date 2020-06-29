@@ -25,6 +25,7 @@ export default class Regression {
     this.launchedFrom = launchedFrom;
 
     this.data = null;
+    this.noVariants = false;
 
 
     this.projectCorrelation = null;
@@ -717,8 +718,19 @@ export default class Regression {
   }
 
 
+  getNoVariants(){
+    return this.noVariants;
+  }
+
+
   processRawData(){
     let self = this;
+
+    console.log("self.rawGenotypes", self.rawGenotypes);
+
+    if(!self.rawGenotypes){
+      self.noVariants = true;
+    }
 
 
     self.data = [];
@@ -730,13 +742,15 @@ export default class Regression {
 
       let key = self.sampleIds[i].toString();
 
+      let gt = null;
 
-      let si = this.sampleIds[0];
+      if(!this.noVariants) {
 
-      let kiP = Object.keys(self.rawPhenotypes)[0];
-      let kiG = Object.keys(self.rawGenotypes)[0];
-
-      let gt = self.rawGenotypes[key];
+         gt = self.rawGenotypes[key];
+      }
+      else{
+        gt = "1/0";
+      }
 
 
       if (gt === "1/1") {
@@ -749,6 +763,7 @@ export default class Regression {
         console.log("error: could not interpret GT", gt);
         af = "not a number";
       }
+
 
 
       let pt = 0;
