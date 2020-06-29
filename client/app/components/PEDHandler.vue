@@ -970,6 +970,30 @@
         self.buildPTLegend();
       },
 
+      nFormatter(num) {
+
+        let digits = 2
+
+        console.log("num to format", num)
+
+        var si = [
+          {value: 1, symbol: ""},
+          {value: 1E3, symbol: "K"},
+          {value: 1E6, symbol: "M"},
+          {value: 1E9, symbol: "B"},
+          {value: 1E12, symbol: "T"}
+        ];
+        var rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+        var i;
+        for (i = si.length - 1; i > 0; i--) {
+          if (num >= si[i].value) {
+            break;
+          }
+        }
+        console.log("num to return", (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol);
+        return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
+      },
+
       buildSlider() {
         let self = this;
 
@@ -988,6 +1012,8 @@
             .default([self.minPt, self.maxPt])
             .height(300)
             .ticks(0)
+            .displayFormat(d => self.nFormatter(d))
+            .tickFormat(d => self.nFormatter(d))
             .fill('#2196f3')
             .on('onchange', val => {
 
@@ -1007,6 +1033,7 @@
             .default([self.minPt, self.maxPt / 2])
             .height(300)
             .ticks(0)
+            .displayFormat(d => self.nFormatter(d))
             .fill('#2196f3')
             .on('onchange', val => {
               self.minThreshold = val[0];
@@ -1020,7 +1047,7 @@
           .append("text").text(self.selectedPhenotype)
           .attr("class", "axis-label")
           .attr("x", -250)
-          .attr("y", -30)
+          .attr("y", -50)
           .attr("transform", "rotate(-90)");
       },
 
@@ -1277,8 +1304,10 @@
           .domain([self.maxThreshold, self.minThreshold]);
         let lAxis = d3.axisBottom()
           .scale(lScale)
-          .ticks(5);
-        key.append("g")
+          .ticks(5)
+          .tickFormat(d3.formatPrefix(".1", 1e6));
+
+  key.append("g")
           .attr("class", "y axis")
           .attr("transform", "translate(5,80)")
           .call(lAxis)

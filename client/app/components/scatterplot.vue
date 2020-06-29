@@ -5,10 +5,10 @@
     <div class="svg-container">
 
       <svg class="scatter-plot" id="scatterplotSvg" width="400px" height="400px">
-        <rect width="300px" height="300px" style="fill: white" transform="translate(50, 30)"></rect>
+        <rect width="300px" height="300px" style="fill: white" transform="translate(75, 30)"></rect>
 
         <!--<rect width="300" height="300"/>-->
-        <g transform="translate(50, 30) " id="scatterplot">
+        <g transform="translate(75, 30) " id="scatterplot">
           <g id="plot"></g>
           <path id="regression-line"/>
           <g id="x-axis" transform="translate(0, 300)" style="font-size: 12px; font-weight: bold"></g>
@@ -51,10 +51,32 @@
 
     methods: {
 
+      nFormatter(num) {
+
+        let digits = 2
+
+        console.log("num to format", num)
+
+        var si = [
+          {value: 1, symbol: ""},
+          {value: 1E3, symbol: "K"},
+          {value: 1E6, symbol: "M"},
+          {value: 1E9, symbol: "B"},
+          {value: 1E12, symbol: "T"}
+        ];
+        var rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+        var i;
+        for (i = si.length - 1; i > 0; i--) {
+          if (num >= si[i].value) {
+            break;
+          }
+        }
+        console.log("num to return", (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol);
+        return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
+      },
+
       buildPlot: function () {
         let self = this;
-
-
 
         var tooltip = d3.select("body")
           .append("div")
@@ -83,23 +105,26 @@
 
         let svg = d3.select("#scatterplotSvg");
         let ticks = ["0 AF", "0.5 AF", "1 AF"];
-        let yLeftAxis = d3.select("#yLeft-axis");
         // let yRightAxis = d3.select("#yRight-axis")
         let xAxis = d3.select("#x-axis");
 
         xAxis.append("text")
           .attr("class", "axis-label")
           .attr("id", "xlabel")
-          .append("g")
           .attr("transform", "translate(150, 37)")
           .text("Alternate Allele Frequency (GT)");
 
 
         d3.select("#ylabel")
-          .text("PTC Sensitivity (PT)");
+          .text("PTC Sensitivity (PT)")
+
+        let yLeftAxis = d3.select("#yLeft-axis");
 
         yLeftAxis
-          .call(d3.axisLeft(self.yScale));
+          .call(d3.axisLeft(self.yScale)
+          .ticks(5)
+          .tickFormat(d => self.nFormatter(d)));
+
           // .attr("transform", "translate(0, 0 )");
 
         if(self.regressionType === "Logistic") {
@@ -334,7 +359,9 @@
 
       var yAxis = d3.axisBottom()
         .scale(yScale)
-        .ticks(5);
+
+
+
 
       key.append("g")
         .attr("class", "y axis")
