@@ -427,25 +427,27 @@
         self.phenotypes = [];
          self.hubSession.promiseGetMetricsForSample(self.project_id, self.sample_id)
             .then((data) => {
-              for(let key in data.metrics){
+              for (let key in data.metrics) {
                 let match = self.metrics.filter(d => {
-                 return d.uid === key;
+                  return d.uid === key;
                 });
 
-                if(match && match.length === 1){
+                if (match && match.length === 1) {
                   let val = data.metrics[key];
-                  if (!isNaN(val)){
+                  if (!isNaN(val)) {
                     self.phenotypes.push(match[0].name);
-                  }
-                  else if(self.isBinary(val)){
+                  } else if (self.isBinary(val)) {
                     self.phenotypes.push(match[0].name);
                   }
 
                 }
               }
+              setTimeout(function () {
+                self.selectedPhenotype = self.phenotypes[0];
+              }, 4000);
+
             });
 
-          self.selectedPhenotype = self.phenotypes[0];
       },
 
       isBinary(val){
@@ -656,12 +658,14 @@
       buildFromHub() {
         let self = this;
         self.pedTxt = self.txt;
+        self.selectedRegression = "Linear";
         self.populateModel();
       },
 
       buildGTMapFromHub(){
         let self = this;
         let gtMap = {};
+
 
         for(let i = 0; i < self.variants.length; i++){
           let varText = self.variants[i].chr + ":" + self.variants[i].pos + "_" + self.variants[i].ref + "/" + self.variants[i].alt;
@@ -677,9 +681,9 @@
             }
           }
         }
+        // self.selectedGenotype = self.variants[0];
         self.genotypeMap = gtMap;
-
-      },
+        },
 
 
       buildPedFromTxt(txt) {
@@ -1045,6 +1049,7 @@
         self.initSelectedFamily();
         self.rebuildPedDict();
         self.highlightFamily();
+
         if (self.launchedFrom !== "U") {
           // self.parseVariants();
         }
@@ -1103,6 +1108,11 @@
             self.parsedVariants.push(parsedVariant);
           }
         }
+
+        setTimeout(function () {
+          self.selectedGenotype = self.parsedVariants[0];
+        }, 4000);
+
       },
       resetValues: function () {
         let self = this;
@@ -1219,6 +1229,10 @@
       },
 
       buildLinearRegressionLegend() {
+
+
+        console.log("buildPTLegend");
+
         let self = this;
         let w = 200, h = 50;
         let key = d3.select("#legend")
@@ -1771,7 +1785,6 @@
         self.promisePhenotypes()
           .then((pts) => {
             self.ptMap = pts;
-             self.selectedRegression = "Linear";
 
 
 
@@ -1883,7 +1896,7 @@
           let promises = [];
           // console.log(typeof selectedPhenotype", typeof self.selectedPhenotype);
           if (typeof self.selectedPhenotype === "object") {
-            self.selectedPhenotype = "affected_status";
+            // self.selectedPhenotype = "affected_status";
           }
 
           for (let i = 0; i < self.sampleIds.length; i++) {
@@ -2082,7 +2095,10 @@
       selectedFamily: function () {
         let self = this;
         let gt = self.selectedGenotype;
-        let pt = self.selectedPhenotype;
+        let pt = null;
+        if(self.selectedPhenotype){
+          pt = self.selectedPhenotype;
+        }
 
         if(self.launchedFrom === "H"){
           self.parseVariants();
@@ -2095,7 +2111,9 @@
 
         self.resetValues();
         self.selectedGenotype = gt;
-        self.selectedPhenotype = pt;
+        if(pt) {
+          self.selectedPhenotype = pt;
+        }
         self.buildPhenotypes();
         self.populateSampleIds();
         self.buildGenotypes();
@@ -2136,6 +2154,8 @@
       selectedPhenotype: function () {
         let self = this;
 
+        console.log("this.selectedPhenotype in watcher", this.selectedPhenotype);
+
         self.populateThresholds();
         self.buildPhenotypes();
         self.buildSlider();
@@ -2148,6 +2168,9 @@
 
       selectedGenotype: function () {
         let self = this;
+
+        console.log("self.selectedGenotype in watcher", self.selectedGenotype);
+
         if (typeof self.selectedGenotype === "undefined") {
         } else {
           self.buildGenotypes();

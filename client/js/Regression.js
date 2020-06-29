@@ -516,11 +516,6 @@ export default class Regression {
       else{
         predicted = 0;
       }
-
-
-      //
-      // console.log("actual: " + testingDataF[i][1] + " probability of being affected " + prob);
-      // console.log("actual: " + testingDataF[i][1] + " predicted: " + predicted);
       yPredF.push(predicted);
     }
 
@@ -727,7 +722,6 @@ export default class Regression {
 
 
     self.data = [];
-    console.log("self.rawGenotypes", self.rawGenotypes);
 
     for(let i  = 0; i < self.sampleIds.length; i++) {
 
@@ -741,8 +735,6 @@ export default class Regression {
 
       let kiP = Object.keys(self.rawPhenotypes)[0];
       let kiG = Object.keys(self.rawGenotypes)[0];
-
-      console.log("key", key)
 
       let gt = self.rawGenotypes[key];
 
