@@ -113,115 +113,9 @@
             </v-btn>
 
             </div>
-
-
-
-
-
           </v-card-text>
         </v-card>
         </v-dialog>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <!--<div class="flex-grid" style="justify:center; text-align: center">-->
-
-            <!--<div class="column">-->
-
-
-          <!--<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Upload Ped</label>-->
-          <!--<FileReader class="uploader" @load="uploadedPedTxt = $event;" ></FileReader>-->
-              <!--<p>Upload a pedigree file from local storage.  Make sure the file is a valid <a href="https://gatkforums.broadinstitute.org/gatk/discussion/7696/pedigree-ped-files">.ped</a> file</p>-->
-
-
-            <!--</div>-->
-
-
-            <!--<div class="column">-->
-          <!--<label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Upload VCF</label>-->
-          <!--<VCFReader class="uploader" @load="uploadedVCF = $event;" ></VCFReader>-->
-            <!--</div>-->
-
-          <!--<div class="column">-->
-
-          <!--<label>Upload Phenotypes</label>-->
-          <!--<FileReader class="uploader" @load="uploadedPTS = $event;" ></FileReader>-->
-            <!--<p>Upload a csv with sample phenotypes.  The first column should contain sample ids, and the second column should contain the phenotype values.</p>-->
-
-            <!--<v-dialog-->
-              <!--width="500"-->
-            <!--&gt;-->
-              <!--<template v-slot:activator="{ on }">-->
-                <!--<v-btn-->
-                  <!--color="red lighten-2"-->
-                  <!--dark-->
-                  <!--v-on="on"-->
-                <!--&gt;-->
-                  <!--View example phenotype csv-->
-                <!--</v-btn>-->
-              <!--</template>-->
-
-              <!--<v-card>-->
-                <!--<v-card-title-->
-                  <!--class="headline grey lighten-2"-->
-                  <!--primary-title-->
-                <!--&gt;-->
-                  <!--Example Phenotype csv-->
-                <!--</v-card-title>-->
-
-                <!--<v-card-text>-->
-                <!--sampleIds, PTC Sensitivity <br>1348, 12 <br> 1349, 4 <br> 1482, 12 <br> 1278, 7-->
-
-                <!--</v-card-text>-->
-              <!--</v-card>-->
-            <!--</v-dialog>-->
-
-
-
-
-
-
-          <!--</div>-->
-            <!--<v-btn v-on:click="launchedFrom = 'U'"> Submit Files</v-btn>-->
-
-          <!--</div>-->
-
         </div>
 
         <div class="column">
@@ -325,7 +219,11 @@
 
   mounted(){
     let self = this;
-    self.hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.variant_set_id, self.source);
+    
+    if(this.access_token){
+      self.hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.variant_set_id, self.source);
+      self.launchedFrom = "H";
+    }
 
   },
 
@@ -334,6 +232,9 @@
       let self = this;
       if(self.launchedFrom === "H"){
         localStorage.setItem('hub-iobio-tkn', self.token_type + ' ' + self.access_token);
+
+        // this.$router.push({query: {access_token: undefined}});
+
         self.getProjectKindredId();
         self.getProjectSamples();
         self.getMetricsForProject();
@@ -359,8 +260,7 @@
 
 
     launchMosaic(){
-      // window.open("https://mosaic.frameshift.io","_self")
-      this.launchedFrom = "H";
+      window.open("https://mosaic.frameshift.io","_blank")
     },
 
     buildTxt: function () {
@@ -453,7 +353,9 @@
           self.metricsToPhenotypes();
         })
     },
-  }
+  },
+
+
 }
 </script>
 
