@@ -1054,14 +1054,27 @@
 
       buildLogisticRegression() {
         let self = this;
-        self.populateGenotypes();
-        let gts = self.fullGTMap[self.selectedGenotype];
 
-
-        self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.PTIndex, "D");
         self.scatterplotData = self.regression.getScatterplotData();
         self.noVariants = self.regression.getNoVariants();
         self.linePoints = self.regression.getLinePoints();
+
+        if(self.launchedFrom === "D") {
+          let gts = self.fullGTMap[self.selectedGenotype];
+
+          self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
+
+        }
+        else if(self.launchedFrom === "H"){
+          self.buildGTMapFromHub();
+          let gts = self.genotypeMap[self.selectedGenotype];
+          self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, -1);
+
+        }
+        else{
+          let gts = self.fullGTMap[self.selectedGenotype];
+          self.regression = new Regression(gts, self.ptMap, "ogistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
+        }
 
         self.populateLogisticEvaluationMetrics();
         self.buildLogisticRegressionLegend();
@@ -2174,7 +2187,7 @@
           self.opts = ptree.build(self.opts);
           self.drawGenotypeBars();
           self.populateSampleIds();
-          self.buildLinearRegression();
+          self.buildRegression();
         } else {
           self.removeHighlight();
           $('#pedigree').on('nodeClick', self.onNodeClick);
