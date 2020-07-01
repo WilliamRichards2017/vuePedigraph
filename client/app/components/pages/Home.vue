@@ -183,7 +183,6 @@
     sample_id: null,
     project_id: null,
     variant_set_id: null,
-    access_token: null,
     token_type: null,
     expires_in: null,
     is_pedigree: null,
@@ -192,6 +191,7 @@
   data() {
     return {
       demoTxt : demoTxt,
+      access_token: null,
       launchedFrom : null,
       pedTxt: null,
       hubTxt: null,
@@ -219,7 +219,15 @@
 
   mounted(){
     let self = this;
-    
+
+    let auth = localStorage.getItem('hub-iobio-tkn')
+    if(auth){
+      this.access_token = auth;
+    }
+
+    console.log("auth", auth)
+
+
     if(this.access_token){
       self.hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.variant_set_id, self.source);
       self.launchedFrom = "H";
@@ -231,7 +239,6 @@
     launchedFrom : function() {
       let self = this;
       if(self.launchedFrom === "H"){
-        localStorage.setItem('hub-iobio-tkn', self.token_type + ' ' + self.access_token);
 
         // this.$router.push({query: {access_token: undefined}});
 

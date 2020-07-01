@@ -14,6 +14,10 @@ Vue.use(VueAxios, axios);
 import App from './App.vue'
 import Home from './components/pages/Home.vue'
 
+import Qs from 'qs'
+
+
+
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.css'
 
@@ -24,6 +28,21 @@ const routes = [
   {
     path: '/',
     component: Home,
+    beforeEnter: (to, from, next) => {
+      var idx = to.hash.indexOf("#access_token");
+      if (idx == 0) {
+        let queryParams = Qs.parse(to.hash.substring(1));
+        let { access_token, expires_in, token_type, sample_id, project_id, is_pedigree, source, variant_set_id } = queryParams;
+        console.log("access_token", access_token);
+        let otherQueryParams = "?sample_id=" + sample_id + "&project_id=" + project_id + "&is_pedigree=" + is_pedigree + "&source=" +source + "&variant_set_id=" + variant_set_id;
+        console.log("otherQueryParams", otherQueryParams);
+        localStorage.setItem('hub-iobio-tkn', token_type + ' ' + access_token);
+        next('/' + otherQueryParams);
+
+      } else {
+        next();
+      }
+    },
 
     props: (route) => ({
       sample_id: route.query.sample_id,

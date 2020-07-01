@@ -349,7 +349,6 @@
     },
     beforeMount() {
       let self = this;
-      localStorage.setItem('hub-iobio-tkn', self.token_type + ' ' + self.access_token);
       self.hubSession = new HubSession(self.source);
     },
 
