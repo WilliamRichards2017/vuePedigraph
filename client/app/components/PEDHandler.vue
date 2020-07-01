@@ -1320,7 +1320,7 @@
         let lAxis = d3.axisBottom()
           .scale(lScale)
           .ticks(5)
-          .tickFormat(d3.formatPrefix(".1", 1e6));
+          .tickFormat(d => self.nFormatter(d));
 
   key.append("g")
           .attr("class", "y axis")
