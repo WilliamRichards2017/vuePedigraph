@@ -634,9 +634,10 @@
       },
 
       ptNameToId(pt){
-        if(this.ptIdMap.hasOwnProperty(pt)){
+        if(this.ptIdMap && this.ptIdMap.hasOwnProperty(pt)){
           return this.ptIdMap[pt];
         }
+        return pt;
       },
 
       buildFromUpload() {

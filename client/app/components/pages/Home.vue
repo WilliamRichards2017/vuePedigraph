@@ -228,7 +228,7 @@
     console.log("auth", auth)
 
 
-    if(this.access_token){
+    if(this.access_token && self.project_id){
       self.hubTxt = new pedTxtBuilder("H", self.sample_id, self.project_id, self.variant_set_id, self.source);
       self.launchedFrom = "H";
     }
