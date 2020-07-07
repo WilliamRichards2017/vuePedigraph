@@ -37,7 +37,7 @@
     },
 
     props: {
-
+      binaryType: null,
       noVariants: null,
       rawData: null,
       linePoints: null,
@@ -55,9 +55,6 @@
       nFormatter(num) {
 
         let digits = 2
-
-        console.log("num to format", num)
-
         var si = [
           {value: 1, symbol: ""},
           {value: 1E3, symbol: "K"},
@@ -72,7 +69,6 @@
             break;
           }
         }
-        console.log("num to return", (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol);
         return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
       },
 
@@ -135,16 +131,6 @@
           .call(d3.axisLeft(self.yScale)
           .ticks(5)
           .tickFormat(d => self.nFormatter(d)));
-
-          // .attr("transform", "translate(0, 0 )");
-
-        if(self.regressionType === "Logistic") {
-
-        }
-        else if (self.regressionType === "Linear"){
-
-        }
-
 
 
         let blue = " #e6e6e6";
@@ -311,9 +297,6 @@
             .domain([0, 1])
             .range([0, self.width]);
 
-
-
-
           var yScale = d3.scaleLinear()
             .domain([this.minPt, this.maxPt])
             .range([self.height, 0]);
@@ -408,8 +391,10 @@
 
     rawData: function () {
 
-      console.log("rawData", this.rawData);
-      console.log("this.noVariants", this.noVariants);
+      if(this.binaryType !== "Number"){
+        this.minPt = 0;
+        this.maxPt = 1;
+      }
 
       this.buildPlot();
       // this.buildPTLegend();

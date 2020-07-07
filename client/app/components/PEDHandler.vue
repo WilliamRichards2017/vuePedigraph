@@ -69,7 +69,7 @@
             <v-card>
               <vueScatter :rawData="scatterplotData" :linePoints="linePoints" :opts="opts" :noVariants="noVariants"
                           :regressionType="selectedRegression" :operand="selectedOperand" :cuttoff="affectedCuttoff"
-                          :maxPt="maxPt" :minPt="minPt"></vueScatter>
+                          :maxPt="maxPt" :minPt="minPt" :binaryType="binaryType"></vueScatter>
             </v-card>
 
             <v-card style="background-color: #f2f2f2; height: 60vh">
@@ -441,6 +441,8 @@
 
                 }
               }
+
+              self.phenotypes.sort();
               setTimeout(function () {
                 self.selectedPhenotype = self.phenotypes[0];
               }, 4000);
@@ -936,7 +938,7 @@
 
 
           gts = self.genotypeMap[self.selectedGenotype];
-          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, -1);
+          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, -1, self.binaryType);
 
         }
         else{
@@ -975,7 +977,6 @@
 
         let digits = 2
 
-        console.log("num to format", num)
 
         var si = [
           {value: 1, symbol: ""},
@@ -991,7 +992,6 @@
             break;
           }
         }
-        console.log("num to return", (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol);
         return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
       },
 
@@ -1001,6 +1001,20 @@
         d3.select("#slider-axisRange").remove();
 
         let sliderRange = null;
+
+        console.log("self.minPT, self.maxPt", self.minPt, self.maxPt);
+
+        console.log("self.binaryType", self.binaryType);
+
+
+
+        // if(self.binaryType && self.binaryType !== "Number" && self.binaryType !== "unknown" || self.maxPt === -Infinity){
+        //   self.minPt = 0;
+        //   self.maxPt =  1;
+        // }
+        //
+
+
 
         if (self.selectedRegression === "Linear") {
           self.maxThreshold = self.maxPt;
@@ -1272,9 +1286,6 @@
 
       buildLinearRegressionLegend() {
 
-
-        console.log("buildPTLegend");
-
         let self = this;
         let w = 200, h = 50;
         let key = d3.select("#legend")
@@ -1523,7 +1534,7 @@
             let sens = parseFloat(pts[self.PTIndex]);
             if (sens < this.minPt) {
               this.minPt = sens;
-            } else if (sens > this.maxPt) {
+            } if (sens > this.maxPt) {
               this.maxPt = sens;
             }
           }
@@ -1553,27 +1564,56 @@
           self.promisePhenotypes()
             .then((pts) => {
               let keys = Object.keys(pts);
-              self.minPT = Math.min.apply(null, keys.map(function (x) {
-                if (isNaN(pts[x])) {
-                  return Infinity
+
+              let minArr = [];
+
+
+              for(let i = 0; i < keys.length; i++){
+                let x = keys[i];
+                if (typeof pts[x] === "undefined" || isNaN(pts[x])) {
                 } else {
-                  return pts[x]
+                  minArr.push(parseFloat(pts[x]))
+                }
+              }
+
+              console.log("minArr", minArr);
+
+              minArr = minArr.sort(function(a, b){return a-b});
+              if(minArr.length > 0){
+                self.minPt = minArr[0];
+                console.log("minArr", minArr);
+                console.log("typeof minArr", typeof self.minPt);
+              }
+              else{
+                self.minPt = 0;
+              }
+
+              self.minPT = Math.min.apply(null, keys.map(function (x) {
+                if (typeof pts[x] === "undefined" || isNaN(pts[x])) {
+                  return Infinity;
+                } else {
+                  console.log("pts[x]", pts[x]);
+                  return parseFloat(pts[x])
                 }
               }));
+
+              console.log("self.minPT in promise phenotype", self.minPt);
 
                 self.minThreshold = self.minPt;
 
 
+
+                console.log("keys after mapping", keys);
               self.maxPt = Math.max.apply(null, keys.map(function (x) {
                 if (isNaN(pts[x])) {
-                  return -Infinity
+                  return 1
                 } else {
-                  return pts[x]
+                  return parseFloat(pts[x]);
                 }
               }));
 
                 self.maxThreshold = self.maxPt;
-              self.buildSlider();
+                setTimeout(self.buildSlider(), 1000);
 
             })
         }
@@ -1817,7 +1857,6 @@
           return 0;
         }
         else{
-          this.binaryType = 'unknown';
           return null;
         }
       },
@@ -1912,7 +1951,6 @@
                 }
               }
 
-
               self.opts.dataset[i].affected = aff;
               self.opts.dataset[i].col = color;
               self.opts.dataset[i].opac = opacity;
@@ -1926,9 +1964,11 @@
 
             self.opts = self.addCachedValuesToOpts(self.opts);
             self.opts = ptree.build(self.opts);
+            if(self.binaryType !== "Number" && self.binaryType !== "unknown"){
+              self.minPt = 0;
+              self.maxPt = 1;
+            }
             self.buildRegression();
-
-
           })
 
 
@@ -1938,7 +1978,6 @@
           let self = this;
           let pts = {};
           let promises = [];
-          // console.log(typeof selectedPhenotype", typeof self.selectedPhenotype);
           if (typeof self.selectedPhenotype === "object") {
             // self.selectedPhenotype = "affected_status";
           }
@@ -2197,13 +2236,8 @@
       },
       selectedPhenotype: function () {
         let self = this;
-
-        console.log("this.selectedPhenotype in watcher", this.selectedPhenotype);
-
         self.populateThresholds();
         self.buildPhenotypes();
-        self.buildSlider();
-
         self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
 
         self.buildRegression();
@@ -2212,9 +2246,6 @@
 
       selectedGenotype: function () {
         let self = this;
-
-        console.log("self.selectedGenotype in watcher", self.selectedGenotype);
-
         if (typeof self.selectedGenotype === "undefined") {
         } else {
           self.buildGenotypes();
@@ -2225,7 +2256,6 @@
       selectedRegression: function () {
         let self = this;
         self.populateSampleIds();
-        self.buildSlider();
         self.buildPhenotypes();
         self.buildRegression();
         self.linePoints = self.regression.getLinePoints();

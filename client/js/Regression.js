@@ -8,12 +8,13 @@ import jsregression from 'js-regression'
 
 
 export default class Regression {
-  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds,  minThreshold, maxThreshold, inverted, ptIndex, launchedFrom) {
+  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds,  minThreshold, maxThreshold, inverted, ptIndex, launchedFrom, binaryType) {
     this.rawGenotypes = rawGenotypes;
     this.rawPhenotypes = rawPhenotypes;
     this.minThreshold = minThreshold;
     this.maxThreshold = maxThreshold;
     this.inverted = inverted;
+    this.binaryType = binaryType;
 
     this.regressionType = regressionType;
 
@@ -213,7 +214,7 @@ export default class Regression {
         let pt = parseFloat(self.rawPhenotypes[key][this.ptIndex]);
 
         if(this.ptIndex === -1) {
-          pt = parseFloat(self.rawPhenotypes[key]);
+          pt = this.parseBinary(self.rawPhenotypes[key]);
         }
 
         if (pt > self.maxPt) {
@@ -722,11 +723,38 @@ export default class Regression {
     return this.noVariants;
   }
 
+  parseBinary(sens){
+    if(!isNaN(sens)){
+      return parseFloat(sens);
+    }
+    if( sens === 'Positive' || sens === 'positive' || sens === 'Pos' || sens === 'pos'){
+      return 1;
+    }
+    else if( sens === 'Negative' || sens === 'negative' || sens === 'Neg' || sens === 'neg'){
+      return 0
+    }
+    else if(sens === 'Yes' || sens === 'yes'){
+      return 1;
+    }
+    else if(sens === 'No' || sens === 'no'){
+      return 0;
+    }
+    else if(sens === 'Affected' || sens === 'affected'){
+      return 1;
+    }
+    else if(sens === 'Unaffected' || sens === 'unaffected'){
+      return 0;
+    }
+    else{
+      this.binaryType = 'unknown';
+      return null;
+    }
+  }
+
+
 
   processRawData(){
     let self = this;
-
-    console.log("self.rawGenotypes", self.rawGenotypes);
 
     if(!self.rawGenotypes){
       self.noVariants = true;
@@ -771,11 +799,14 @@ export default class Regression {
       if (self.rawPhenotypes.hasOwnProperty(key)) {
 
         if(this.ptIndex === -1){
-          pt = parseFloat(self.rawPhenotypes[key]);
+          pt = self.rawPhenotypes[key];
         }
         else {
-          pt = parseFloat(self.rawPhenotypes[key][this.ptIndex]);
+          pt = self.rawPhenotypes[key][this.ptIndex];
         }
+
+
+        let pt = self.parseBinary(pt);
 
 
         let x = af;
