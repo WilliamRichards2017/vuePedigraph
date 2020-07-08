@@ -1050,6 +1050,7 @@
 
 
         if (self.selectedRegression === "Linear") {
+          self.minThreshold = self.minPt;
           self.maxThreshold = self.maxPt;
 
 
@@ -1073,6 +1074,7 @@
         } else if (self.selectedRegression === "Logistic") {
 
           self.minThreshold = (self.maxPt + self.minPt) / 2;
+          self.maxThreshold = self.maxPt;
 
           sliderRange = d3
             .sliderVertical()
