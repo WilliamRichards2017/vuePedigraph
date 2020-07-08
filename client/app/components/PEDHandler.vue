@@ -973,10 +973,43 @@
         self.buildPTLegend();
       },
 
+      nFormatterLabel(num) {
+
+        let digits = 2;
+
+        console.log("self.binaryType", this.binaryType);
+
+        console.log("num in nFormatter", num);
+
+        if(this.binaryType === "Yes"){
+          if(num == 1){
+            return "Yes"
+          }
+          return "No";
+        }
+
+
+        var si = [
+          {value: 1, symbol: ""},
+          {value: 1E3, symbol: "K"},
+          {value: 1E6, symbol: "M"},
+          {value: 1E9, symbol: "B"},
+          {value: 1E12, symbol: "T"}
+        ];
+        var rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+        var i;
+        for (i = si.length - 1; i > 0; i--) {
+          if (num >= si[i].value) {
+            break;
+          }
+        }
+        return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
+      },
+
+
       nFormatter(num) {
 
-        let digits = 2
-
+        let digits = 2;
 
         var si = [
           {value: 1, symbol: ""},
@@ -1002,9 +1035,9 @@
 
         let sliderRange = null;
 
-        console.log("self.minPT, self.maxPt", self.minPt, self.maxPt);
 
-        console.log("self.binaryType", self.binaryType);
+        console.log("self.minPT, self.maxPt", self.minPt, self.maxPt);
+        console.log("self.selectedRegression", self.selectedRegression);
 
 
 
@@ -1027,7 +1060,7 @@
             .default([self.minPt, self.maxPt])
             .height(300)
             .ticks(0)
-            .displayFormat(d => self.nFormatter(d))
+            .displayFormat(d => self.nFormatterLabel(d))
             .tickFormat(d => self.nFormatter(d))
             .fill('#2196f3')
             .on('onchange', val => {
@@ -1039,13 +1072,13 @@
 
         } else if (self.selectedRegression === "Logistic") {
 
-          self.maxThreshold = self.maxPt / 2;
+          self.minThreshold = (self.maxPt + self.minPt) / 2;
 
           sliderRange = d3
             .sliderVertical()
             .min(self.minPt)
             .max(self.maxPt)
-            .default([self.minPt, self.maxPt / 2])
+            .default([self.minThreshold, self.maxThreshold])
             .height(300)
             .ticks(0)
             .displayFormat(d => self.nFormatter(d))
@@ -1054,16 +1087,20 @@
               self.minThreshold = val[0];
               self.maxThreshold = val[1];
             });
+
         }
 
 
-        d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
-          .call(sliderRange)
-          .append("text").text(self.selectedPhenotype)
-          .attr("class", "axis-label")
-          .attr("x", -250)
-          .attr("y", -50)
-          .attr("transform", "rotate(-90)");
+        if(self.binaryType === "Number" || self.binaryType === "unknown") {
+          console.log("updating slider with self.minPt, self.maxPt / 2",self.minPt, self.maxPt / 2)
+          d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
+            .call(sliderRange)
+            .append("text").text(self.selectedPhenotype)
+            .attr("class", "axis-label")
+            .attr("x", -250)
+            .attr("y", -50)
+            .attr("transform", "rotate(-90)");
+        }
       },
 
       buildLogisticRegression() {
@@ -1090,8 +1127,14 @@
           self.regression = new Regression(gts, self.ptMap, "ogistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
         }
 
-        self.populateLogisticEvaluationMetrics();
-        self.buildLogisticRegressionLegend();
+
+          if(!self.noVariants) {
+            self.populateLogisticEvaluationMetrics();
+            self.buildLogisticRegressionLegend();
+          }
+
+        self.scatterplotData = self.regression.getScatterplotData();
+
       },
 
 
@@ -1576,13 +1619,9 @@
                 }
               }
 
-              console.log("minArr", minArr);
-
               minArr = minArr.sort(function(a, b){return a-b});
               if(minArr.length > 0){
                 self.minPt = minArr[0];
-                console.log("minArr", minArr);
-                console.log("typeof minArr", typeof self.minPt);
               }
               else{
                 self.minPt = 0;
@@ -1592,7 +1631,6 @@
                 if (typeof pts[x] === "undefined" || isNaN(pts[x])) {
                   return Infinity;
                 } else {
-                  console.log("pts[x]", pts[x]);
                   return parseFloat(pts[x])
                 }
               }));
@@ -1613,8 +1651,7 @@
               }));
 
                 self.maxThreshold = self.maxPt;
-                setTimeout(self.buildSlider(), 1000);
-
+                self.buildSlider();
             })
         }
       },
@@ -1964,10 +2001,10 @@
 
             self.opts = self.addCachedValuesToOpts(self.opts);
             self.opts = ptree.build(self.opts);
-            if(self.binaryType !== "Number" && self.binaryType !== "unknown"){
-              self.minPt = 0;
-              self.maxPt = 1;
-            }
+            // if(self.binaryType !== "Number" && self.binaryType !== "unknown"){
+            //   self.minPt = 0;
+            //   self.maxPt = 1;
+            // }
             self.buildRegression();
           })
 
@@ -2258,7 +2295,21 @@
         self.populateSampleIds();
         self.buildPhenotypes();
         self.buildRegression();
+        self.buildSlider();
         self.linePoints = self.regression.getLinePoints();
+      },
+
+      binaryType:function(){
+        if(this.binaryType != null && this.binaryType !== "Number" && this.binaryType !== "unknown"){
+          this.regressionTypes = ["Logistic"];
+          this.selectedRegression = "Logistic";
+        }
+        else {
+          this.regressionTypes = ["Linear", "Logistic"];
+          this.selectedRegression = "Linear";
+          this.buildSlider();
+
+        }
       }
     }
   }
