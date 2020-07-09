@@ -921,6 +921,10 @@
         let self = this;
         //TODO - implement this
 
+
+        self.scatterplotData = self.regression.getScatterplotData();
+
+
         if(self.launchedFrom === "H"){
           self.buildGTMapFromHub();
         }
@@ -1106,10 +1110,6 @@
       buildLogisticRegression() {
         let self = this;
 
-        self.scatterplotData = self.regression.getScatterplotData();
-        self.noVariants = self.regression.getNoVariants();
-        self.linePoints = self.regression.getLinePoints();
-
         if(self.launchedFrom === "D") {
           let gts = self.fullGTMap[self.selectedGenotype];
 
@@ -1134,6 +1134,11 @@
 
         self.scatterplotData = self.regression.getScatterplotData();
         self.buildLogisticRegressionLegend();
+
+
+        self.scatterplotData = self.regression.getScatterplotData();
+        self.noVariants = self.regression.getNoVariants();
+        self.linePoints = self.regression.getLinePoints();
 
 
       },
@@ -2015,13 +2020,6 @@
 
             self.opts = self.addCachedValuesToOpts(self.opts);
             self.opts = ptree.build(self.opts);
-
-            self.opts = self.addCachedValuesToOpts(self.opts);
-            self.opts = ptree.build(self.opts);
-            // if(self.binaryType !== "Number" && self.binaryType !== "unknown"){
-            //   self.minPt = 0;
-            //   self.maxPt = 1;
-            // }
             self.buildRegression();
           })
 
@@ -2290,11 +2288,14 @@
       },
       selectedPhenotype: function () {
         let self = this;
+        // self.populateSampleIds();
         self.populateThresholds();
         self.buildPhenotypes();
-        self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
-
-        self.buildRegression();
+        //
+        //
+        // self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
+        //
+        // self.buildRegression();
 
       },
 
@@ -2323,7 +2324,7 @@
         }
         else {
           this.regressionTypes = ["Linear", "Logistic"];
-          this.selectedRegression = "Linear";
+          // this.selectedRegression = "Linear";
           this.buildSlider();
 
         }
