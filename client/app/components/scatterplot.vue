@@ -72,6 +72,34 @@
         return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
       },
 
+      nFormatterLabel(num) {
+
+        let digits = 2;
+        if(this.binaryType === "Yes"){
+          if(num == 1){
+            return "Yes"
+          }
+          return "No";
+        }
+
+
+        var si = [
+          {value: 1, symbol: ""},
+          {value: 1E3, symbol: "K"},
+          {value: 1E6, symbol: "M"},
+          {value: 1E9, symbol: "B"},
+          {value: 1E12, symbol: "T"}
+        ];
+        var rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+        var i;
+        for (i = si.length - 1; i > 0; i--) {
+          if (num >= si[i].value) {
+            break;
+          }
+        }
+        return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
+      },
+
       buildPlot: function () {
         let self = this;
 
@@ -127,10 +155,17 @@
 
         let yLeftAxis = d3.select("#yLeft-axis");
 
+        let tickNum = 5;
+
+        if(self.binaryType && self.binaryType !== "Number" && self.binaryType !== "unknown"){
+          tickNum = 1;
+        }
+
+
         yLeftAxis
           .call(d3.axisLeft(self.yScale)
-          .ticks(5)
-          .tickFormat(d => self.nFormatter(d)));
+          .ticks(tickNum)
+          .tickFormat(d => self.nFormatterLabel(d)));
 
 
         let blue = " #e6e6e6";

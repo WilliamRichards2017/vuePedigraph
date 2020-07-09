@@ -615,6 +615,8 @@
         let self = this;
         self.pedTxt = self.txt;
 
+        self.binaryType = "Number";
+
 
         self.genotypeMap = self.buildGTMapFromVcf();
         self.parsedVariants = Object.keys(self.genotypeMap).filter(Boolean);
@@ -977,10 +979,6 @@
 
         let digits = 2;
 
-        console.log("self.binaryType", this.binaryType);
-
-        console.log("num in nFormatter", num);
-
         if(this.binaryType === "Yes"){
           if(num == 1){
             return "Yes"
@@ -1132,10 +1130,11 @@
 
           if(!self.noVariants) {
             self.populateLogisticEvaluationMetrics();
-            self.buildLogisticRegressionLegend();
           }
 
         self.scatterplotData = self.regression.getScatterplotData();
+        self.buildLogisticRegressionLegend();
+
 
       },
 
@@ -1392,8 +1391,12 @@
       },
 
       buildLogisticRegressionLegend() {
+
+        console.log("inside build logistic regression")
+        console.log("self.inverted", this.inverted);
+
         let self = this;
-        d3.select("#legend").remove();
+        d3.select("#legendSvg").remove();
         let w = 200, h = 50;
         let lScale = d3.scaleLinear()
           .range([0, w])
@@ -1412,15 +1415,16 @@
           .attr("transform", "translate(5,60)");
         if (!self.inverted) {
           key.append("rect")
-            .attr("width", lScale(self.maxThreshold - self.minThreshold))
+            .attr("width", lScale(self.maxThreshold) - lScale(self.minThreshold))
             .attr("x", lScale(self.minThreshold))
             .attr("height", h - 30)
             .style("fill", self.purple)
             .style("stroke", "black")
             .attr("transform", "translate(5,60)");
+
         } else if (self.inverted) {
           key.append("rect")
-            .attr("width", lScale(12 - self.maxThreshold))
+            .attr("width", lScale(self.maxPt) - lScale(self.maxThreshold))
             .attr("x", lScale(self.maxThreshold))
             .attr("height", h - 30)
             .style("fill", self.purple)
@@ -1433,9 +1437,18 @@
             .style("stroke", "black")
             .attr("transform", "translate(5,60)");
         }
+
+        let tickNum = 5;
+
+        if(self.binaryType && self.binaryType !== "Number" && self.binaryType !== "unknown"){
+          tickNum = 1;
+        }
+
         let lAxis = d3.axisBottom()
           .scale(lScale)
-          .ticks(12);
+          .ticks(tickNum)
+          .tickFormat(d => self.nFormatterLabel(d));
+  ;
         key.append("g")
           .attr("class", "y axis")
           .attr("transform", "translate(5,80)")
