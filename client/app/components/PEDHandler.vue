@@ -1913,6 +1913,7 @@
         }
       },
 
+
       buildHubPhenotypes: function () {
         let self = this;
         self.cachedPhenotypes = {};
@@ -1949,7 +1950,8 @@
               if (self.binaryType === "unknown") {
                 color = "none";
               } else if(self.binaryType !== 'Number' || (self.minThreshold === 0 && self.maxThreshold === 0) || (self.minThreshold === 1 && self.maxThreshold === 1)){
-                if(sens === 1){
+                console.log("sens", sens);
+                if((self.inverted && sens === 0) || (!self.inverted && sens === 1)){
                   color = self.purple;
                 }
                 else{
