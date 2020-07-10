@@ -2244,6 +2244,7 @@
           self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
           self.opts.dataset = io.readLinkage(self.pedTxt);
           self.populateSampleIds();
+          self.populateThresholds();
           self.buildGTMapFromHub();
         }
 
