@@ -133,6 +133,7 @@
         // let yRightAxis = d3.select("#yRight-axis")
         let xAxis = d3.select("#x-axis");
 
+        d3.select("#xlabel").remove();
 
         if(!this.noVariants) {
           xAxis.append("text")
@@ -145,7 +146,7 @@
           xAxis.append("text")
             .attr("class", "axis-label")
             .attr("id", "xlabel")
-            .attr("transform", "translate(100, 37)")
+            .attr("transform", "translate(150, 27)")
             .text("Genotype N/A");
         }
 
@@ -182,6 +183,7 @@
           xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
             .attr("x", 172)
             .attr("y", 5)
+            .attr("class", "gt-bar")
             .style("stroke", "black")
             .style("stroke-width", 1)
             .attr("fill", blue);
@@ -189,6 +191,8 @@
           xAxis.append("rect").attr("width", "5px").attr('height', "13px")
             .attr("x", 182)
             .attr("y", 5)
+            .attr("class", "gt-bar")
+
             .style("stroke", "black")
             .style("stroke-width", 1)
             .attr("fill", red);
@@ -198,6 +202,8 @@
           xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
             .attr("x", 277)
             .attr("y", 5)
+            .attr("class", "gt-bar")
+
             .style("stroke", "black")
             .style("stroke-width", 1)
             .attr("fill", red);
@@ -205,6 +211,8 @@
           xAxis.append("rect").attr("width", "5px").attr('height', "13px")
             .attr("x", 287)
             .attr("y", 5)
+            .attr("class", "gt-bar")
+
             .style("stroke", "black")
             .style("stroke-width", 1)
             .attr("fill", red);
@@ -212,6 +220,8 @@
           xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
             .attr("x", 62)
             .attr("y", 5)
+            .attr("class", "gt-bar")
+
             .style("stroke", "black")
             .style("stroke-width", 1)
             .attr("fill", blue);
@@ -219,10 +229,17 @@
           xAxis.append("rect").attr("width", "5px").attr('height', "13px")
             .attr("x", 73)
             .attr("y", 5)
+            .attr("class", "gt-bar")
+
             .style("stroke", "black")
             .style("stroke-width", 1)
             .attr("fill", blue);
 
+        }
+        else{
+          d3.selectAll(".gt-bar").remove();
+          xAxis
+            .call(d3.axisBottom(self.xScale).ticks(0))
         }
 
         let highlightCircle = function(d) {

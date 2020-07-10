@@ -678,7 +678,7 @@
           for(let j = 0; j < this.sampleIds.length; j++){
             let sampleId = self.sampleIds[j];
             if(self.variants[i].sample_ids.includes(self.sampleIds[j])){
-              gtMap[varText][sampleId] = "1/1";
+              gtMap[varText][sampleId] = "0/1";
             }
             else{
               gtMap[varText][sampleId] = "0/0";
@@ -2145,6 +2145,7 @@
               .attr("x", "-7")
               .attr("y", "25")
               .attr("opacity", opacity)
+              .attr("class", "gt-bar")
               .attr("fill", blue)
               .style("stroke", "black")
               .style("stroke-width", 1);
@@ -2154,6 +2155,7 @@
               .attr("x", "4")
               .attr("y", "25")
               .attr("opacity", opacity)
+              .attr("class", "gt-bar")
               .style("stroke", "black")
               .style("stroke-width", 1)
               .attr("fill", red);
@@ -2164,6 +2166,7 @@
               .attr("x", "-7")
               .attr("y", "25")
               .attr("opacity", opacity)
+              .attr("class", "gt-bar")
               .style("stroke", "black")
               .style("stroke-width", 1)
               .attr("fill", blue);
@@ -2173,6 +2176,7 @@
               .attr("x", "4")
               .attr("y", "25")
               .attr("opacity", opacity)
+              .attr("class", "gt-bar")
               .style("stroke", "black")
               .style("stroke-width", 1)
               .attr("fill", blue);
@@ -2183,6 +2187,7 @@
               .attr("x", "-7")
               .attr("y", "25")
               .attr("opacity", opacity)
+              .attr("class", "gt-bar")
               .style("stroke", "black")
               .style("stroke-width", 1)
               .attr("fill", red);
@@ -2192,10 +2197,15 @@
               .attr("x", "4")
               .attr("y", "25")
               .attr("opacity", opacity)
+              .attr("class", "gt-bar")
               .style("stroke", "black")
               .style("stroke-width", 1)
               .attr("fill", red);
           }
+        }
+        if(self.noVariants){
+          d3.selectAll(".gt-bars").remove();
+          d3.selectAll(".indi_details").remove();
         }
       }
     },
@@ -2306,7 +2316,11 @@
       selectedGenotype: function () {
         let self = this;
         if (typeof self.selectedGenotype === "undefined") {
+          self.noVariants = true;
+          self.drawGenotypeBars();
+          self.buildRegression();
         } else {
+          self.noVariants = false;
           self.buildGenotypes();
           self.buildRegression();
         }
