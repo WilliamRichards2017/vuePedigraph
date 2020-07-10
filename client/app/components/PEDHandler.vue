@@ -1936,7 +1936,7 @@
               console.log("sens", sens);
 
 
-              if (typeof sens === 'undefined' || sens === 'nan' || !sens) {
+              if (typeof sens === 'undefined' || sens === 'nan' || sens === null) {
                 self.opts.dataset[i].NA = true;
 
                 self.cachedNulls.push(id);
@@ -2321,6 +2321,7 @@
       },
 
       binaryType:function(){
+        console.log("this.binaryType in watcher", this.binaryType);
         if(this.binaryType != null && this.binaryType !== "Number" && this.binaryType !== "unknown"){
           this.regressionTypes = ["Logistic"];
           this.selectedRegression = "Logistic";
