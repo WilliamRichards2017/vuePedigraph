@@ -922,9 +922,6 @@
         //TODO - implement this
 
 
-        self.scatterplotData = self.regression.getScatterplotData();
-
-
         if(self.launchedFrom === "H"){
           self.buildGTMapFromHub();
         }
