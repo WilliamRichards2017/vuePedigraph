@@ -209,12 +209,16 @@ export default class Regression {
 
       if (self.rawPhenotypes.hasOwnProperty(key)) {
 
+        console.log("self.rawPhenotypes[key]", self.rawPhenotypes[key])
 
         let gt = self.rawGenotypes[key];
-        let pt = parseFloat(self.rawPhenotypes[key][this.ptIndex]);
+        let pt = null;
 
         if(this.ptIndex === -1) {
           pt = this.parseBinary(self.rawPhenotypes[key]);
+        }
+        else{
+          parseFloat(self.rawPhenotypes[key][this.ptIndex]);
         }
 
         if (pt > self.maxPt) {

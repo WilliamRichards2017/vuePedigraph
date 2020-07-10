@@ -687,6 +687,7 @@
         }
         // self.selectedGenotype = self.variants[0];
         self.genotypeMap = gtMap;
+        self.drawGenotypeBars();
         },
 
 
