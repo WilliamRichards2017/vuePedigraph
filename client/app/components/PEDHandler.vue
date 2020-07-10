@@ -1939,8 +1939,10 @@
               let scaledSens = -1;
               let opacity = 1;
 
+              console.log("sens", sens);
 
-              if (typeof sens === 'undefined' || sens === 'nan') {
+
+              if (typeof sens === 'undefined' || sens === 'nan' || !sens) {
                 self.opts.dataset[i].NA = true;
 
                 self.cachedNulls.push(id);
@@ -2009,6 +2011,11 @@
                   }
                 }
               }
+
+             if( self.opts.dataset[i].NA){
+               color = "white";
+             }
+
 
               self.opts.dataset[i].affected = aff;
               self.opts.dataset[i].col = color;
