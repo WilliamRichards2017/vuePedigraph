@@ -1129,9 +1129,6 @@
             self.populateLogisticEvaluationMetrics();
           }
 
-        self.scatterplotData = self.regression.getScatterplotData();
-        self.buildLogisticRegressionLegend();
-
 
         self.scatterplotData = self.regression.getScatterplotData();
         self.noVariants = self.regression.getNoVariants();
@@ -1719,7 +1716,7 @@
                   color = self.purple;
                 }
               } else if (self.inverted) {
-                if (sens <= self.minThreshold || sens >= self.maxThreshold) {
+                if (sens < self.minThreshold || sens > self.maxThreshold)  {
                   aff = 2;
                   color = self.purple;
                 }
@@ -1969,7 +1966,8 @@
                     color = self.purple;
                   }
                 } else if (self.inverted) {
-                  if (sens <= self.minThreshold || sens >= self.maxThreshold) {
+                  console.log("sens in inverted log", sens);
+                  if (sens < self.minThreshold || sens > self.maxThreshold) {
                     aff = 2;
                     color = self.purple;
                   }
