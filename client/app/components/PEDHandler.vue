@@ -1143,12 +1143,15 @@
         let self = this;
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
+        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+        self.opts.dataset = io.readLinkage(self.pedTxt);
 
 
         if (self.launchedFrom === "H" && self.isolateFamily) {
           self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
           self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
           self.opts = self.addCachedValuesToOpts(self.opts);
+          self.opts = ptree.build(self.opts);
         }
         else{
           self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
@@ -1926,7 +1929,7 @@
               let scaledSens = -1;
               let opacity = 1;
 
-              if (typeof sens === 'undefined' || sens === 'nan' || !sens) {
+              if (typeof sens === 'undefined' || sens === 'nan' || sens === null) {
                 self.opts.dataset[i].NA = true;
                 self.cachedNulls.push(id);
               }
@@ -1934,6 +1937,9 @@
                 let index = self.cachedNulls.indexOf(id);
                 self.cachedNulls = self.cachedNulls.splice(index, 1)
               }
+
+
+              console.log("sens after parse", sens);
 
               self.opts.dataset[i].sens = sens;
 
@@ -1949,6 +1955,7 @@
                 }
                 else{
                   color = "white";
+                  console.log("color = white in build phenotypes");
                 }
               }else if (self.selectedRegression === "Logistic") {
 
@@ -2002,6 +2009,7 @@
                color = "white";
              }
 
+             console.log("final color", color);
 
               self.opts.dataset[i].affected = aff;
               self.opts.dataset[i].col = color;
@@ -2278,9 +2286,12 @@
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
         if (self.isolateFamily) {
+          self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
+          self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
+          self.opts = self.addCachedValuesToOpts(self.opts);
+          self.opts = ptree.build(self.opts);
           self.drawGenotypeBars();
           self.populateSampleIds();
-          self.buildPhenotypes();
           self.buildRegression();
           $('#pedigree').on('nodeClick', self.onNodeClick);
           $('#pedigree').on('bgClick', self.onBGClick);
