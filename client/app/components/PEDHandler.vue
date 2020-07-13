@@ -1035,20 +1035,6 @@
 
         let sliderRange = null;
 
-
-        console.log("self.minPT, self.maxPt", self.minPt, self.maxPt);
-        console.log("self.selectedRegression", self.selectedRegression);
-
-
-
-        // if(self.binaryType && self.binaryType !== "Number" && self.binaryType !== "unknown" || self.maxPt === -Infinity){
-        //   self.minPt = 0;
-        //   self.maxPt =  1;
-        // }
-        //
-
-
-
         if (self.selectedRegression === "Linear") {
           self.minThreshold = self.minPt;
           self.maxThreshold = self.maxPt;
@@ -1094,7 +1080,6 @@
 
 
         if(self.binaryType === "Number" || self.binaryType === "unknown") {
-          console.log("updating slider with self.minPt, self.maxPt / 2",self.minPt, self.maxPt / 2)
           d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
             .call(sliderRange)
             .append("text").text(self.selectedPhenotype)
@@ -1226,7 +1211,10 @@
         self.highlightFamily();
       },
 
-      onBGClick: function (e, swag) {
+      onBGClick: function () {
+        this.isolateFamily = false;
+        console.log("onBGClick triggered");
+        console.log("this.isolateFamily", this.isolateFamily);
         this.removeHighlight();
       },
 
@@ -1253,7 +1241,7 @@
             opts.dataset[i].col = col;
             opts.dataset[i].opacity = opacity;
           }
-          if (self.cachedNulls.includes(id)) {
+          if (self.cachedNulls.includes(id.toString())) {
             opts.dataset[i].NA = true;
           }
         }
@@ -1391,9 +1379,6 @@
       },
 
       buildLogisticRegressionLegend() {
-
-        console.log("inside build logistic regression")
-        console.log("self.inverted", this.inverted);
 
         let self = this;
         d3.select("#legendSvg").remove();
@@ -1650,13 +1635,10 @@
                 }
               }));
 
-              console.log("self.minPT in promise phenotype", self.minPt);
-
                 self.minThreshold = self.minPt;
 
 
 
-                console.log("keys after mapping", keys);
               self.maxPt = Math.max.apply(null, keys.map(function (x) {
                 if (isNaN(pts[x])) {
                   return 1
@@ -1923,7 +1905,6 @@
             self.ptMap = pts;
 
 
-
             for (let i = 0; i < self.opts.dataset.length; i++) {
               let id = self.opts.dataset[i].name;
               let sens = "nan";
@@ -1934,13 +1915,13 @@
               let scaledSens = -1;
               let opacity = 1;
 
-              console.log("sens", sens);
-
-
-              if (typeof sens === 'undefined' || sens === 'nan' || sens === null) {
+              if (typeof sens === 'undefined' || sens === 'nan' || !sens) {
                 self.opts.dataset[i].NA = true;
-
                 self.cachedNulls.push(id);
+              }
+              else{
+                let index = self.cachedNulls.indexOf(id);
+                self.cachedNulls = self.cachedNulls.splice(index, 1)
               }
 
               self.opts.dataset[i].sens = sens;
@@ -1952,7 +1933,6 @@
               if (self.binaryType === "unknown") {
                 color = "none";
               } else if(self.binaryType !== 'Number' || (self.minThreshold === 0 && self.maxThreshold === 0) || (self.minThreshold === 1 && self.maxThreshold === 1)){
-                console.log("sens", sens);
                 if((self.inverted && sens === 0) || (!self.inverted && sens === 1)){
                   color = self.purple;
                 }
@@ -1967,7 +1947,6 @@
                     color = self.purple;
                   }
                 } else if (self.inverted) {
-                  console.log("sens in inverted log", sens);
                   if (sens < self.minThreshold || sens > self.maxThreshold) {
                     aff = 2;
                     color = self.purple;
@@ -2282,6 +2261,8 @@
       },
 
       isolateFamily: function () {
+
+        console.log("isolate family in watcher", this.isolateFamily);
         let self = this;
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
@@ -2293,10 +2274,17 @@
           self.drawGenotypeBars();
           self.populateSampleIds();
           self.buildRegression();
+          $('#pedigree').on('nodeClick', self.onNodeClick);
+          $('#pedigree').on('bgClick', self.onBGClick);
         } else {
           self.removeHighlight();
           $('#pedigree').on('nodeClick', self.onNodeClick);
           $('#pedigree').on('bgClick', self.onBGClick);
+
+
+          self.populateSampleIds();
+          self.buildPhenotypes();
+          self.buildRegression();
         }
         $('#pedigree').on('nodeClick', self.onNodeClick);
       },
@@ -2336,7 +2324,6 @@
       },
 
       binaryType:function(){
-        console.log("this.binaryType in watcher", this.binaryType);
         if(this.binaryType != null && this.binaryType !== "Number" && this.binaryType !== "unknown"){
           this.regressionTypes = ["Logistic"];
           this.selectedRegression = "Logistic";

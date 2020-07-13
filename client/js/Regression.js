@@ -209,8 +209,6 @@ export default class Regression {
 
       if (self.rawPhenotypes.hasOwnProperty(key)) {
 
-        console.log("self.rawPhenotypes[key]", self.rawPhenotypes[key])
-
         let gt = self.rawGenotypes[key];
         let pt = null;
 
