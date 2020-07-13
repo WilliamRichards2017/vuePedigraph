@@ -1143,8 +1143,19 @@
         let self = this;
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
-        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
-        self.opts.dataset = io.readLinkage(self.pedTxt);
+
+
+        if (self.launchedFrom === "H" && self.isolateFamily) {
+          self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
+          self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
+          self.opts = self.addCachedValuesToOpts(self.opts);
+        }
+        else{
+          self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+          self.opts.dataset = io.readLinkage(self.pedTxt);
+        }
+
+
         if (self.launchedFrom === 'D') {
           self.buildDemoPhenotypes();
         } else if (self.launchedFrom === 'H') {
@@ -2267,12 +2278,9 @@
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
         if (self.isolateFamily) {
-          self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
-          self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
-          self.opts = self.addCachedValuesToOpts(self.opts);
-          self.opts = ptree.build(self.opts);
           self.drawGenotypeBars();
           self.populateSampleIds();
+          self.buildPhenotypes();
           self.buildRegression();
           $('#pedigree').on('nodeClick', self.onNodeClick);
           $('#pedigree').on('bgClick', self.onBGClick);
