@@ -42,6 +42,7 @@
 
       <v-select :items="parsedVariants"
                 id="selectGenotype" label="Select Genotype" v-model="selectedGenotype" clearable
+                max-width="250"
       ></v-select>
 
 
@@ -443,9 +444,7 @@
               }
 
               self.phenotypes.sort();
-              setTimeout(function () {
-                self.selectedPhenotype = self.phenotypes[0];
-              }, 4000);
+               self.selectedPhenotype = self.phenotypes[0];
 
             });
 
@@ -685,9 +684,9 @@
             }
           }
         }
-        // self.selectedGenotype = self.variants[0];
         self.genotypeMap = gtMap;
         self.drawGenotypeBars();
+
         },
 
 
@@ -1210,8 +1209,7 @@
 
         setTimeout(function () {
           self.selectedGenotype = self.parsedVariants[0];
-        }, 4000);
-
+        }, 2000);
       },
       resetValues: function () {
         let self = this;
@@ -1227,8 +1225,6 @@
 
       onBGClick: function () {
         this.isolateFamily = false;
-        console.log("onBGClick triggered");
-        console.log("this.isolateFamily", this.isolateFamily);
         this.removeHighlight();
       },
 
@@ -1938,9 +1934,6 @@
                 self.cachedNulls = self.cachedNulls.splice(index, 1)
               }
 
-
-              console.log("sens after parse", sens);
-
               self.opts.dataset[i].sens = sens;
 
               let aff = 0;
@@ -1955,7 +1948,6 @@
                 }
                 else{
                   color = "white";
-                  console.log("color = white in build phenotypes");
                 }
               }else if (self.selectedRegression === "Logistic") {
 
@@ -2008,8 +2000,6 @@
              if( self.opts.dataset[i].NA){
                color = "white";
              }
-
-             console.log("final color", color);
 
               self.opts.dataset[i].affected = aff;
               self.opts.dataset[i].col = color;
@@ -2280,8 +2270,6 @@
       },
 
       isolateFamily: function () {
-
-        console.log("isolate family in watcher", this.isolateFamily);
         let self = this;
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
@@ -2419,6 +2407,17 @@
 
   th:empty {
     visibility: hidden;
+  }
+
+
+  .v-select__selection--comma{
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .v-input__control{
+    max-width: 250px;
+
   }
 
   .tableTitle {
