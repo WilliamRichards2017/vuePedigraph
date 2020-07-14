@@ -686,8 +686,7 @@
         }
         self.genotypeMap = gtMap;
         self.drawGenotypeBars();
-
-        },
+      },
 
 
       buildPedFromTxt(txt) {
@@ -1142,9 +1141,6 @@
         let self = this;
         $('#pedigree').remove();
         $('#pedigrees').append($("<div id='pedigree'></div>"));
-        self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
-        self.opts.dataset = io.readLinkage(self.pedTxt);
-
 
         if (self.launchedFrom === "H" && self.isolateFamily) {
           self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
@@ -1181,6 +1177,8 @@
         self.opts.dataset = io.readLinkage(self.pedTxt);
         if(self.launchedFrom === "H"){
           self.opts.dataset = self.addHubGenotypesToOpts(self.opts);
+          self.buildHubPhenotypes();
+
 
         }
         else{
@@ -1225,6 +1223,8 @@
 
       onBGClick: function () {
         this.isolateFamily = false;
+          this.highlightedSampleIDs = this.sampleIds;
+          // this.buildPhenotypes();
         this.removeHighlight();
       },
 
@@ -1925,13 +1925,16 @@
               let scaledSens = -1;
               let opacity = 1;
 
+              console.log("sens in build hub phenotypes", sens);
+
               if (typeof sens === 'undefined' || sens === 'nan' || sens === null) {
+                console.log("sens = null", sens);
                 self.opts.dataset[i].NA = true;
                 self.cachedNulls.push(id);
               }
               else{
                 let index = self.cachedNulls.indexOf(id);
-                self.cachedNulls = self.cachedNulls.splice(index, 1)
+                // self.cachedNulls = self.cachedNulls.splice(index, 1)
               }
 
               self.opts.dataset[i].sens = sens;
@@ -2278,8 +2281,9 @@
           self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
-          self.drawGenotypeBars();
-          self.populateSampleIds();
+          // self.drawGenotypeBars();
+          // self.populateSampleIds();
+          self.buildPhenotypes();
           self.buildRegression();
           $('#pedigree').on('nodeClick', self.onNodeClick);
           $('#pedigree').on('bgClick', self.onBGClick);
@@ -2287,8 +2291,6 @@
           self.removeHighlight();
           $('#pedigree').on('nodeClick', self.onNodeClick);
           $('#pedigree').on('bgClick', self.onBGClick);
-
-
           self.populateSampleIds();
           self.buildPhenotypes();
           self.buildRegression();
@@ -2318,6 +2320,8 @@
           self.noVariants = false;
           self.buildGenotypes();
           self.buildRegression();
+          self.buildPhenotypes();
+
         }
       },
 
