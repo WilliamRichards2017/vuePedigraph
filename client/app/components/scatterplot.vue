@@ -75,11 +75,24 @@
       nFormatterLabel(num) {
 
         let digits = 2;
+
         if(this.binaryType === "Yes"){
           if(num == 1){
             return "Yes"
           }
           return "No";
+        }
+        else if(this.binaryType === "Positive"){
+          if(num == 1){
+            return "Positive"
+          }
+          return "Negative";
+        }
+        else if(this.binaryType === "Affected"){
+          if(num == 1){
+            return "Affected"
+          }
+          return "Unaffected";
         }
 
 

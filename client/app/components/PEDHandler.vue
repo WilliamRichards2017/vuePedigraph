@@ -985,6 +985,19 @@
           }
           return "No";
         }
+        else if(this.binaryType === "Positive"){
+          if(num == 1){
+            return "Positive"
+          }
+          return "Negative";
+        }
+        else if(this.binaryType === "Affected"){
+          if(num == 1){
+            return "Affected"
+          }
+          return "Unaffected";
+        }
+
 
 
         var si = [
@@ -1925,8 +1938,6 @@
               let scaledSens = -1;
               let opacity = 1;
 
-              console.log("sens in build hub phenotypes", sens);
-
               if (typeof sens === 'undefined' || sens === 'nan' || sens === null) {
                 console.log("sens = null", sens);
                 self.opts.dataset[i].NA = true;
@@ -1934,7 +1945,7 @@
               }
               else{
                 let index = self.cachedNulls.indexOf(id);
-                // self.cachedNulls = self.cachedNulls.splice(index, 1)
+                self.cachedNulls = self.cachedNulls.splice(index, 1)
               }
 
               self.opts.dataset[i].sens = sens;
