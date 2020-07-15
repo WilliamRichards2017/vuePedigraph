@@ -975,6 +975,18 @@
         self.buildPTLegend();
       },
 
+      formatTextAnchor(num){
+
+        if(this.binaryType !== "Yes" && this.binaryType !== "unknown"){
+          if(num == 1){
+            return "end"
+          }
+          return "start";
+        }
+        return "end";
+
+      },
+
       nFormatterLabel(num) {
 
         let digits = 2;
@@ -987,7 +999,7 @@
         }
         else if(this.binaryType === "Positive"){
           if(num == 1){
-            return "Positive"
+            return "PositivPositive"
           }
           return "Negative";
         }
@@ -1130,6 +1142,9 @@
         self.scatterplotData = self.regression.getScatterplotData();
         self.noVariants = self.regression.getNoVariants();
         self.linePoints = self.regression.getLinePoints();
+
+        self.buildPTLegend();
+
 
 
       },
@@ -1407,17 +1422,18 @@
         d3.select("#legendSvg").remove();
         let w = 200, h = 50;
         let lScale = d3.scaleLinear()
-          .range([0, w])
+          .range([20, w-20 ])
           .domain([self.minPt, self.maxPt]);
         let key = d3.select("#legend")
           .append('svg')
           .attr("id", "legendSvg")
           .append("svg")
-          .attr("width", 220)
-          .attr("height", 100);
+          .attr("width", 270)
+          .attr("height", 100)
         key.append("rect")
-          .attr("width", w)
+          .attr("width", w -40)
           .attr("height", h - 30)
+          .attr("x", 20)
           .style("fill", "white")
           .style("stroke", "black")
           .attr("transform", "translate(5,60)");
@@ -1456,21 +1472,22 @@
           .scale(lScale)
           .ticks(tickNum)
           .tickFormat(d => self.nFormatterLabel(d));
-  ;
         key.append("g")
           .attr("class", "y axis")
           .attr("transform", "translate(5,80)")
           .call(lAxis)
-          .attr("dy", ".71em")
-          .style("text-anchor", "end");
-        if (!self.inverted) {
-          key.append("text")
-            .attr("transform", "translate(20,50)")
-            .text("Affected <----> Un-affected");
-        } else if (self.inverted) {
-          key.append("text")
-            .attr("transform", "translate(20,50)")
-            .text("Un-affected <----> Affected");
+          .attr("dy", ".71em");
+
+        if(self.binaryType === "Number") {
+          if (!self.inverted) {
+            key.append("text")
+              .attr("transform", "translate(20,50)")
+              .text("Affected <----> Un-affected");
+          } else if (self.inverted) {
+            key.append("text")
+              .attr("transform", "translate(20,50)")
+              .text("Un-affected <----> Affected");
+          }
         }
       },
 
