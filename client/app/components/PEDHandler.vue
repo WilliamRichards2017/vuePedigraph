@@ -1182,12 +1182,13 @@
         if (self.launchedFrom === "H" && self.isolateFamily) {
           self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
           self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
-          self.opts = self.addCachedValuesToOpts(self.opts);
-          self.opts = ptree.build(self.opts);
+          // self.opts = self.addCachedValuesToOpts(self.opts);
+          // self.opts = ptree.build(self.opts);
         }
         else{
           self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
           self.opts.dataset = io.readLinkage(self.pedTxt);
+
         }
 
 
@@ -2306,28 +2307,35 @@
 
       isolateFamily: function () {
         let self = this;
-        $('#pedigree').remove();
-        $('#pedigrees').append($("<div id='pedigree'></div>"));
-        if (self.isolateFamily) {
-          self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
-          self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
-          self.opts = self.addCachedValuesToOpts(self.opts);
-          self.opts = ptree.build(self.opts);
-          // self.drawGenotypeBars();
-          // self.populateSampleIds();
-          self.buildPhenotypes();
-          self.buildRegression();
+
+        console.log("highlighted sample ids", self.highlightedSampleIDs);
+
+        if(self.highlightedSampleIDs.length > 0) {
+
+          $('#pedigree').remove();
+          $('#pedigrees').append($("<div id='pedigree'></div>"));
+          if (self.isolateFamily) {
+            self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
+            self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
+            self.opts = self.addCachedValuesToOpts(self.opts);
+            self.opts = ptree.build(self.opts);
+            // self.drawGenotypeBars();
+            // self.populateSampleIds();
+            self.buildPhenotypes();
+            self.buildRegression();
+            $('#pedigree').on('nodeClick', self.onNodeClick);
+            $('#pedigree').on('bgClick', self.onBGClick);
+          } else {
+            self.removeHighlight();
+            $('#pedigree').on('nodeClick', self.onNodeClick);
+            $('#pedigree').on('bgClick', self.onBGClick);
+            self.populateSampleIds();
+            self.buildPhenotypes();
+            self.buildRegression();
+            self.highlightedSampleIDs = [];
+          }
           $('#pedigree').on('nodeClick', self.onNodeClick);
-          $('#pedigree').on('bgClick', self.onBGClick);
-        } else {
-          self.removeHighlight();
-          $('#pedigree').on('nodeClick', self.onNodeClick);
-          $('#pedigree').on('bgClick', self.onBGClick);
-          self.populateSampleIds();
-          self.buildPhenotypes();
-          self.buildRegression();
         }
-        $('#pedigree').on('nodeClick', self.onNodeClick);
       },
       selectedPhenotype: function () {
         let self = this;
