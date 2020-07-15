@@ -1054,7 +1054,10 @@
       buildSlider() {
         let self = this;
 
+        setTimeout(function(){
+
         d3.select("#slider-axisRange").remove();
+        console.log("slider removed");
 
         let sliderRange = null;
 
@@ -1103,6 +1106,7 @@
 
 
         if(self.binaryType === "Number" || self.binaryType === "unknown") {
+          console.log("adding scatterplot");
           d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
             .call(sliderRange)
             .append("text").text(self.selectedPhenotype)
@@ -1111,6 +1115,11 @@
             .attr("y", -50)
             .attr("transform", "rotate(-90)");
         }
+        else{
+          d3.select("#slider-axisRange").remove();
+        }
+
+        });
       },
 
       buildLogisticRegression() {
@@ -2246,17 +2255,12 @@
       minThreshold: function () {
         let self = this;
           self.buildPhenotypes();
-          if(self.launchedFrom !== "H") {
-            self.buildRegression();
-          }
+
       },
 
       maxThreshold: function () {
         let self = this
           self.buildPhenotypes();
-        if(self.launchedFrom !== "H") {
-          self.buildRegression();
-        }
       },
 
       selectedFamily: function () {
