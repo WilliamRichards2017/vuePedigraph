@@ -164,7 +164,6 @@ export default class Regression {
     self.projectF1 = 2 * ((self.projectPrecision * self.projectRecall) / (self.projectPrecision + self.projectRecall));
 
 
-    // console.log("family log cliassification metrics");
 
 
   }
