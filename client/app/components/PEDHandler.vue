@@ -1950,111 +1950,116 @@
         let self = this;
         self.cachedPhenotypes = {};
 
-        self.promisePhenotypes()
-          .then((pts) => {
-            self.ptMap = pts;
+        if(self.ptMap){
+          let pts = self.ptMap;
+          for (let i = 0; i < self.opts.dataset.length; i++) {
+            let id = self.opts.dataset[i].name;
+            let sens = "nan";
+            if(pts.hasOwnProperty(id)) {
+              let pt = pts[id];
+              sens = self.parseBinary(pt);
+            }
+            let scaledSens = -1;
+            let opacity = 1;
 
-
-            for (let i = 0; i < self.opts.dataset.length; i++) {
-              let id = self.opts.dataset[i].name;
-              let sens = "nan";
-              if(pts.hasOwnProperty(id)) {
-                let pt = pts[id];
-                sens = self.parseBinary(pt);
-              }
-              let scaledSens = -1;
-              let opacity = 1;
-
-              if (typeof sens === 'undefined' || sens === 'nan' || sens === null) {
-                console.log("sens = null", sens);
-                self.opts.dataset[i].NA = true;
-                self.cachedNulls.push(id);
-              }
-              else{
-                let index = self.cachedNulls.indexOf(id);
-                self.cachedNulls = self.cachedNulls.splice(index, 1)
-              }
-
-              self.opts.dataset[i].sens = sens;
-
-              let aff = 0;
-
-              let color = "white";
-
-              if (self.binaryType === "unknown") {
-                color = "none";
-              } else if(self.binaryType !== 'Number' || (self.minThreshold === 0 && self.maxThreshold === 0) || (self.minThreshold === 1 && self.maxThreshold === 1)){
-                if((self.inverted && sens === 0) || (!self.inverted && sens === 1)){
-                  color = self.purple;
-                }
-                else{
-                  color = "white";
-                }
-              }else if (self.selectedRegression === "Logistic") {
-
-                if (!self.inverted) {
-                  if (sens >= self.minThreshold && sens <= self.maxThreshold) {
-                    aff = 2;
-                    color = self.purple;
-                  }
-                } else if (self.inverted) {
-                  if (sens < self.minThreshold || sens > self.maxThreshold) {
-                    aff = 2;
-                    color = self.purple;
-                  }
-                }
-
-              } else if (self.selectedRegression === "Linear") {
-                if (!this.inverted) {
-                  if (sens < self.minThreshold) {
-                    scaledSens = -1;
-                    opacity = 0.4;
-                  } else if (sens > self.maxThreshold) {
-                    scaledSens = -1;
-                    opacity = 0.4;
-                  } else {
-                    scaledSens = (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
-                  }
-                  if (scaledSens === -1) {
-                    color = "gray";
-                  } else {
-                    color = d3.interpolateRgb("white", self.purple)(scaledSens);
-                  }
-                } else if (this.inverted) {
-                  if (sens < self.minThreshold) {
-                    scaledSens = -1;
-                    opacity = 0.4;
-                  } else if (sens > self.maxThreshold) {
-                    scaledSens = -1;
-                    opacity = 0.4;
-                  } else {
-                    scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
-                  }
-                  if (scaledSens === -1) {
-                    color = "gray";
-                  } else {
-                    color = d3.interpolateRgb("white", self.purple)(scaledSens);
-                  }
-                }
-              }
-
-             if( self.opts.dataset[i].NA){
-               color = "white";
-             }
-
-              self.opts.dataset[i].affected = aff;
-              self.opts.dataset[i].col = color;
-              self.opts.dataset[i].opac = opacity;
-              self.cachedPhenotypes[id] = aff;
-              self.cachedColors[id] = color;
-              self.cachedOpacity[id] = opacity;
+            if (typeof sens === 'undefined' || sens === 'nan' || sens === null) {
+              console.log("sens = null", sens);
+              self.opts.dataset[i].NA = true;
+              self.cachedNulls.push(id);
+            }
+            else{
+              let index = self.cachedNulls.indexOf(id);
+              self.cachedNulls = self.cachedNulls.splice(index, 1)
             }
 
-            self.opts = self.addCachedValuesToOpts(self.opts);
-            self.opts = ptree.build(self.opts);
-            self.buildRegression();
-          })
+            self.opts.dataset[i].sens = sens;
 
+            let aff = 0;
+
+            let color = "white";
+
+            if (self.binaryType === "unknown") {
+              color = "none";
+            } else if(self.binaryType !== 'Number' || (self.minThreshold === 0 && self.maxThreshold === 0) || (self.minThreshold === 1 && self.maxThreshold === 1)){
+              if((self.inverted && sens === 0) || (!self.inverted && sens === 1)){
+                color = self.purple;
+              }
+              else{
+                color = "white";
+              }
+            }else if (self.selectedRegression === "Logistic") {
+
+              if (!self.inverted) {
+                if (sens >= self.minThreshold && sens <= self.maxThreshold) {
+                  aff = 2;
+                  color = self.purple;
+                }
+              } else if (self.inverted) {
+                if (sens < self.minThreshold || sens > self.maxThreshold) {
+                  aff = 2;
+                  color = self.purple;
+                }
+              }
+
+            } else if (self.selectedRegression === "Linear") {
+              if (!this.inverted) {
+                if (sens < self.minThreshold) {
+                  scaledSens = -1;
+                  opacity = 0.4;
+                } else if (sens > self.maxThreshold) {
+                  scaledSens = -1;
+                  opacity = 0.4;
+                } else {
+                  scaledSens = (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
+                }
+                if (scaledSens === -1) {
+                  color = "gray";
+                } else {
+                  color = d3.interpolateRgb("white", self.purple)(scaledSens);
+                }
+              } else if (this.inverted) {
+                if (sens < self.minThreshold) {
+                  scaledSens = -1;
+                  opacity = 0.4;
+                } else if (sens > self.maxThreshold) {
+                  scaledSens = -1;
+                  opacity = 0.4;
+                } else {
+                  scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
+                }
+                if (scaledSens === -1) {
+                  color = "gray";
+                } else {
+                  color = d3.interpolateRgb("white", self.purple)(scaledSens);
+                }
+              }
+            }
+
+            if( self.opts.dataset[i].NA){
+              color = "white";
+            }
+
+            self.opts.dataset[i].affected = aff;
+            self.opts.dataset[i].col = color;
+            self.opts.dataset[i].opac = opacity;
+            self.cachedPhenotypes[id] = aff;
+            self.cachedColors[id] = color;
+            self.cachedOpacity[id] = opacity;
+          }
+
+          self.opts = self.addCachedValuesToOpts(self.opts);
+          self.opts = ptree.build(self.opts);
+          self.buildRegression();
+        }
+        else {
+
+          self.promisePhenotypes()
+            .then((pts) => {
+              self.ptMap = pts;
+              self.buildHubPhenotypes();
+            })
+
+        }
 
       },
       promisePhenotypes: function () {
@@ -2340,8 +2345,14 @@
       selectedPhenotype: function () {
         let self = this;
         // self.populateSampleIds();
+
+        if(self.launchedFrom === "H"){
+          self.ptMap = null;
+        }
+
         self.populateThresholds();
         self.buildPhenotypes();
+
         //
         //
         // self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
