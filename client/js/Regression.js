@@ -198,7 +198,7 @@ export default class Regression {
         if (this.ptIndex === -1) {
           pt = this.parseBinary(self.rawPhenotypes[key]);
         } else {
-          parseFloat(self.rawPhenotypes[key][this.ptIndex]);
+          pt = parseFloat(self.rawPhenotypes[key][this.ptIndex]);
         }
 
         if (pt > self.maxPt) {
@@ -586,9 +586,6 @@ export default class Regression {
     let self = this;
 
     let jDs = [];
-
-    console.log("self.binaryType", self.binaryType);
-
 
     if (self.binaryType === "Number") {
       jDs = self.linearJitter(self.data);
