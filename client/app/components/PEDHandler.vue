@@ -2386,7 +2386,7 @@
       },
 
       binaryType:function(){
-        if(this.binaryType != null && this.binaryType !== "Number" && this.binaryType !== "unknown"){
+        if(this.binaryType != null && this.binaryType !== "Number"){
           this.regressionTypes = ["Logistic"];
           this.selectedRegression = "Logistic";
         }

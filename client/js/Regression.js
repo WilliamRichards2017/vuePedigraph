@@ -799,7 +799,6 @@ export default class Regression {
     } else if (sens === 'Unaffected' || sens === 'unaffected') {
       return 0;
     } else {
-      this.binaryType = 'unknown';
       return null;
     }
   }
