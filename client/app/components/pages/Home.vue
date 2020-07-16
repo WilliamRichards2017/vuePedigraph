@@ -134,7 +134,7 @@
 
       <PEDHandler
       v-if="launchedFrom === 'H' && typeof pedTxt === 'string' && metrics.length > 0"
-      :txt="pedTxt" :launchedFrom="launchedFrom" :phenotypesProp="phenotypes" :metrics="metrics" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants" :family_id="familyId" :ptIdMap="ptNameToIdMap"
+      :txt="pedTxt" :launchedFrom="launchedFrom" :phenotypesProp="phenotypes" :metrics="metrics" :sample_id="sample_id" :project_id="project_id" :access_token="access_token" :token_type="token_type" :expires_in="expires_in" :is_pedigree="is_pedigree" :source="source" :variants="variants" :family_id="familyId" :ptIdMap="ptNameToIdMap" :all-ids="allIds"
   />
 
     <PEDHandler
@@ -201,6 +201,7 @@
       phenotypes: null,
       variants: null,
       ptNameToIdMap: null,
+      allIds: null,
 
       demoPhenotypes: ["PTC Sensitivity"],
       demoVariants: ["7:141972755_C/T", "14:93388386_G/A"],
@@ -329,14 +330,12 @@
     getProjectSamples: function(){
       let self = this;
       let samples = [];
-      self.familySamples = [];
+      self.allIds = [];
       self.hubTxt.promiseGetProjectSamples()
         .then((data) => {
           samples = data.data;
           for(let i = 0; i < samples.length; i++){
-            if(samples[i].pedigree["kindred_id"] === self.familyId){
-              self.familySamples.push(samples[i].id);
-            }
+              self.allIds.push(samples[i].id);
           }
         })
     },

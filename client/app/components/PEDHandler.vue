@@ -114,7 +114,7 @@
                     <td>{{familyRecall}}</td>
                     <td>{{familyF1}}</td>
                   </tr>
-                  <tr v-if="launchedFrom !== 'H'">
+                  <tr v-if="!tooBig">
                     <th>Project</th>
                     <td>{{projectAccuracy}}</td>
                     <td>{{projectPrecision}}</td>
@@ -124,7 +124,7 @@
                   <tr v-else>
                     <th>Project</th>
                     <td>Project too large for analysis</td>
-                    <td>N/A</td>
+                    <td> > 100 samples </td>
                     <td>N/A</td>
                     <td>N/A</td>
                   </tr>
@@ -154,7 +154,7 @@
                       </td>
                     </tr>
 
-                    <tr class="val" id="projectRow" v-if="launchedFrom !== 'H'">
+                    <tr class="val" id="projectRow" v-if="!tooBig">
                       <th class="val"> Project</th>
                       <td id="projectR"> {{projectCorrelation}}</td>
                       <td class="val">{{(projectCorrelation**2).toFixed(4)}}</td>
@@ -166,7 +166,7 @@
                     <tr v-else>
                       <th>Project</th>
                       <td>Project too large for analysis</td>
-                      <td>N/A</td>
+                      <td> > 100 samples in project</td>
                       <td>N/A</td>
                       <td>N/A</td>
                     </tr>
@@ -234,6 +234,7 @@
       phenotypeText: null,
       phenotypesProp: null,
       ptIdMap: null,
+      allIds: null,
     },
     components: {
       navigation,
@@ -340,6 +341,7 @@
         familyF1: -1,
 
         ptMap: null,
+        tooBig: false,
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         binaryVals: ['Affected', 'affected', 'Unaffected', 'unaffected', 'Yes', 'yes', 'No', 'no', "Positive", 'positive', "Pos", 'pos', 'Negative', 'negavite', 'Neg', 'neg'],
@@ -373,6 +375,10 @@
 
     mounted() {
       let self = this;
+
+      if(self.allIds.length > 99){
+        self.tooBig = true;
+      }
 
 
       self.tableHeader = [
@@ -683,14 +689,13 @@
         let self = this;
         let gtMap = {};
 
-
         for(let i = 0; i < self.variants.length; i++){
           let varText = self.variants[i].chr + ":" + self.variants[i].pos + "_" + self.variants[i].ref + "/" + self.variants[i].alt;
           let gts = {};
           gtMap[varText] = gts;
-          for(let j = 0; j < this.sampleIds.length; j++){
-            let sampleId = self.sampleIds[j];
-            if(self.variants[i].sample_ids.includes(self.sampleIds[j])){
+          for(let j = 0; j < self.allIds.length; j++){
+            let sampleId = self.allIds[j];
+            if(self.variants[i].sample_ids.includes(self.allIds[j])){
               gtMap[varText][sampleId] = "0/1";
             }
             else{
@@ -1659,7 +1664,6 @@
             self.maxThreshold = 12;
           } else if (self.selectedPhenotype === "Androstenone Sensitivity") {
             self.minPt = 0;
-            self.maxPt = 12;
             self.minThreshold = 0;
             self.maxThreshold = 12;
           } else if (self.selectedPhenotype === "Asparagus Sensitivity") {
@@ -1672,7 +1676,7 @@
           else if(self.launchedFrom === "H") {
 
 
-          self.promisePhenotypes()
+          self.promisePhenotypesFamily()
             .then((pts) => {
               let keys = Object.keys(pts);
 
@@ -2081,8 +2085,42 @@
 
       },
       promisePhenotypes: function () {
+        let self = this;
+
         return new Promise((resolve, reject) => {
-          let self = this;
+
+          if(self.tooBig){
+            self.allIds = self.sampleIds
+          }
+          let pts = {};
+          let promises = [];
+          if (typeof self.selectedPhenotype === "object") {
+            // self.selectedPhenotype = "affected_status";
+          }
+
+          for (let i = 0; i < self.allIds.length; i++) {
+            let metP = self.hubSession.promiseGetMetricsForSample(self.project_id, self.allIds[i])
+              .then((data) => {
+                let pt = self.ptNameToId(self.selectedPhenotype);
+                let samplePhenotype = data.metrics[pt];
+                let sampleId = self.allIds[i];
+                pts[sampleId] = samplePhenotype;
+              });
+            promises.push(metP);
+          }
+          Promise.all(promises)
+            .then(() => {
+              resolve(pts)
+            }).catch((e) => {
+            console.log("error", e);
+            reject(e);
+          });
+        })
+      },
+      promisePhenotypesFamily: function () {
+        let self = this;
+
+        return new Promise((resolve, reject) => {
           let pts = {};
           let promises = [];
           if (typeof self.selectedPhenotype === "object") {
@@ -2112,7 +2150,7 @@
       addHubGenotypesToOpts: function(opts){
 
         let self = this;
-        if (self.selectedGenotype === null) {
+        if (self.selectedGenotype === null || !self.genotypeMap) {
         } else {
           let gts = self.genotypeMap[self.selectedGenotype];
           for (let i = 0; i < opts.dataset.length; i++) {

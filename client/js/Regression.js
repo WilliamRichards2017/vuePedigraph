@@ -570,6 +570,8 @@ export default class Regression {
   populateLogisticMetrics(xF, yF, xP, yP) {
     let self = this;
 
+    console.log("xF", xF, "yF", yF, "xP", xP, "yP", yP );
+
 
     if (!self.noVariants) {
       self.populateLogisticFamilyMetrics(xF, yF);
