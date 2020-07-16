@@ -143,7 +143,8 @@
                       <td>{{(familyCorrelation**2).toFixed(4)}}</td>
                       <td id="familyP" class="val">{{familyPVal.toExponential(3)}}</td>
                       <td>
-                        <v-icon dense right color="green" v-show="familyPVal <= 0.05 && familyPVal >= 0">check_circle</v-icon>
+                        <v-icon dense right color="green" v-show="familyPVal <= 0.05 && familyPVal >= 0">check_circle
+                        </v-icon>
                       </td>
                     </tr>
 
@@ -153,7 +154,9 @@
                       <td class="val">{{(projectCorrelation**2).toFixed(4)}}</td>
                       <td id="projectP" class="val"> {{projectPVal.toExponential(3)}}</td>
                       <td>
-                        <v-icon dense right color="green" v-show="projectPVal <= 0.05  && projectPVal >= 0">check_circle</v-icon>
+                        <v-icon dense right color="green" v-show="projectPVal <= 0.05  && projectPVal >= 0">
+                          check_circle
+                        </v-icon>
                       </td>
                     </tr>
                   </table>
@@ -303,7 +306,7 @@
         selectedRegression: null,
         showPed: true,
         affectedCuttoff: "7",
-        minThreshold:  null,
+        minThreshold: null,
         maxThreshold: null,
 
 
@@ -419,55 +422,54 @@
 
       },
 
-      populateHubPhenotypes(){
+      populateHubPhenotypes() {
 
         let self = this;
 
 
         self.phenotypes = [];
-         self.hubSession.promiseGetMetricsForSample(self.project_id, self.sample_id)
-            .then((data) => {
-              for (let key in data.metrics) {
-                let match = self.metrics.filter(d => {
-                  return d.uid === key;
-                });
+        self.hubSession.promiseGetMetricsForSample(self.project_id, self.sample_id)
+          .then((data) => {
+            for (let key in data.metrics) {
+              let match = self.metrics.filter(d => {
+                return d.uid === key;
+              });
 
-                if (match && match.length === 1) {
-                  let val = data.metrics[key];
-                  if (!isNaN(val)) {
-                    self.phenotypes.push(match[0].name);
-                  } else if (self.isBinary(val)) {
-                    self.phenotypes.push(match[0].name);
-                  }
-
+              if (match && match.length === 1) {
+                let val = data.metrics[key];
+                if (!isNaN(val)) {
+                  self.phenotypes.push(match[0].name);
+                } else if (self.isBinary(val)) {
+                  self.phenotypes.push(match[0].name);
                 }
+
               }
+            }
 
-              self.phenotypes.sort();
-               self.selectedPhenotype = self.phenotypes[0];
+            self.phenotypes.sort();
+            self.selectedPhenotype = self.phenotypes[0];
 
-            });
+          });
 
       },
 
-      isBinary(val){
-        if(this.binaryVals.includes(val)){
+      isBinary(val) {
+        if (this.binaryVals.includes(val)) {
           return true
-        }
-        else{
+        } else {
           return false
         }
       },
 
 
-      formatJson: function(json){
+      formatJson: function (json) {
 
         let ret = {};
 
-        for(let i = 0; i < json.length; i++){
+        for (let i = 0; i < json.length; i++) {
           let key = json[i]["LINK_ID"];
           let v = json[i]["LAB"];
-          if(ret.hasOwnProperty(key)){
+          if (ret.hasOwnProperty(key)) {
           }
           ret[key] = v;
         }
@@ -476,9 +478,9 @@
       },
 
 
-      csvToJson: function(csv){
+      csvToJson: function (csv) {
 
-        var lines=csv.split("\n");
+        var lines = csv.split("\n");
 
         var result = [];
 
@@ -486,14 +488,14 @@
         // to deal with those before doing the next step
         // (you might convert them to &&& or something, then covert them back later)
         // jsfiddle showing the issue https://jsfiddle.net/
-        var headers=lines[0].split(",");
+        var headers = lines[0].split(",");
 
-        for(var i=1;i<lines.length;i++){
+        for (var i = 1; i < lines.length; i++) {
 
           var obj = {};
-          var currentline=lines[i].split(",");
+          var currentline = lines[i].split(",");
 
-          for(var j=0;j<headers.length;j++){
+          for (var j = 0; j < headers.length; j++) {
             obj[headers[j]] = currentline[j];
           }
 
@@ -507,30 +509,26 @@
 
       },
 
-      readTextFile: function()
-      {
+      readTextFile: function () {
 
         let self = this;
 
-    let file = "./../static/linkIds.csv"
-    var rawFile = new XMLHttpRequest();
-    rawFile.open("GET", file, false);
-    rawFile.onreadystatechange = function ()
-    {
-      if(rawFile.readyState === 4)
-      {
-        if(rawFile.status === 200 || rawFile.status == 0)
-        {
-          var allText = rawFile.responseText;
-          let json = self.csvToJson(allText);
-          let ret = self.formatJson(json);
+        let file = "./../static/linkIds.csv"
+        var rawFile = new XMLHttpRequest();
+        rawFile.open("GET", file, false);
+        rawFile.onreadystatechange = function () {
+          if (rawFile.readyState === 4) {
+            if (rawFile.status === 200 || rawFile.status == 0) {
+              var allText = rawFile.responseText;
+              let json = self.csvToJson(allText);
+              let ret = self.formatJson(json);
 
+            }
+          }
         }
+        rawFile.send(null);
       }
-    }
-    rawFile.send(null);
-  }
-,
+      ,
 
       removeHighlight: function () {
         let self = this;
@@ -582,7 +580,6 @@
             let varText = variant[0] + ':' + variant[1] + "_" + variant[3] + '/' + variant[4];
 
 
-
             varText = varText.replace(/\s/g, '');
 
             let gts = filteredCols.slice(9);
@@ -590,9 +587,8 @@
             if (firstTwo === "#C" || firstTwo === "#c") {
               sampleIDs = gts;
             } else {
-              if(varText === ":undefined_undefined/undefined"){
-              }
-              else{
+              if (varText === ":undefined_undefined/undefined") {
+              } else {
                 gtMap[varText] = gts;
 
               }
@@ -636,8 +632,8 @@
 
       },
 
-      ptNameToId(pt){
-        if(this.ptIdMap && this.ptIdMap.hasOwnProperty(pt)){
+      ptNameToId(pt) {
+        if (this.ptIdMap && this.ptIdMap.hasOwnProperty(pt)) {
           return this.ptIdMap[pt];
         }
         return pt;
@@ -646,7 +642,7 @@
       buildFromUpload() {
         let self = this;
 
-        self.pedTxt= self.validatePedFile(self.txt);
+        self.pedTxt = self.validatePedFile(self.txt);
         self.populateModel();
         self.selectedRegression = "Linear";
         self.selectedFamily = self.pedTxt.split(" ")[0];
@@ -665,21 +661,20 @@
         self.populateModel();
       },
 
-      buildGTMapFromHub(){
+      buildGTMapFromHub() {
         let self = this;
         let gtMap = {};
 
 
-        for(let i = 0; i < self.variants.length; i++){
+        for (let i = 0; i < self.variants.length; i++) {
           let varText = self.variants[i].chr + ":" + self.variants[i].pos + "_" + self.variants[i].ref + "/" + self.variants[i].alt;
           let gts = {};
           gtMap[varText] = gts;
-          for(let j = 0; j < this.sampleIds.length; j++){
+          for (let j = 0; j < this.sampleIds.length; j++) {
             let sampleId = self.sampleIds[j];
-            if(self.variants[i].sample_ids.includes(self.sampleIds[j])){
+            if (self.variants[i].sample_ids.includes(self.sampleIds[j])) {
               gtMap[varText][sampleId] = "0/1";
-            }
-            else{
+            } else {
               gtMap[varText][sampleId] = "0/0";
             }
           }
@@ -711,7 +706,7 @@
       promiseGetPedigreeForSample(project_id, sample_id) {
         let self = this;
 
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
           // Get pedigree for sample
           self.getPedigreeForSample(project_id, sample_id)
             .done(rawPedigree => {
@@ -729,7 +724,7 @@
         })
       },
 
-      validatePedFile(txt){
+      validatePedFile(txt) {
         let pedLines = txt.split('\n');
         let pedTxt = "";
 
@@ -740,7 +735,7 @@
         let allPaternalIds = [];
 
         //todo: double check genders are correct
-        for(let i = 0; i < pedLines.length; i++){
+        for (let i = 0; i < pedLines.length; i++) {
           let splitLine = pedLines[i].split("\t");
 
           let pedLine = pedLines[i];
@@ -748,11 +743,10 @@
           let maternalId = splitLine[3];
           let paternalId = splitLine[2];
 
-          if(maternalId === "0" && paternalId !== "0"){
+          if (maternalId === "0" && paternalId !== "0") {
             maternalId = "undefinedMaternal" + i.toString();
             pedLine = splitLine[0] + '\t' + splitLine[1] + '\t' + paternalId + '\t' + maternalId + "\t" + splitLine[4];
-          }
-          else if(maternalId !== "0" && paternalId === "0"){
+          } else if (maternalId !== "0" && paternalId === "0") {
             paternalId = "undefinedPaternal" + i.toString();
             pedLine = splitLine[0] + '\t' + splitLine[1] + '\t' + paternalId + '\t' + maternalId + "\t" + splitLine[4];
           }
@@ -766,17 +760,17 @@
 
         let familyId = this.getFamilyIdFromPedLine(pedLines[0]);
 
-        for(let  i = 0; i < allMaternalIds.length; i++){
-          if(!allSampleIds.includes(allMaternalIds[i])){
-            if(allMaternalIds !== "0") {
+        for (let i = 0; i < allMaternalIds.length; i++) {
+          if (!allSampleIds.includes(allMaternalIds[i])) {
+            if (allMaternalIds !== "0") {
               let nullPedLine = this.buildNullPedLine(familyId, allMaternalIds[i], "M");
               newPedLines.push(nullPedLine);
             }
           }
         }
-        for(let  i = 0; i < allPaternalIds.length; i++){
-          if(!allSampleIds.includes(allPaternalIds[i])){
-            if(allPaternalIds[i] !== "0") {
+        for (let i = 0; i < allPaternalIds.length; i++) {
+          if (!allSampleIds.includes(allPaternalIds[i])) {
+            if (allPaternalIds[i] !== "0") {
               let nullPedLine = this.buildNullPedLine(familyId, allPaternalIds[i], "P");
               newPedLines.push(nullPedLine);
             }
@@ -788,11 +782,11 @@
         return pedTxt;
       },
 
-      linesToText(lines){
+      linesToText(lines) {
 
         let txt = "";
 
-        for(let i = 0; i < lines.length; i++){
+        for (let i = 0; i < lines.length; i++) {
           txt = txt + lines[i] + '\n';
         }
 
@@ -800,20 +794,19 @@
 
       },
 
-      getFamilyIdFromPedLine(pedLine){
+      getFamilyIdFromPedLine(pedLine) {
         let splitLine = pedLine.split('\t')
         return splitLine[0];
 
       },
 
-      buildNullPedLine(familyId, id, gender){
+      buildNullPedLine(familyId, id, gender) {
 
         let sex = 0;
 
-        if(gender === "M"){
+        if (gender === "M") {
           sex = 2;
-        }
-        else if(gender === "P"){
+        } else if (gender === "P") {
           sex = 1;
         }
         let nullPedLine = familyId + "\t" + id + '\t0\t0\t' + sex;
@@ -921,29 +914,26 @@
         //TODO - implement this
 
 
-        if(self.launchedFrom === "H"){
+        if (self.launchedFrom === "H") {
           self.buildGTMapFromHub();
-        }
-        else{
+        } else {
           self.populateGenotypes();
         }
         let gts = self.fullGTMap[self.selectedGenotype];
         self.PTIndex = self.phenotypes.indexOf(self.ptNameToId(self.selectedPhenotype));
 
 
-        if(self.launchedFrom === "D") {
+        if (self.launchedFrom === "D") {
 
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
 
-        }
-        else if(self.launchedFrom === "H"){
+        } else if (self.launchedFrom === "H") {
 
 
           gts = self.genotypeMap[self.selectedGenotype];
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, -1, self.binaryType);
 
-        }
-        else{
+        } else {
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
         }
         self.linePoints = self.regression.getLinePoints();
@@ -975,10 +965,10 @@
         self.buildPTLegend();
       },
 
-      formatTextAnchor(num){
+      formatTextAnchor(num) {
 
-        if(this.binaryType !== "Yes" && this.binaryType !== "unknown"){
-          if(num == 1){
+        if (this.binaryType !== "Yes" && this.binaryType !== "unknown") {
+          if (num == 1) {
             return "end"
           }
           return "start";
@@ -991,25 +981,22 @@
 
         let digits = 2;
 
-        if(this.binaryType === "Yes"){
-          if(num == 1){
+        if (this.binaryType === "Yes") {
+          if (num == 1) {
             return "Yes"
           }
           return "No";
-        }
-        else if(this.binaryType === "Positive"){
-          if(num == 1){
+        } else if (this.binaryType === "Positive") {
+          if (num == 1) {
             return "PositivPositive"
           }
           return "Negative";
-        }
-        else if(this.binaryType === "Affected"){
-          if(num == 1){
+        } else if (this.binaryType === "Affected") {
+          if (num == 1) {
             return "Affected"
           }
           return "Unaffected";
         }
-
 
 
         var si = [
@@ -1054,70 +1041,69 @@
       buildSlider() {
         let self = this;
 
-        setTimeout(function(){
+        setTimeout(function () {
 
-        d3.select("#slider-axisRange").remove();
-        console.log("slider removed");
-
-        let sliderRange = null;
-
-        if (self.selectedRegression === "Linear") {
-          self.minThreshold = self.minPt;
-          self.maxThreshold = self.maxPt;
-
-
-          sliderRange = d3
-            .sliderVertical()
-            .min(self.minPt)
-            .max(self.maxPt)
-            .default([self.minPt, self.maxPt])
-            .height(300)
-            .ticks(0)
-            .displayFormat(d => self.nFormatterLabel(d))
-            .tickFormat(d => self.nFormatter(d))
-            .fill('#2196f3')
-            .on('onchange', val => {
-
-              self.minThreshold = val[0];
-              self.maxThreshold = val[1];
-
-            });
-
-        } else if (self.selectedRegression === "Logistic") {
-
-          self.minThreshold = (self.maxPt + self.minPt) / 2;
-          self.maxThreshold = self.maxPt;
-
-          sliderRange = d3
-            .sliderVertical()
-            .min(self.minPt)
-            .max(self.maxPt)
-            .default([self.minThreshold, self.maxThreshold])
-            .height(300)
-            .ticks(0)
-            .displayFormat(d => self.nFormatter(d))
-            .fill('#2196f3')
-            .on('onchange', val => {
-              self.minThreshold = val[0];
-              self.maxThreshold = val[1];
-            });
-
-        }
-
-
-        if(self.binaryType === "Number" || self.binaryType === "unknown") {
-          console.log("adding scatterplot");
-          d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
-            .call(sliderRange)
-            .append("text").text(self.selectedPhenotype)
-            .attr("class", "axis-label")
-            .attr("x", -250)
-            .attr("y", -50)
-            .attr("transform", "rotate(-90)");
-        }
-        else{
           d3.select("#slider-axisRange").remove();
-        }
+          console.log("slider removed");
+
+          let sliderRange = null;
+
+          if (self.selectedRegression === "Linear") {
+            self.minThreshold = self.minPt;
+            self.maxThreshold = self.maxPt;
+
+
+            sliderRange = d3
+              .sliderVertical()
+              .min(self.minPt)
+              .max(self.maxPt)
+              .default([self.minPt, self.maxPt])
+              .height(300)
+              .ticks(0)
+              .displayFormat(d => self.nFormatterLabel(d))
+              .tickFormat(d => self.nFormatter(d))
+              .fill('#2196f3')
+              .on('onchange', val => {
+
+                self.minThreshold = val[0];
+                self.maxThreshold = val[1];
+
+              });
+
+          } else if (self.selectedRegression === "Logistic") {
+
+            self.minThreshold = (self.maxPt + self.minPt) / 2;
+            self.maxThreshold = self.maxPt;
+
+            sliderRange = d3
+              .sliderVertical()
+              .min(self.minPt)
+              .max(self.maxPt)
+              .default([self.minThreshold, self.maxThreshold])
+              .height(300)
+              .ticks(0)
+              .displayFormat(d => self.nFormatter(d))
+              .fill('#2196f3')
+              .on('onchange', val => {
+                self.minThreshold = val[0];
+                self.maxThreshold = val[1];
+              });
+
+          }
+
+
+          if (self.binaryType === "Number" || self.binaryType === "unknown") {
+            console.log("adding scatterplot");
+            d3.select("#scatterplot").append("g").attr("id", "slider-axisRange")
+              .call(sliderRange)
+              .append("text").text(self.selectedPhenotype)
+              .attr("class", "axis-label")
+              .attr("x", -250)
+              .attr("y", -50)
+              .attr("transform", "rotate(-90)");
+          } else {
+            d3.select("#slider-axisRange").remove();
+          }
 
         });
       },
@@ -1125,28 +1111,26 @@
       buildLogisticRegression() {
         let self = this;
 
-        if(self.launchedFrom === "D") {
+        if (self.launchedFrom === "D") {
           let gts = self.fullGTMap[self.selectedGenotype];
 
           self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
 
-        }
-        else if(self.launchedFrom === "H"){
+        } else if (self.launchedFrom === "H") {
           self.buildGTMapFromHub();
           let gts = self.genotypeMap[self.selectedGenotype];
 
           self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, -1, self.binaryType);
 
-        }
-        else{
+        } else {
           let gts = self.fullGTMap[self.selectedGenotype];
           self.regression = new Regression(gts, self.ptMap, "ogistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
         }
 
 
-          if(!self.noVariants) {
-            self.populateLogisticEvaluationMetrics();
-          }
+        if (!self.noVariants) {
+          self.populateLogisticEvaluationMetrics();
+        }
 
 
         self.scatterplotData = self.regression.getScatterplotData();
@@ -1154,7 +1138,6 @@
         self.linePoints = self.regression.getLinePoints();
 
         self.buildPTLegend();
-
 
 
       },
@@ -1185,8 +1168,7 @@
           self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
           // self.opts = self.addCachedValuesToOpts(self.opts);
           // self.opts = ptree.build(self.opts);
-        }
-        else{
+        } else {
           self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
           self.opts.dataset = io.readLinkage(self.pedTxt);
 
@@ -1214,13 +1196,12 @@
         self.cachedGenotypes = {};
         self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
         self.opts.dataset = io.readLinkage(self.pedTxt);
-        if(self.launchedFrom === "H"){
+        if (self.launchedFrom === "H") {
           self.opts.dataset = self.addHubGenotypesToOpts(self.opts);
           self.buildHubPhenotypes();
 
 
-        }
-        else{
+        } else {
           self.opts.dataset = self.addNewGenotypesToOpts(self.opts);
         }
         self.opts = ptree.build(self.opts);
@@ -1236,10 +1217,9 @@
         self.parsedVariants = [];
         for (let i = 0; i < self.variants.length; i++) {
           let parsedVariant = self.variants[i].chr + ":" + self.variants[i].pos + "_" + self.variants[i].ref + "/" + self.variants[i].alt;
-          if(typeof parsedVariant === "undefined"){
+          if (typeof parsedVariant === "undefined") {
 
-          }
-          else {
+          } else {
             self.parsedVariants.push(parsedVariant);
           }
         }
@@ -1262,8 +1242,8 @@
 
       onBGClick: function () {
         this.isolateFamily = false;
-          this.highlightedSampleIDs = this.sampleIds;
-          // this.buildPhenotypes();
+        this.highlightedSampleIDs = this.sampleIds;
+        // this.buildPhenotypes();
         this.removeHighlight();
       },
 
@@ -1414,7 +1394,7 @@
           .ticks(5)
           .tickFormat(d => self.nFormatter(d));
 
-  key.append("g")
+        key.append("g")
           .attr("class", "y axis")
           .attr("transform", "translate(5,80)")
           .call(lAxis)
@@ -1433,7 +1413,7 @@
         d3.select("#legendSvg").remove();
         let w = 200, h = 50;
         let lScale = d3.scaleLinear()
-          .range([20, w-20 ])
+          .range([20, w - 20])
           .domain([self.minPt, self.maxPt]);
         let key = d3.select("#legend")
           .append('svg')
@@ -1442,7 +1422,7 @@
           .attr("width", 270)
           .attr("height", 100)
         key.append("rect")
-          .attr("width", w -40)
+          .attr("width", w - 40)
           .attr("height", h - 30)
           .attr("x", 20)
           .style("fill", "white")
@@ -1475,7 +1455,7 @@
 
         let tickNum = 5;
 
-        if(self.binaryType && self.binaryType !== "Number" && self.binaryType !== "unknown"){
+        if (self.binaryType && self.binaryType !== "Number" && self.binaryType !== "unknown") {
           tickNum = 1;
         }
 
@@ -1489,7 +1469,7 @@
           .call(lAxis)
           .attr("dy", ".71em");
 
-        if(self.binaryType === "Number") {
+        if (self.binaryType === "Number") {
           if (!self.inverted) {
             key.append("text")
               .attr("transform", "translate(20,50)")
@@ -1593,8 +1573,8 @@
         let self = this;
         for (let key in self.pedDict) {
           if (self.pedDict.hasOwnProperty(key)) {
-            if(key === ""){}
-            else {
+            if (key === "") {
+            } else {
               self.familyIDs.push(key);
             }
             let pedLines = self.pedDict[key];
@@ -1628,7 +1608,8 @@
             let sens = parseFloat(pts[self.PTIndex]);
             if (sens < this.minPt) {
               this.minPt = sens;
-            } if (sens > this.maxPt) {
+            }
+            if (sens > this.maxPt) {
               this.maxPt = sens;
             }
           }
@@ -1651,8 +1632,7 @@
             self.minThreshold = 0;
             self.maxThreshold = 2;
           }
-        }
-          else if(self.launchedFrom === "H") {
+        } else if (self.launchedFrom === "H") {
 
 
           self.promisePhenotypes()
@@ -1662,7 +1642,7 @@
               let minArr = [];
 
 
-              for(let i = 0; i < keys.length; i++){
+              for (let i = 0; i < keys.length; i++) {
                 let x = keys[i];
                 if (typeof pts[x] === "undefined" || isNaN(pts[x])) {
                 } else {
@@ -1670,11 +1650,12 @@
                 }
               }
 
-              minArr = minArr.sort(function(a, b){return a-b});
-              if(minArr.length > 0){
+              minArr = minArr.sort(function (a, b) {
+                return a - b
+              });
+              if (minArr.length > 0) {
                 self.minPt = minArr[0];
-              }
-              else{
+              } else {
                 self.minPt = 0;
               }
 
@@ -1686,8 +1667,7 @@
                 }
               }));
 
-                self.minThreshold = self.minPt;
-
+              self.minThreshold = self.minPt;
 
 
               self.maxPt = Math.max.apply(null, keys.map(function (x) {
@@ -1698,8 +1678,8 @@
                 }
               }));
 
-                self.maxThreshold = self.maxPt;
-                self.buildSlider();
+              self.maxThreshold = self.maxPt;
+              self.buildSlider();
             })
         }
       },
@@ -1750,7 +1730,7 @@
                   color = self.purple;
                 }
               } else if (self.inverted) {
-                if (sens < self.minThreshold || sens > self.maxThreshold)  {
+                if (sens < self.minThreshold || sens > self.maxThreshold) {
                   aff = 2;
                   color = self.purple;
                 }
@@ -1809,94 +1789,93 @@
 
 
         self.cachedPhenotypes = {};
-          for (let i = 0; i < self.opts.dataset.length; i++) {
-            let id = self.opts.dataset[i].name;
-            let sens = "nan";
-            if(self.PTCPhenotypes.hasOwnProperty(id)) {
-              sens = self.PTCPhenotypes[id][self.ptIndex];
-            }
-            let scaledSens = -1;
-            let opacity = 1;
-
-
-            if (typeof sens === 'undefined' || sens === 'nan') {
-              self.opts.dataset[i].NA = true;
-
-              self.cachedNulls.push(id);
-            }
-            else{
-              let index = self.cachedNulls.indexOf(id);
-              self.cachedNulls = self.cachedNulls.splice(index, 1)
-            }
-
-            sens = parseInt(sens);
-
-            self.opts.dataset[i].sens = sens;
-
-            let aff = 0;
-
-            let color = "white";
-
-            if (typeof sens === "undefined" || isNaN(parseInt(sens))) {
-              color = "none";
-            } else if (self.selectedRegression === "Logistic") {
-
-              if (!self.inverted) {
-                if (sens >= self.minThreshold && sens <= self.maxThreshold) {
-                  aff = 2;
-                  color = self.purple;
-                }
-              } else if (self.inverted) {
-                if (sens <= self.minThreshold || sens >= self.maxThreshold) {
-                  aff = 2;
-                  color = self.purple;
-                }
-              }
-
-            } else if (self.selectedRegression === "Linear") {
-              if (!this.inverted) {
-                if (sens < self.minThreshold) {
-                  scaledSens = -1;
-                  opacity = 0.4;
-                } else if (sens > self.maxThreshold) {
-                  scaledSens = -1;
-                  opacity = 0.4;
-                } else {
-                  scaledSens = (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
-                }
-                if (scaledSens === -1) {
-                  color = "gray";
-                } else {
-                  color = d3.interpolateRgb("white", self.purple)(scaledSens);
-                }
-              } else if (this.inverted) {
-                if (sens < self.minThreshold) {
-                  scaledSens = -1;
-                  opacity = 0.4;
-                } else if (sens > self.maxThreshold) {
-                  scaledSens = -1;
-                  opacity = 0.4;
-                } else {
-                  scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
-                }
-                if (scaledSens === -1) {
-                  color = "gray";
-                } else {
-                  color = d3.interpolateRgb("white", self.purple)(scaledSens);
-                }
-              }
-            }
-            self.opts.dataset[i].affected = aff;
-            self.opts.dataset[i].col = color;
-            self.opts.dataset[i].opac = opacity;
-            self.cachedPhenotypes[id] = aff;
-            self.cachedColors[id] = color;
-            self.cachedOpacity[id] = opacity;
-            // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
+        for (let i = 0; i < self.opts.dataset.length; i++) {
+          let id = self.opts.dataset[i].name;
+          let sens = "nan";
+          if (self.PTCPhenotypes.hasOwnProperty(id)) {
+            sens = self.PTCPhenotypes[id][self.ptIndex];
           }
-          self.opts = self.addCachedValuesToOpts(self.opts);
-          self.opts = ptree.build(self.opts);
-          self.drawGenotypeBars();
+          let scaledSens = -1;
+          let opacity = 1;
+
+
+          if (typeof sens === 'undefined' || sens === 'nan') {
+            self.opts.dataset[i].NA = true;
+
+            self.cachedNulls.push(id);
+          } else {
+            let index = self.cachedNulls.indexOf(id);
+            self.cachedNulls = self.cachedNulls.splice(index, 1)
+          }
+
+          sens = parseInt(sens);
+
+          self.opts.dataset[i].sens = sens;
+
+          let aff = 0;
+
+          let color = "white";
+
+          if (typeof sens === "undefined" || isNaN(parseInt(sens))) {
+            color = "none";
+          } else if (self.selectedRegression === "Logistic") {
+
+            if (!self.inverted) {
+              if (sens >= self.minThreshold && sens <= self.maxThreshold) {
+                aff = 2;
+                color = self.purple;
+              }
+            } else if (self.inverted) {
+              if (sens <= self.minThreshold || sens >= self.maxThreshold) {
+                aff = 2;
+                color = self.purple;
+              }
+            }
+
+          } else if (self.selectedRegression === "Linear") {
+            if (!this.inverted) {
+              if (sens < self.minThreshold) {
+                scaledSens = -1;
+                opacity = 0.4;
+              } else if (sens > self.maxThreshold) {
+                scaledSens = -1;
+                opacity = 0.4;
+              } else {
+                scaledSens = (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
+              }
+              if (scaledSens === -1) {
+                color = "gray";
+              } else {
+                color = d3.interpolateRgb("white", self.purple)(scaledSens);
+              }
+            } else if (this.inverted) {
+              if (sens < self.minThreshold) {
+                scaledSens = -1;
+                opacity = 0.4;
+              } else if (sens > self.maxThreshold) {
+                scaledSens = -1;
+                opacity = 0.4;
+              } else {
+                scaledSens = 1 - (sens - self.minThreshold) / (self.maxThreshold - self.minThreshold)
+              }
+              if (scaledSens === -1) {
+                color = "gray";
+              } else {
+                color = d3.interpolateRgb("white", self.purple)(scaledSens);
+              }
+            }
+          }
+          self.opts.dataset[i].affected = aff;
+          self.opts.dataset[i].col = color;
+          self.opts.dataset[i].opac = opacity;
+          self.cachedPhenotypes[id] = aff;
+          self.cachedColors[id] = color;
+          self.cachedOpacity[id] = opacity;
+          // Label Debug // let nid = self.opts.dataset[i].name.toString(); // let allele = self.TASGenotypes[nid]; // self.opts.dataset[i].alleles = sens + "," + allele;
+        }
+        self.opts = self.addCachedValuesToOpts(self.opts);
+        self.opts = ptree.build(self.opts);
+        self.drawGenotypeBars();
       },
 
       buildRegression: function () {
@@ -1912,36 +1891,30 @@
 
       },
 
-      parseBinary(sens){
-        if(!isNaN(sens)){
+      parseBinary(sens) {
+        if (!isNaN(sens)) {
           this.binaryType = 'Number';
           return parseFloat(sens);
         }
-        if( sens === 'Positive' || sens === 'positive' || sens === 'Pos' || sens === 'pos'){
-         this.binaryType = 'Positive';
-         return 1;
-        }
-        else if( sens === 'Negative' || sens === 'negative' || sens === 'Neg' || sens === 'neg'){
+        if (sens === 'Positive' || sens === 'positive' || sens === 'Pos' || sens === 'pos') {
+          this.binaryType = 'Positive';
+          return 1;
+        } else if (sens === 'Negative' || sens === 'negative' || sens === 'Neg' || sens === 'neg') {
           this.binaryType = 'Positive';
           return 0
-        }
-        else if(sens === 'Yes' || sens === 'yes'){
+        } else if (sens === 'Yes' || sens === 'yes') {
           this.binaryType = 'Yes';
           return 1;
-        }
-        else if(sens === 'No' || sens === 'no'){
+        } else if (sens === 'No' || sens === 'no') {
           this.binaryType = 'Yes';
           return 0;
-        }
-        else if(sens === 'Affected' || sens === 'affected'){
+        } else if (sens === 'Affected' || sens === 'affected') {
           this.binaryType = 'Affected';
           return 1;
-        }
-        else if(sens === 'Unaffected' || sens === 'unaffected'){
+        } else if (sens === 'Unaffected' || sens === 'unaffected') {
           this.binaryType = 'Affected';
           return 0;
-        }
-        else{
+        } else {
           return null;
         }
       },
@@ -1951,12 +1924,12 @@
         let self = this;
         self.cachedPhenotypes = {};
 
-        if(self.ptMap){
+        if (self.ptMap) {
           let pts = self.ptMap;
           for (let i = 0; i < self.opts.dataset.length; i++) {
             let id = self.opts.dataset[i].name;
             let sens = "nan";
-            if(pts.hasOwnProperty(id)) {
+            if (pts.hasOwnProperty(id)) {
               let pt = pts[id];
               sens = self.parseBinary(pt);
             }
@@ -1966,8 +1939,7 @@
             if (typeof sens === 'undefined' || sens === 'nan' || sens === null) {
               self.opts.dataset[i].NA = true;
               self.cachedNulls.push(id);
-            }
-            else{
+            } else {
               let index = self.cachedNulls.indexOf(id);
               self.cachedNulls = self.cachedNulls.splice(index, 1)
             }
@@ -1980,14 +1952,13 @@
 
             if (self.binaryType === "unknown") {
               color = "none";
-            } else if(self.binaryType !== 'Number' || (self.minThreshold === 0 && self.maxThreshold === 0) || (self.minThreshold === 1 && self.maxThreshold === 1)){
-              if((self.inverted && sens === 0) || (!self.inverted && sens === 1)){
+            } else if (self.binaryType !== 'Number' || (self.minThreshold === 0 && self.maxThreshold === 0) || (self.minThreshold === 1 && self.maxThreshold === 1)) {
+              if ((self.inverted && sens === 0) || (!self.inverted && sens === 1)) {
                 color = self.purple;
-              }
-              else{
+              } else {
                 color = "white";
               }
-            }else if (self.selectedRegression === "Logistic") {
+            } else if (self.selectedRegression === "Logistic") {
 
               if (!self.inverted) {
                 if (sens >= self.minThreshold && sens <= self.maxThreshold) {
@@ -2035,7 +2006,7 @@
               }
             }
 
-            if( self.opts.dataset[i].NA){
+            if (self.opts.dataset[i].NA) {
               color = "white";
             }
 
@@ -2050,8 +2021,7 @@
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
           self.buildRegression();
-        }
-        else {
+        } else {
 
           self.promisePhenotypes()
             .then((pts) => {
@@ -2091,7 +2061,7 @@
         })
       },
 
-      addHubGenotypesToOpts: function(opts){
+      addHubGenotypesToOpts: function (opts) {
 
         let self = this;
         if (self.selectedGenotype === null) {
@@ -2101,14 +2071,14 @@
             let id = parseInt(opts.dataset[i].name).toString();
 
             let gtForID = gts[id];
-              let allele = " ";
-              if (typeof gtForID === "undefined") {
-              } else {
-                allele = gtForID.substr(0, 3);
-              }
-              self.cachedGenotypes[id] = allele;
+            let allele = " ";
+            if (typeof gtForID === "undefined") {
+            } else {
+              allele = gtForID.substr(0, 3);
             }
+            self.cachedGenotypes[id] = allele;
           }
+        }
 
         opts = self.addCachedValuesToOpts(opts);
         return opts.dataset;
@@ -2237,7 +2207,7 @@
               .attr("fill", red);
           }
         }
-        if(self.noVariants){
+        if (self.noVariants) {
           d3.selectAll(".gt-bars").remove();
           d3.selectAll(".indi_details").remove();
         }
@@ -2260,24 +2230,24 @@
 
       minThreshold: function () {
         let self = this;
-          self.buildPhenotypes();
+        self.buildPhenotypes();
 
       },
 
       maxThreshold: function () {
         let self = this
-          self.buildPhenotypes();
+        self.buildPhenotypes();
       },
 
       selectedFamily: function () {
         let self = this;
         let gt = self.selectedGenotype;
         let pt = null;
-        if(self.selectedPhenotype){
+        if (self.selectedPhenotype) {
           pt = self.selectedPhenotype;
         }
 
-        if(self.launchedFrom === "H"){
+        if (self.launchedFrom === "H") {
           self.ptMap = null;
           self.parseVariants();
           self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
@@ -2290,7 +2260,7 @@
 
         self.resetValues();
         self.selectedGenotype = gt;
-        if(pt) {
+        if (pt) {
           self.selectedPhenotype = pt;
         }
 
@@ -2317,7 +2287,7 @@
 
         console.log("highlighted sample ids", self.highlightedSampleIDs);
 
-        if(self.highlightedSampleIDs.length > 0) {
+        if (self.highlightedSampleIDs.length > 0) {
 
           $('#pedigree').remove();
           $('#pedigrees').append($("<div id='pedigree'></div>"));
@@ -2348,7 +2318,7 @@
         let self = this;
         // self.populateSampleIds();
 
-        if(self.launchedFrom === "H"){
+        if (self.launchedFrom === "H") {
           self.ptMap = null;
         }
 
@@ -2385,12 +2355,11 @@
         self.linePoints = self.regression.getLinePoints();
       },
 
-      binaryType:function(){
-        if(this.binaryType != null && this.binaryType !== "Number"){
+      binaryType: function () {
+        if (this.binaryType != null && this.binaryType !== "Number") {
           this.regressionTypes = ["Logistic"];
           this.selectedRegression = "Logistic";
-        }
-        else {
+        } else {
           this.regressionTypes = ["Linear", "Logistic"];
           this.selectedRegression = "Linear";
           this.buildSlider();
@@ -2465,12 +2434,13 @@
   }
 
 
-  .v-select__selection--comma{
+  .v-select__selection--comma {
     max-width: 250px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .v-input__control{
+
+  .v-input__control {
     max-width: 250px;
 
   }

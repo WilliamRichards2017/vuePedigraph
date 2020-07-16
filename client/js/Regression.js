@@ -348,9 +348,6 @@ export default class Regression {
         //interleaving positive and negative integers 0 base point
         let ls = (1 - (-1) ** im * (2 * im + 1)) / 4
 
-
-        console.log("i, ls", i, ls);
-
         let x = xi + ls * 0.1;
         let y = -1;
         if (yi === 0) {
@@ -358,8 +355,6 @@ export default class Regression {
         } else {
           y = 1 - (rowIndex * 0.075) - 0.075;
         }
-
-        console.log("x, y", x, y);
 
         if (rowCount === 3) {
           rowIndex++;
@@ -385,8 +380,6 @@ export default class Regression {
       let jD = {id: id, x: x, y: y};
       jDs.push(jD);
     }
-
-    console.log("jds in binary jitter", jDs)
 
     return jDs;
   }
