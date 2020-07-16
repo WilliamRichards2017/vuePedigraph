@@ -114,12 +114,19 @@
                     <td>{{familyRecall}}</td>
                     <td>{{familyF1}}</td>
                   </tr>
-                  <tr>
+                  <tr v-if="launchedFrom !== 'H'">
                     <th>Project</th>
                     <td>{{projectAccuracy}}</td>
                     <td>{{projectPrecision}}</td>
                     <td>{{projectRecall}}</td>
                     <td>{{projectF1}}</td>
+                  </tr>
+                  <tr v-else>
+                    <th>Project</th>
+                    <td>Project too large for analysis</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
                   </tr>
 
                 </table>
@@ -133,7 +140,7 @@
                     <th></th>
                     <th style="text-align: left"> Pearsons 'r'</th>
                     <th style="text-align: left"> r^2</th>
-                    <th style="text-align: left"> P-val</th>
+                    <th style="text-align: left"> P-value</th>
                     <th>Significant</th>
                     </thead>
                     <tbody></tbody>
@@ -141,20 +148,27 @@
                       <th class="val">Family</th>
                       <td id="familyR" class="val">{{familyCorrelation}}</td>
                       <td>{{(familyCorrelation**2).toFixed(4)}}</td>
-                      <td id="familyP" class="val">{{familyPVal.toExponential(3)}}</td>
+                      <td id="familyP" class="val">{{familyPVal.toExponential(2)}}</td>
                       <td>
                         <v-icon dense right color="green" v-show="familyPVal <= 0.05 && familyPVal >= 0">check_circle</v-icon>
                       </td>
                     </tr>
 
-                    <tr class="val" id="projectRow">
+                    <tr class="val" id="projectRow" v-if="launchedFrom !== 'H'">
                       <th class="val"> Project</th>
                       <td id="projectR"> {{projectCorrelation}}</td>
                       <td class="val">{{(projectCorrelation**2).toFixed(4)}}</td>
-                      <td id="projectP" class="val"> {{projectPVal.toExponential(3)}}</td>
+                      <td id="projectP" class="val"> {{projectPVal.toExponential(2)}}</td>
                       <td>
                         <v-icon dense right color="green" v-show="projectPVal <= 0.05  && projectPVal >= 0">check_circle</v-icon>
                       </td>
+                    </tr>
+                    <tr v-else>
+                      <th>Project</th>
+                      <td>Project too large for analysis</td>
+                      <td>N/A</td>
+                      <td>N/A</td>
+                      <td>N/A</td>
                     </tr>
                   </table>
                 </div>
@@ -942,7 +956,6 @@
 
         }
         else{
-          console.log("else");
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex, self.binaryType);
         }
         self.linePoints = self.regression.getLinePoints();
@@ -955,20 +968,38 @@
         self.familyCorrelation = familyCandP[0];
         self.familyPVal = familyCandP[1];
 
-        self.linearMetrics = [
-          {
-            name: "family",
-            "Pearsons R": self.familyCorrelation,
-            "R^2": self.familyCorrelation ** 2,
-            "P-val": self.familyPVal
-          },
-          {
-            name: "project",
-            "Pearsons R": self.projectCorrelation,
-            "R^2": self.projectCorrelation ** 2,
-            "P-val": self.projectPVal
-          }
-        ];
+        if(self.launchedFrom === "H") {
+          self.linearMetrics = [
+            {
+              name: "family",
+              "Pearsons R": self.familyCorrelation,
+              "R^2": self.familyCorrelation ** 2,
+              "P-val": self.familyPVal
+            },
+            {
+              name: "project",
+              "Pearsons R": "N/A",
+              "R^2": "N/A",
+              "P-val": "N/A"
+            }
+          ];
+        }
+        else{
+          self.linearMetrics = [
+            {
+              name: "family",
+              "Pearsons R": self.familyCorrelation,
+              "R^2": self.familyCorrelation ** 2,
+              "P-val": self.familyPVal
+            },
+            {
+              name: "project",
+              "Pearsons R": self.projectCorrelation,
+              "R^2": self.projectCorrelation ** 2,
+              "P-val": self.projectPVal
+            }
+          ];
+        }
 
         self.scatterplotData = self.regression.getScatterplotData();
         self.buildPTLegend();

@@ -116,8 +116,6 @@ export default class Regression {
 
     //F1
     self.familyF1 = 2 * ((self.familyPrecision * self.familyRecall) / (self.familyPrecision + self.familyRecall))
-
-
   }
 
   populateProjectClassificationMetrics(y, yPred) {
@@ -623,6 +621,10 @@ export default class Regression {
     let jDs = self.linearJitter(self.data);
     self.scatterplotDataLin = self.mapJitterToData(jDs, self.data);
     self.linePointsLin = self.findLineByLeastSquares(self.xRawF, self.yRawF);
+
+    // self.populateLogisticMetrics(self.xRawF, self.yRawF, self.xRawP, self.yRawP);
+
+
   }
 
 
