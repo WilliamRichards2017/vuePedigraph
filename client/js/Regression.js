@@ -6,9 +6,8 @@ import {Matrix} from "ml-matrix";
 import jsregression from 'js-regression'
 
 
-
 export default class Regression {
-  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds,  minThreshold, maxThreshold, inverted, ptIndex, binaryType) {
+  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds, minThreshold, maxThreshold, inverted, ptIndex, binaryType) {
     this.rawGenotypes = rawGenotypes;
     this.rawPhenotypes = rawPhenotypes;
     this.minThreshold = minThreshold;
@@ -30,7 +29,7 @@ export default class Regression {
     this.projectCorrelation = null;
     this.projectPVal = null;
 
-    this.purple =  "#5810A5";
+    this.purple = "#5810A5";
 
 
     this.projectAccuracy = -1;
@@ -68,12 +67,10 @@ export default class Regression {
     this.maxPt = null;
     this.minPt = null;
 
-    this.logJitterMapping = [[0,0], [1,0], [-1, 0], [0,1], [-1, 1], [1,1], [0, -1], [-1, -1], [1, -1]];
+    this.logJitterMapping = [[0, 0], [1, 0], [-1, 0], [0, 1], [-1, 1], [1, 1], [0, -1], [-1, -1], [1, -1]];
 
-    if(typeof this.sampleIds === "undefined" || this.sampleIds === null){
-    }
-
-    else {
+    if (typeof this.sampleIds === "undefined" || this.sampleIds === null) {
+    } else {
       this.processRawData();
       this.populateRawCoords();
       this.populateScatterplotData();
@@ -82,7 +79,7 @@ export default class Regression {
     }
   }
 
-  populateFamilyClassificationMetrics(y, yPred){
+  populateFamilyClassificationMetrics(y, yPred) {
 
     let self = this;
 
@@ -93,18 +90,15 @@ export default class Regression {
 
 
     //Make sure order of y and yPred is preserved in populate log
-    for(let i = 0; i < y.length; i++){
-      if(y[i] === 1 && yPred[i] === 1 ){
+    for (let i = 0; i < y.length; i++) {
+      if (y[i] === 1 && yPred[i] === 1) {
         self.familyTP += 1;
-      }
-      else if(y[i] === 0 && yPred[i] === 0){
-        self.familyTN +=1;
-      }
-      else if(y[i] === 0 && yPred[i] === 1){
-        self.familyFP +=1;
-      }
-      else if(y[i] === 1 && yPred[i] === 0){
-        self.familyFN +=1;
+      } else if (y[i] === 0 && yPred[i] === 0) {
+        self.familyTN += 1;
+      } else if (y[i] === 0 && yPred[i] === 1) {
+        self.familyFP += 1;
+      } else if (y[i] === 1 && yPred[i] === 0) {
+        self.familyFN += 1;
       }
     }
 
@@ -121,13 +115,12 @@ export default class Regression {
 
 
     //F1
-    self.familyF1 = 2* ((self.familyPrecision*self.familyRecall)/(self.familyPrecision+self.familyRecall))
-
+    self.familyF1 = 2 * ((self.familyPrecision * self.familyRecall) / (self.familyPrecision + self.familyRecall))
 
 
   }
 
-  populateProjectClassificationMetrics(y, yPred){
+  populateProjectClassificationMetrics(y, yPred) {
 
     let self = this;
 
@@ -139,25 +132,21 @@ export default class Regression {
     let len = 0;
 
     //Make sure order of y and yPred is preserved in populate log
-    for(let i = 0; i < y.length; i++){
-      if(y[i] === 1 && yPred[i] === 1 ){
+    for (let i = 0; i < y.length; i++) {
+      if (y[i] === 1 && yPred[i] === 1) {
         self.projectTP += 1;
-        len +=1;
-      }
-      else if(y[i] === 0 && yPred[i] === 0){
-        self.projectTN +=1;
         len += 1;
-      }
-      else if(y[i] === 0 && yPred[i] === 1){
-        self.projectFP +=1;
+      } else if (y[i] === 0 && yPred[i] === 0) {
+        self.projectTN += 1;
         len += 1;
-      }
-      else if(y[i] === 1 && yPred[i] === 0){
-        self.projectFN +=1;
-        len +=1;
+      } else if (y[i] === 0 && yPred[i] === 1) {
+        self.projectFP += 1;
+        len += 1;
+      } else if (y[i] === 1 && yPred[i] === 0) {
+        self.projectFN += 1;
+        len += 1;
       }
     }
-
 
 
     self.projectAccuracy = (self.projectTP + self.projectTN) / len;
@@ -172,7 +161,7 @@ export default class Regression {
 
 
     //F1
-    self.projectF1 = 2* ((self.projectPrecision*self.projectRecall)/(self.projectPrecision+self.projectRecall));
+    self.projectF1 = 2 * ((self.projectPrecision * self.projectRecall) / (self.projectPrecision + self.projectRecall));
 
 
     // console.log("family log cliassification metrics");
@@ -180,14 +169,13 @@ export default class Regression {
 
   }
 
-  getMaxPt(){
+  getMaxPt() {
     return this.maxPt;
   }
 
-  getMinPt(){
+  getMinPt() {
     return this.minPt;
   }
-
 
 
   populateRawCoords() {
@@ -210,10 +198,9 @@ export default class Regression {
         let gt = self.rawGenotypes[key];
         let pt = null;
 
-        if(this.ptIndex === -1) {
+        if (this.ptIndex === -1) {
           pt = this.parseBinary(self.rawPhenotypes[key]);
-        }
-        else{
+        } else {
           parseFloat(self.rawPhenotypes[key][this.ptIndex]);
         }
 
@@ -244,19 +231,19 @@ export default class Regression {
     }
   }
 
-  calculateProjectCorrelation(){
+  calculateProjectCorrelation() {
     let self = this;
     self.projectCorrelation = self.pearsonCorrelation([self.xRawP, self.yRawP], 0, 1);
   }
 
-  calculateProjectPVal(){
+  calculateProjectPVal() {
     let self = this;
     let ft = fisherTest(self.projectCorrelation, self.xRawP.length);
     self.familyPVal = ft.pvalue;
   }
 
 
-  linearJitter(data){
+  linearJitter(data) {
 
     let coordsIdMap = {};
 
@@ -266,10 +253,9 @@ export default class Regression {
       if (p.hasOwnProperty("x") && p.hasOwnProperty("y") && p.hasOwnProperty("id")) {
         let key = p.x.toString() + ',' + p.y.toString();
 
-        if(coordsIdMap.hasOwnProperty(key)){
+        if (coordsIdMap.hasOwnProperty(key)) {
           coordsIdMap[key].push(p["id"]);
-        }
-        else{
+        } else {
           coordsIdMap[key] = [];
           coordsIdMap[key].push(p["id"]);
         }
@@ -279,7 +265,7 @@ export default class Regression {
 
     let jitterCoords = {};
 
-    for(let key of Object.keys(coordsIdMap)){
+    for (let key of Object.keys(coordsIdMap)) {
       let value = coordsIdMap[key];
 
       let s = key.split(',');
@@ -288,29 +274,28 @@ export default class Regression {
       let yi = parseFloat(s[1]);
 
 
-      if(value.length % 2 === 1){
+      if (value.length % 2 === 1) {
 
-        let ls = -1*(value.length-1)/2;
-        for(let i = 0; i < value.length; i++) {
-          let x = xi + ls*0.1;
+        let ls = -1 * (value.length - 1) / 2;
+        for (let i = 0; i < value.length; i++) {
+          let x = xi + ls * 0.1;
 
-          jitterCoords[value[i]] = [x,yi];
-          ls +=1;
+          jitterCoords[value[i]] = [x, yi];
+          ls += 1;
         }
-      }
-      else if (value.length % 2 === 0){
-        let ls = -1*(value.length)/2;
-        for(let i = 0; i < value.length; i++) {
-          let x = xi + ls*0.1;
-          jitterCoords[value[i]] = [x,yi];
-          ls +=1;
+      } else if (value.length % 2 === 0) {
+        let ls = -1 * (value.length) / 2;
+        for (let i = 0; i < value.length; i++) {
+          let x = xi + ls * 0.1;
+          jitterCoords[value[i]] = [x, yi];
+          ls += 1;
         }
       }
     }
 
     let jDs = [];
 
-    for(let key of Object.keys(jitterCoords)) {
+    for (let key of Object.keys(jitterCoords)) {
       let value = jitterCoords[key];
       let x = value[0];
       let y = value[1];
@@ -323,7 +308,7 @@ export default class Regression {
     return jDs;
   }
 
-  binaryJitter(data){
+  binaryJitter(data) {
 
     let coordsIdMap = {};
 
@@ -333,10 +318,9 @@ export default class Regression {
       if (p.hasOwnProperty("x") && p.hasOwnProperty("y") && p.hasOwnProperty("id")) {
         let key = p.x.toString() + ',' + p.y.toString();
 
-        if(coordsIdMap.hasOwnProperty(key)){
+        if (coordsIdMap.hasOwnProperty(key)) {
           coordsIdMap[key].push(p["id"]);
-        }
-        else{
+        } else {
           coordsIdMap[key] = [];
           coordsIdMap[key].push(p["id"]);
         }
@@ -346,7 +330,7 @@ export default class Regression {
 
     let jitterCoords = {};
 
-    for(let key of Object.keys(coordsIdMap)){
+    for (let key of Object.keys(coordsIdMap)) {
       let value = coordsIdMap[key];
 
       let s = key.split(',');
@@ -356,47 +340,43 @@ export default class Regression {
 
       let rowIndex = 0;
       let rowCount = 0;
-      let negZero = 1;
 
 
-      if(yi === 0){
+      for (let i = 0; i < value.length; i++) {
+
+        let im = (i % 4);
+        //interleaving positive and negative integers 0 base point
+        let ls = (1 - (-1) ** im * (2 * im + 1)) / 4
 
 
-          for(let i = 0; i < value.length; i++) {
+        console.log("i, ls", i, ls);
 
-            let im = (i % 4) ;
-            //interleaving positive and negative integers 0 base point
-           let ls =  (1-(-1)**im*(2*im+1))/4
-
-
-
-
-
-            console.log("i, ls", i, ls);
-
-            let x = xi + ls*0.1;
-            let y = rowIndex*0.075 + 0.075;
-
-            console.log("x, y", x, y);
-
-            if(rowCount === 3){
-              rowIndex++;
-              rowCount = 0;
-            }
-            else{
-              rowCount++;
-            }
-
-                jitterCoords[value[i]] = [x,y];
-          }
+        let x = xi + ls * 0.1;
+        let y = -1;
+        if (yi === 0) {
+          y = rowIndex * 0.075 + 0.075;
+        } else {
+          y = 1 - (rowIndex * 0.075) - 0.075;
         }
 
+        console.log("x, y", x, y);
 
+        if (rowCount === 3) {
+          rowIndex++;
+          rowCount = 0;
+        } else {
+          rowCount++;
+        }
+
+        jitterCoords[value[i]] = [x, y];
       }
+
+
+    }
 
     let jDs = [];
 
-    for(let key of Object.keys(jitterCoords)) {
+    for (let key of Object.keys(jitterCoords)) {
       let value = jitterCoords[key];
       let x = value[0];
       let y = value[1];
@@ -412,36 +392,33 @@ export default class Regression {
   }
 
 
-
-
-  populateScatterplotData(){
+  populateScatterplotData() {
     let self = this;
-    if(self.regressionType === "Linear"){
+    if (self.regressionType === "Linear") {
       self.populateLinearScatterplotData();
 
-    }
-    else if(self.regressionType === "Logistic"){
+    } else if (self.regressionType === "Logistic") {
       self.populateLogisticScatterplotData();
     }
   }
 
-  translateYtoLogCategories(y){
+  translateYtoLogCategories(y) {
 
     let yB = [];
 
-     for (let i = 0; i < y.length; i++) {
-        if (y[i] <= this.minThreshold || y[i] >= this.maxThreshold) {
-          yB.push(0);
-        } else {
-          yB.push(1);
-        }
+    for (let i = 0; i < y.length; i++) {
+      if (y[i] <= this.minThreshold || y[i] >= this.maxThreshold) {
+        yB.push(0);
+      } else {
+        yB.push(1);
       }
+    }
 
     return yB;
   }
 
 
-  populateLogisticProjectMetrics(xF,yF){
+  populateLogisticProjectMetrics(xF, yF) {
 
 
     let self = this;
@@ -450,11 +427,11 @@ export default class Regression {
 
     let yBF = self.translateYtoLogCategories(yF);
 
-    if(self.inverted){
+    if (self.inverted) {
       yBF = self.invertArr(yBF);
     }
 
-    for(let i = 0; i < xF.length; i++){
+    for (let i = 0; i < xF.length; i++) {
       testingDataF.push([xF[i], yBF[i]])
     }
 
@@ -471,24 +448,23 @@ export default class Regression {
 
     let probs = [];
 
-    let counts =  {};
+    let counts = {};
 
-    for(let i=0; i < testingDataF.length; ++i) {
+    for (let i = 0; i < testingDataF.length; ++i) {
 
       let prob = logistic.transform(testingDataF[i]);
 
-      if(!probs.includes(prob)){
+      if (!probs.includes(prob)) {
         probs.push(prob);
       }
 
-        if(testingDataF[i][1] === 1){
+      if (testingDataF[i][1] === 1) {
 
-          if(counts.hasOwnProperty(prob)){
-            counts[prob] += 1
-          }
-          else{
-            counts[prob] = 0;
-            counts[prob] +=1;
+        if (counts.hasOwnProperty(prob)) {
+          counts[prob] += 1
+        } else {
+          counts[prob] = 0;
+          counts[prob] += 1;
         }
       }
 
@@ -497,8 +473,7 @@ export default class Regression {
 
     probs = probs.sort();
 
-    for(let i=0; i < testingDataF.length; ++i) {
-
+    for (let i = 0; i < testingDataF.length; ++i) {
 
 
       var prob = logistic.transform(testingDataF[i]);
@@ -509,20 +484,18 @@ export default class Regression {
 
       let maxCount = 0;
 
-      for(let k in counts){
-        if(counts[k] > maxCount){
+      for (let k in counts) {
+        if (counts[k] > maxCount) {
           maxCount = counts[k];
           maxProb = parseFloat(k);
         }
       }
 
-      if(prob === maxProb){
+      if (prob === maxProb) {
         predicted = 1;
-      }
-      else{
+      } else {
         predicted = 0;
       }
-
 
 
       // console.log("actual: " + testingDataF[i][1] + " probability of being Iris-virginica: " + prob);
@@ -531,18 +504,16 @@ export default class Regression {
     }
 
 
-
     this.populateProjectClassificationMetrics(yBF, yPredF);
   }
 
-  invertArr(arr){
+  invertArr(arr) {
 
     let invArr = [];
-    for(let i = 0; i < arr.length; i++){
-      if(arr[i] === 1){
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] === 1) {
         invArr.push(0)
-      }
-      else{
+      } else {
         invArr.push(1)
       }
     }
@@ -550,7 +521,7 @@ export default class Regression {
 
   }
 
-  populateLogisticFamilyMetrics(xF,yF){
+  populateLogisticFamilyMetrics(xF, yF) {
     //
 
     let self = this;
@@ -560,11 +531,11 @@ export default class Regression {
 
     let yBF = self.translateYtoLogCategories(yF);
 
-    if(self.inverted){
+    if (self.inverted) {
       yBF = self.invertArr(yBF);
     }
 
-    for(let i = 0; i < xF.length; i++){
+    for (let i = 0; i < xF.length; i++) {
       testingDataF.push([xF[i], yBF[i]])
     }
 
@@ -581,10 +552,10 @@ export default class Regression {
     let probs = [];
 
 // === Testing the trained logistic regression === //
-    for(let i=0; i < testingDataF.length; ++i) {
+    for (let i = 0; i < testingDataF.length; ++i) {
       var prob = logistic.transform(testingDataF[i]);
       if (!probs.includes(prob)) {
-        if(testingDataF[i][1] === 1){
+        if (testingDataF[i][1] === 1) {
           probs.push(prob);
         }
       }
@@ -593,35 +564,31 @@ export default class Regression {
 
     probs = probs.sort();
 
-    for(let i=0; i < testingDataF.length; ++i) {
-
+    for (let i = 0; i < testingDataF.length; ++i) {
 
 
       var prob = logistic.transform(testingDataF[i]);
 
       let predicted = 0;
 
-      if(probs.includes(prob)){
+      if (probs.includes(prob)) {
         predicted = 1;
-      }
-      else{
+      } else {
         predicted = 0;
       }
       yPredF.push(predicted);
     }
 
 
-
     this.populateFamilyClassificationMetrics(yBF, yPredF);
   }
-
 
 
   populateLogisticMetrics(xF, yF, xP, yP) {
     let self = this;
 
 
-    if(!self.noVariants) {
+    if (!self.noVariants) {
       self.populateLogisticFamilyMetrics(xF, yF);
       self.populateLogisticProjectMetrics(xP, yP);
     }
@@ -629,8 +596,7 @@ export default class Regression {
   }
 
 
-
-  populateLogisticScatterplotData(){
+  populateLogisticScatterplotData() {
 
     let self = this;
 
@@ -639,10 +605,9 @@ export default class Regression {
     console.log("self.binaryType", self.binaryType);
 
 
-    if(self.binaryType === "Number" || self.binaryType === "unknown") {
+    if (self.binaryType === "Number") {
       jDs = self.linearJitter(self.data);
-    }
-    else{
+    } else {
       console.log("in binary jitter", self.binaryType);
       jDs = self.binaryJitter(self.data);
     }
@@ -653,15 +618,15 @@ export default class Regression {
 
   }
 
-  mapJitterToData(jDs, ds){
+  mapJitterToData(jDs, ds) {
 
     let data = ds.slice();
-    for(const i in jDs){
+    for (const i in jDs) {
       let j = jDs[i];
-      for(const i in data){
+      for (const i in data) {
         let d = data[i];
 
-        if(d.id === j.id){
+        if (d.id === j.id) {
           d.xSource = j.x;
           d.ySource = j.y;
         }
@@ -673,7 +638,7 @@ export default class Regression {
   }
 
 
-  populateLinearScatterplotData(){
+  populateLinearScatterplotData() {
 
     let self = this;
     let jDs = self.linearJitter(self.data);
@@ -684,45 +649,44 @@ export default class Regression {
   }
 
 
-
   //Linear regression evaluation metrics
 
-  getProjectPrecision(){
+  getProjectPrecision() {
     return this.projectPrecision.toFixed(4);
   }
 
-  getProjectRecall(){
+  getProjectRecall() {
     return this.projectRecall.toFixed(4);
   }
 
-  getProjectF1(){
+  getProjectF1() {
     return this.projectF1.toFixed(4);
   }
 
-  getProjectAccuracy(){
+  getProjectAccuracy() {
     return this.projectAccuracy.toFixed(4);
   }
 
 //Linear regression evaluation metrics
-  getProjectCorrelation(){
+  getProjectCorrelation() {
     return this.projectCorrelation.toFixed(4);
   }
 
-  getFamilyPVal(){
+  getFamilyPVal() {
     return this.familyPVal;
   }
 
 
-  getProjectPVal(){
+  getProjectPVal() {
     return this.projectPVal;
   }
 
 
-  getFamilyCorrelationAndPVal(){
+  getFamilyCorrelationAndPVal() {
 
     let self = this;
 
-    let familyCorrelation = self.pearsonCorrelation([self.xRawF,self.yRawF], 0, 1);
+    let familyCorrelation = self.pearsonCorrelation([self.xRawF, self.yRawF], 0, 1);
 
     //where family correlation is rho
     let ft = fisherTest(familyCorrelation, self.xRawF.length);
@@ -733,29 +697,21 @@ export default class Regression {
   }
 
 
-  getFamilyAccuracy(){
+  getFamilyAccuracy() {
     return this.familyAccuracy.toFixed(4);
   }
 
-  getFamilyPrecision(){
+  getFamilyPrecision() {
     return this.familyPrecision.toFixed(4);
   }
 
-  getFamilyRecall(){
+  getFamilyRecall() {
     return this.familyRecall.toFixed(4);
   }
 
-  getFamilyF1(){
+  getFamilyF1() {
     return this.familyF1.toFixed(4);
   }
-
-
-
-
-
-
-
-
 
 
   findLineByLeastSquares(values_x, values_y) {
@@ -780,19 +736,19 @@ export default class Regression {
      * Above and below cover edge cases
      */
     if (values_length === 0) {
-      return [ [], [] ];
+      return [[], []];
     }
 
     /*
      * Calculate the sum for each of the parts necessary.
      */
-    for (let i = 0; i< values_length; i++) {
+    for (let i = 0; i < values_length; i++) {
       x = values_x[i];
       y = values_y[i];
-      x_sum+= x;
-      y_sum+= y;
-      xx_sum += x*x;
-      xy_sum += x*y;
+      x_sum += x;
+      y_sum += y;
+      xx_sum += x * x;
+      xy_sum += x * y;
       count++;
     }
 
@@ -800,8 +756,8 @@ export default class Regression {
      * Calculate m and b for the line equation:
      * y = x * m + b
      */
-    var m = (count*xy_sum - x_sum*y_sum) / (count*xx_sum - x_sum*x_sum);
-    var b = (y_sum/count) - (m*x_sum)/count;
+    var m = (count * xy_sum - x_sum * y_sum) / (count * xx_sum - x_sum * x_sum);
+    var b = (y_sum / count) - (m * x_sum) / count;
 
     /*
      * We then return the x and y data points according to our fit
@@ -822,51 +778,44 @@ export default class Regression {
   }
 
 
-  getNoVariants(){
+  getNoVariants() {
     return this.noVariants;
   }
 
-  parseBinary(sens){
-    if(!isNaN(sens)){
+  parseBinary(sens) {
+    if (!isNaN(sens)) {
       return parseFloat(sens);
     }
-    if( sens === 'Positive' || sens === 'positive' || sens === 'Pos' || sens === 'pos'){
+    if (sens === 'Positive' || sens === 'positive' || sens === 'Pos' || sens === 'pos') {
       return 1;
-    }
-    else if( sens === 'Negative' || sens === 'negative' || sens === 'Neg' || sens === 'neg'){
+    } else if (sens === 'Negative' || sens === 'negative' || sens === 'Neg' || sens === 'neg') {
       return 0
-    }
-    else if(sens === 'Yes' || sens === 'yes'){
+    } else if (sens === 'Yes' || sens === 'yes') {
       return 1;
-    }
-    else if(sens === 'No' || sens === 'no'){
+    } else if (sens === 'No' || sens === 'no') {
       return 0;
-    }
-    else if(sens === 'Affected' || sens === 'affected'){
+    } else if (sens === 'Affected' || sens === 'affected') {
       return 1;
-    }
-    else if(sens === 'Unaffected' || sens === 'unaffected'){
+    } else if (sens === 'Unaffected' || sens === 'unaffected') {
       return 0;
-    }
-    else{
+    } else {
       this.binaryType = 'unknown';
       return null;
     }
   }
 
 
-
-  processRawData(){
+  processRawData() {
     let self = this;
 
-    if(!self.rawGenotypes){
+    if (!self.rawGenotypes) {
       self.noVariants = true;
     }
 
 
     self.data = [];
 
-    for(let i  = 0; i < self.sampleIds.length; i++) {
+    for (let i = 0; i < self.sampleIds.length; i++) {
 
       let af = -1;
 
@@ -875,11 +824,10 @@ export default class Regression {
 
       let gt = null;
 
-      if(!this.noVariants) {
+      if (!this.noVariants) {
 
-         gt = self.rawGenotypes[key];
-      }
-      else{
+        gt = self.rawGenotypes[key];
+      } else {
         gt = "1/0";
       }
 
@@ -896,15 +844,13 @@ export default class Regression {
       }
 
 
-
       let pt = 0;
 
       if (self.rawPhenotypes.hasOwnProperty(key)) {
 
-        if(this.ptIndex === -1){
+        if (this.ptIndex === -1) {
           pt = self.rawPhenotypes[key];
-        }
-        else {
+        } else {
           pt = self.rawPhenotypes[key][this.ptIndex];
         }
 
@@ -943,39 +889,41 @@ export default class Regression {
 
     let selectedNodes = self.data.filter(d => d.color !== "gray");
 
-    let x = Object.keys(selectedNodes).map(function(k){return selectedNodes[k].x});
-    let y =  Object.keys(selectedNodes).map(function(k){return selectedNodes[k].y});
+    let x = Object.keys(selectedNodes).map(function (k) {
+      return selectedNodes[k].x
+    });
+    let y = Object.keys(selectedNodes).map(function (k) {
+      return selectedNodes[k].y
+    });
 
     self.xRawF = x;
     self.yRawF = y;
   }
 
-  getScatterplotData(){
+  getScatterplotData() {
 
     let self = this;
 
 
-    if(self.regressionType === "Linear"){
+    if (self.regressionType === "Linear") {
       return self.scatterplotDataLin;
-    }
-    else if(self.regressionType === "Logistic"){
+    } else if (self.regressionType === "Logistic") {
       return self.scatterplotDataLog;
     }
   }
 
-  getLinePoints(){
+  getLinePoints() {
     let self = this;
 
-    if(self.regressionType === "Linear"){
+    if (self.regressionType === "Linear") {
       return self.linePointsLin;
-    }
-    else if(self.regressionType === "Logistic"){
+    } else if (self.regressionType === "Logistic") {
       return self.linePointsLog;
     }
 
   }
 
-  calculateProjectPVal(){
+  calculateProjectPVal() {
 
     this.populateRawCoords();
 
@@ -986,13 +934,12 @@ export default class Regression {
     this.projectPVal = ft.pvalue;
 
 
-
   }
 
-  getSexFromSampleId(id){
+  getSexFromSampleId(id) {
 
-    for(let i = 0; i < this.dataset.length; i++){
-      if(this.dataset[i].name === id.toString()){
+    for (let i = 0; i < this.dataset.length; i++) {
+      if (this.dataset[i].name === id.toString()) {
         return this.dataset[i].sex;
       }
     }
@@ -1001,9 +948,9 @@ export default class Regression {
 
   }
 
-  getColorFromSampleId(id){
-    for(let i = 0; i < this.dataset.length; i++){
-      if(this.dataset[i].name === id.toString()){
+  getColorFromSampleId(id) {
+    for (let i = 0; i < this.dataset.length; i++) {
+      if (this.dataset[i].name === id.toString()) {
         return this.dataset[i].col;
       }
     }
@@ -1012,10 +959,10 @@ export default class Regression {
 
   }
 
-  getOpacityFromSampleId(id){
+  getOpacityFromSampleId(id) {
 
-    for(let i = 0; i < this.dataset.length; i++){
-      if(this.dataset[i].name === id.toString()){
+    for (let i = 0; i < this.dataset.length; i++) {
+      if (this.dataset[i].name === id.toString()) {
         return this.dataset[i].opac;
       }
     }

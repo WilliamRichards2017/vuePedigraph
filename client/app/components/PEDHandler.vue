@@ -2278,6 +2278,7 @@
         }
 
         if(self.launchedFrom === "H"){
+          self.ptMap = null;
           self.parseVariants();
           self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
           self.opts.dataset = io.readLinkage(self.pedTxt);
@@ -2292,9 +2293,10 @@
         if(pt) {
           self.selectedPhenotype = pt;
         }
-        self.buildPhenotypes();
+
         self.populateSampleIds();
         self.buildGenotypes();
+        self.buildPhenotypes();
         self.buildRegression();
         $('#pedigree').on('nodeClick', self.onNodeClick);
         $('#pedigree').on('bgClick', self.onBGClick);
