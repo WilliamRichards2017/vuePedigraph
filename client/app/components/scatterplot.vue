@@ -1,5 +1,6 @@
 <template>
-  <div id='vueScatter' width="400px" height="400px" style="background-color: #f2f2f2; border-color: black; border-style: solid; border-width: 1px" >
+  <div id='vueScatter' width="400px" height="400px"
+       style="background-color: #f2f2f2; border-color: black; border-style: solid; border-width: 1px">
     <div class="chartTitle"> GT/PT regression for selected Family</div>
 
     <div class="svg-container">
@@ -76,20 +77,18 @@
 
         let digits = 2;
 
-        if(this.binaryType === "Yes"){
-          if(num == 1){
+        if (this.binaryType === "Yes") {
+          if (num == 1) {
             return "Yes"
           }
           return "No";
-        }
-        else if(this.binaryType === "Positive"){
-          if(num == 1){
+        } else if (this.binaryType === "Positive") {
+          if (num == 1) {
             return "Positive"
           }
           return "Negative";
-        }
-        else if(this.binaryType === "Affected"){
-          if(num == 1){
+        } else if (this.binaryType === "Affected") {
+          if (num == 1) {
             return "Affected"
           }
           return "Unaffected";
@@ -132,7 +131,6 @@
           }
         }
 
-        // Set up the scales
         self.xScale = d3.scaleLinear()
           .domain([-0.2, 1.2])
           .range([0, self.width]);
@@ -141,21 +139,18 @@
           .domain([self.minPt, self.maxPt])
           .range([self.height, 0]);
 
-        let svg = d3.select("#scatterplotSvg");
         let ticks = ["0 AF", "0.5 AF", "1 AF"];
-        // let yRightAxis = d3.select("#yRight-axis")
         let xAxis = d3.select("#x-axis");
 
         d3.select("#xlabel").remove();
 
-        if(!this.noVariants) {
+        if (!this.noVariants) {
           xAxis.append("text")
             .attr("class", "axis-label")
             .attr("id", "xlabel")
             .attr("transform", "translate(150, 37)")
             .text("Alternate Allele Frequency (GT)");
-        }
-        else{
+        } else {
           xAxis.append("text")
             .attr("class", "axis-label")
             .attr("id", "xlabel")
@@ -171,22 +166,22 @@
 
         let tickNum = 5;
 
-        if(self.binaryType && self.binaryType !== "Number" && self.binaryType !== "unknown"){
+        if (self.binaryType && self.binaryType !== "Number" && self.binaryType !== "unknown") {
           tickNum = 1;
         }
 
 
         yLeftAxis
           .call(d3.axisLeft(self.yScale)
-          .ticks(tickNum)
-          .tickFormat(d => self.nFormatterLabel(d)));
+            .ticks(tickNum)
+            .tickFormat(d => self.nFormatterLabel(d)));
 
 
         let blue = " #e6e6e6";
         let red = "#595959";
 
 
-        if(!this.noVariants) {
+        if (!this.noVariants) {
           xAxis
             .call(d3.axisBottom(self.xScale).ticks(3).tickFormat(function (d, i) {
               return ticks[i];
@@ -209,7 +204,6 @@
             .style("stroke", "black")
             .style("stroke-width", 1)
             .attr("fill", red);
-
 
 
           xAxis.append('svg').append("rect").attr("width", "5px").attr('height', "13px")
@@ -248,58 +242,40 @@
             .style("stroke-width", 1)
             .attr("fill", blue);
 
-        }
-        else{
+        } else {
           d3.selectAll(".gt-bar").remove();
           xAxis
             .call(d3.axisBottom(self.xScale).ticks(0))
         }
 
-        let highlightCircle = function(d) {
+        let highlightCircle = function (d) {
           d3.select(this).attr("r", 15);
-
-          // tooltip.style("visibility", "visible").text(d.id)
-          //   .style("font-size", 12)
-          //   .style("font-weight", "bold");
-
         };
 
 
-        let highlightSquare = function(d) {
-
+        let highlightSquare = function (d) {
           d3.select(this).attr("width", 30)
             .attr("height", 30)
             .attr("x", self.xScale(d.xSource) - 15)
             .attr("y", self.yScale(d.ySource) - 15);
-
-          // tooltip.style("visibility", "visible").text(d.id)
-          //   .style("font-size", 12)
-          //   .style("font-weight", "bold");
-
         };
 
-        let unhighlightCircle = function() {
-
+        let unhighlightCircle = function () {
           tooltip.style("visibility", "hidden");
-
           d3.select(this).attr("r", 10);
-
         };
 
-        let unhighlightSquare = function(d) {
-
+        let unhighlightSquare = function (d) {
           tooltip.style("visibility", "hidden");
-
           d3.select(this).attr("width", 20)
             .attr("height", 20)
             .attr("x", self.xScale(d.xSource) - 10)
             .attr("y", self.yScale(d.ySource) - 10);
         };
 
-
-
         let squares = d3.select("#plot").selectAll('rect')
           .data(M).join("rect");
+
         squares
           .attr("x", d => self.xScale(d.xSource) - 10)
           .attr("y", d => self.yScale(d.ySource) - 10)
@@ -308,7 +284,9 @@
           .style("fill", d => d.color)
           .style("opacity", d => d.opacity)
           .on("mouseover", highlightSquare)
-          .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX + 5)+"px");})
+          .on("mousemove", function () {
+            return tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 5) + "px");
+          })
           .on("mouseout", unhighlightSquare)
 
         let squareText = d3.select("#plot").selectAll('text.sq')
@@ -328,7 +306,9 @@
           .style("fill", d => d.color)
           .style("opacity", d => d.opacity)
           .on("mouseover", highlightCircle)
-          .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX + 5)+"px");})
+          .on("mousemove", function () {
+            return tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 5) + "px");
+          })
           .on("mouseout", unhighlightCircle);
 
 
@@ -337,144 +317,127 @@
           .style("text-shadow", "2px 2px 11px white")
           .classed("circ", true);
         circleText
-          .attr("x", d => self.xScale(d.xSource) -10)
+          .attr("x", d => self.xScale(d.xSource) - 10)
           .attr("y", d => self.yScale(d.ySource))
           .text(d => d.id);
 
       },
 
-      buildRegressionLine(){
-
+      buildRegressionLine() {
         let self = this;
+        let coords = [];
 
-          let coords = [];
-
-          if(this.linePoints === null) {
-            this.linePoints = [[0,0], [0,0]];
+        if (this.linePoints === null) {
+          this.linePoints = [[0, 0], [0, 0]];
+        } else {
+          for (let i = 0; i < this.linePoints[0].length; i++) {
+            coords.push({x: this.linePoints[0][i], y: this.linePoints[1][i]})
           }
-          else {
-            for (let i = 0; i < this.linePoints[0].length; i++) {
-              coords.push({x: this.linePoints[0][i], y: this.linePoints[1][i]})
-            }
-          }
+        }
 
-          var xScale = d3.scaleLinear()
-            .domain([0, 1])
-            .range([0, self.width]);
+        var xScale = d3.scaleLinear()
+          .domain([0, 1])
+          .range([0, self.width]);
 
-          var yScale = d3.scaleLinear()
-            .domain([this.minPt, this.maxPt])
-            .range([self.height, 0]);
-          let aLineGenerator = d3
-            .line()
-            .x(d => xScale(d.x))
-            .y(d => yScale(d.y));
+        var yScale = d3.scaleLinear()
+          .domain([self.minPt, self.maxPt])
+          .range([self.height, 0]);
+        let aLineGenerator = d3
+          .line()
+          .x(d => xScale(d.x))
+          .y(d => yScale(d.y));
 
 
-          d3.select("#regression-line")
-            .data(this.linePoints)
-            .attr("d", aLineGenerator(coords))
-            .attr("transform");
+        d3.select("#regression-line")
+          .data(this.linePoints)
+          .attr("d", aLineGenerator(coords))
+          .attr("transform");
 
       },
 
-    buildPTLegend() {
+      buildPTLegend() {
 
-      let w = 200;
-      let h = 50;
+        let w = 200;
+        let h = 50;
 
-      let key = d3.select("#legend")
-        .append("svg")
-        .attr("width", 220)
-        .attr("height", 200);
+        let key = d3.select("#legend")
+          .append("svg")
+          .attr("width", 220)
+          .attr("height", 200);
 
-      let legend = key.append("defs")
-        .append("svg:linearGradient")
-        .attr("id", "gradient")
-        .attr("x1", "0%")
-        .attr("y1", "100%")
-        .attr("x2", "100%")
-        .attr("y2", "100%")
-        .attr("spreadMethod", "pad");
+        let legend = key.append("defs")
+          .append("svg:linearGradient")
+          .attr("id", "gradient")
+          .attr("x1", "0%")
+          .attr("y1", "100%")
+          .attr("x2", "100%")
+          .attr("y2", "100%")
+          .attr("spreadMethod", "pad");
 
-      legend.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "#F9F9F9")
-        .attr("stop-opacity", 1);
-
-
-      legend.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "#8629EA")
-        .attr("stop-opacity", 1);
-
-      key.append("rect")
-        .attr("width", w + 1)
-        .attr("height", h - 30)
-        .style("fill", "url(#gradient)")
-        .attr("transform", "translate(0,60)");
-
-      let yScale = d3.scaleLinear()
-        .range([w, 0])
-        .domain([this.minPt, this.maxPt]);
-
-      var yAxis = d3.axisBottom()
-        .scale(yScale)
+        legend.append("stop")
+          .attr("offset", "0%")
+          .attr("stop-color", "#F9F9F9")
+          .attr("stop-opacity", 1);
 
 
+        legend.append("stop")
+          .attr("offset", "100%")
+          .attr("stop-color", "#8629EA")
+          .attr("stop-opacity", 1);
+
+        key.append("rect")
+          .attr("width", w + 1)
+          .attr("height", h - 30)
+          .style("fill", "url(#gradient)")
+          .attr("transform", "translate(0,60)");
+
+        let yScale = d3.scaleLinear()
+          .range([w, 0])
+          .domain([this.minPt, this.maxPt]);
+
+        var yAxis = d3.axisBottom()
+          .scale(yScale)
 
 
-      key.append("g")
-        .attr("class", "y axis")
-        .attr("transform", "translate(0,80)")
-        .call(yAxis)
-        .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("dy", ".71em")
-        .style("text-anchor", "end");
+        key.append("g")
+          .attr("class", "y axis")
+          .attr("transform", "translate(0,80)")
+          .call(yAxis)
+          .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("dy", ".71em")
+          .style("text-anchor", "end");
 
-      key.append("text")
-        .attr("transform", "translate(0,50)")
-        .text("less affected <----> more affected");
+        key.append("text")
+          .attr("transform", "translate(0,50)")
+          .text("less affected <----> more affected");
 
-
+      },
     },
+    mounted() {},
 
-  }
-  ,
-  mounted()
-  {
-    // this.buildPlot();
-  }
-  ,
-
-  watch : {
-    linePoints: function () {
-      this.buildRegressionLine();
-    },
+    watch: {
+      linePoints: function () {
+        this.buildRegressionLine();
+      },
 
 
-    rawData: function () {
-
-      if(this.binaryType !== "Number"){
-        this.minPt = 0;
-        this.maxPt = 1;
+      rawData: function () {
+        if (this.binaryType !== "Number") {
+          this.minPt = 0;
+          this.maxPt = 1;
+        }
+        this.buildPlot();
       }
-
-      this.buildPlot();
-      // this.buildPTLegend();
     }
-  }
   }
 </script>
 
 
 <style>
   .scatter-plot circle {
-
     stroke: #000000;
     stroke-width: 1;
-
   }
 
   .scatter-plot text.sq {

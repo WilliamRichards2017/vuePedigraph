@@ -164,8 +164,6 @@ export default class Regression {
     self.projectF1 = 2 * ((self.projectPrecision * self.projectRecall) / (self.projectPrecision + self.projectRecall));
 
 
-
-
   }
 
   getMaxPt() {
@@ -303,7 +301,6 @@ export default class Regression {
       let jD = {id: id, x: x, y: y};
       jDs.push(jD);
     }
-
     return jDs;
   }
 
@@ -488,10 +485,6 @@ export default class Regression {
       } else {
         predicted = 0;
       }
-
-
-      // console.log("actual: " + testingDataF[i][1] + " probability of being Iris-virginica: " + prob);
-      // console.log("actual: " + testingDataF[i][1] + " predicted: " + predicted);
       yPredF.push(predicted);
     }
 
@@ -600,7 +593,6 @@ export default class Regression {
     if (self.binaryType === "Number") {
       jDs = self.linearJitter(self.data);
     } else {
-      console.log("in binary jitter", self.binaryType);
       jDs = self.binaryJitter(self.data);
     }
 
@@ -626,22 +618,16 @@ export default class Regression {
       }
     }
     return data;
-
   }
 
 
   populateLinearScatterplotData() {
-
     let self = this;
     let jDs = self.linearJitter(self.data);
-
     self.scatterplotDataLin = self.mapJitterToData(jDs, self.data);
     self.linePointsLin = self.findLineByLeastSquares(self.xRawF, self.yRawF);
-
   }
 
-
-  //Linear regression evaluation metrics
 
   getProjectPrecision() {
     return this.projectPrecision.toFixed(4);
@@ -874,10 +860,6 @@ export default class Regression {
       }
     }
 
-
-    // let selectedNodes = d3.filter(self.data, d => {return d.color !== "gray"})
-
-
     let selectedNodes = self.data.filter(d => d.color !== "gray");
 
     let x = Object.keys(selectedNodes).map(function (k) {
@@ -892,10 +874,7 @@ export default class Regression {
   }
 
   getScatterplotData() {
-
     let self = this;
-
-
     if (self.regressionType === "Linear") {
       return self.scatterplotDataLin;
     } else if (self.regressionType === "Logistic") {
@@ -915,28 +894,19 @@ export default class Regression {
   }
 
   calculateProjectPVal() {
-
     this.populateRawCoords();
-
     let rho = this.projectCorrelation;
-
     let ft = fisherTest(rho, this.xRawP.length);
-
     this.projectPVal = ft.pvalue;
-
-
   }
 
   getSexFromSampleId(id) {
-
     for (let i = 0; i < this.dataset.length; i++) {
       if (this.dataset[i].name === id.toString()) {
         return this.dataset[i].sex;
       }
     }
-
     return "U";
-
   }
 
   getColorFromSampleId(id) {
@@ -945,19 +915,15 @@ export default class Regression {
         return this.dataset[i].col;
       }
     }
-
     return "none";
-
   }
 
   getOpacityFromSampleId(id) {
-
     for (let i = 0; i < this.dataset.length; i++) {
       if (this.dataset[i].name === id.toString()) {
         return this.dataset[i].opac;
       }
     }
-
     return "none";
 
   }

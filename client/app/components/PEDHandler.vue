@@ -932,9 +932,7 @@
 
 
         if(self.launchedFrom === "D") {
-
-          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
-
+          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex, self.binaryType);
         }
         else if(self.launchedFrom === "H"){
 
@@ -944,7 +942,8 @@
 
         }
         else{
-          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
+          console.log("else");
+          self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex, self.binaryType);
         }
         self.linePoints = self.regression.getLinePoints();
         self.noVariants = self.regression.getNoVariants();
@@ -973,18 +972,6 @@
 
         self.scatterplotData = self.regression.getScatterplotData();
         self.buildPTLegend();
-      },
-
-      formatTextAnchor(num){
-
-        if(this.binaryType !== "Yes" && this.binaryType !== "unknown"){
-          if(num == 1){
-            return "end"
-          }
-          return "start";
-        }
-        return "end";
-
       },
 
       nFormatterLabel(num) {
@@ -1126,7 +1113,7 @@
         if(self.launchedFrom === "D") {
           let gts = self.fullGTMap[self.selectedGenotype];
 
-          self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
+          self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex, self.binaryType);
 
         }
         else if(self.launchedFrom === "H"){
@@ -1138,7 +1125,7 @@
         }
         else{
           let gts = self.fullGTMap[self.selectedGenotype];
-          self.regression = new Regression(gts, self.ptMap, "ogistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex);
+          self.regression = new Regression(gts, self.ptMap, "ogistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex, self.binaryType);
         }
 
 
@@ -1181,12 +1168,13 @@
         if (self.launchedFrom === "H" && self.isolateFamily) {
           self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
           self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
-          // self.opts = self.addCachedValuesToOpts(self.opts);
           // self.opts = ptree.build(self.opts);
         }
         else{
           self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
           self.opts.dataset = io.readLinkage(self.pedTxt);
+          self.opts = self.addCachedValuesToOpts(self.opts);
+
 
         }
 
@@ -2285,6 +2273,11 @@
           self.populateThresholds();
           self.buildGTMapFromHub();
         }
+        else{
+          self.pedTxt = self.getDataByFamilyID(self.selectedFamily);
+          self.opts.dataset = io.readLinkage(self.pedTxt);
+          self.opts = self.addCachedValuesToOpts(self.opts);
+        }
 
 
         self.resetValues();
@@ -2296,7 +2289,6 @@
         self.populateSampleIds();
         self.buildGenotypes();
         self.buildPhenotypes();
-        self.buildRegression();
         $('#pedigree').on('nodeClick', self.onNodeClick);
         $('#pedigree').on('bgClick', self.onBGClick);
       },
@@ -2354,7 +2346,8 @@
 
         //
         //
-        // self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
+        self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
+        self.buildSlider();
         //
         // self.buildRegression();
 
