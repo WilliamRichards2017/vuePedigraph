@@ -21,7 +21,8 @@
 
       <v-spacer></v-spacer>
 
-      <v-tooltip top style="padding-left: 10px" v-show="launchedFrom === 'D'">
+      <div v-if="launchedFrom === 'D'" style="padding-right: 10px">
+      <v-tooltip left style="padding-left: 10px" color="#1a1a1a">
         <template v-slot:activator="{ on }">
           <v-icon v-on="on" color="white">info_outline</v-icon>
         </template>
@@ -31,6 +32,7 @@
         <div>Asparagus Smelling Sensitivity - 1:248496863</div>
 
       </v-tooltip>
+      </div>
 
       <!--TODO: phenotypes shouldnt be passed in as prop most likely-->
       <v-select :items="phenotypes"
@@ -44,6 +46,21 @@
                 id="selectGenotype" label="Select Genotype" v-model="selectedGenotype" clearable
                 max-width="250"
       ></v-select>
+
+
+      <div v-if="launchedFrom === 'H'">
+        <v-tooltip bottom color="#1a1a1a">
+          <template v-slot:activator="{ on }">
+            <v-icon v-on="on" color="white">info_outline</v-icon>
+          </template>
+          <span style="font-weight: bold; text-decoration: underline">Note: Genotype endpoint not yet available in Mosaic</span>
+          <div>GT is currently calculated based on if a sample contains a variant</div>
+          <div> A sample with the variant receives a GT of 0/1</div>
+          <div> A sample without the variant receives a GT of 0/0</div>
+          <div> Full GT information will be available before the end of July</div>
+
+        </v-tooltip>
+      </div>
 
 
       <v-spacer></v-spacer>
@@ -689,13 +706,19 @@
         let self = this;
         let gtMap = {};
 
+        let allIds = self.allIds;
+
+        if(self.tooBig){
+          allIds = self.sampleIds;
+        }
+
         for(let i = 0; i < self.variants.length; i++){
           let varText = self.variants[i].chr + ":" + self.variants[i].pos + "_" + self.variants[i].ref + "/" + self.variants[i].alt;
           let gts = {};
           gtMap[varText] = gts;
-          for(let j = 0; j < self.allIds.length; j++){
-            let sampleId = self.allIds[j];
-            if(self.variants[i].sample_ids.includes(self.allIds[j])){
+          for(let j = 0; j < allIds.length; j++){
+            let sampleId = allIds[j];
+            if(self.variants[i].sample_ids.includes(allIds[j])){
               gtMap[varText][sampleId] = "0/1";
             }
             else{
@@ -2089,8 +2112,10 @@
 
         return new Promise((resolve, reject) => {
 
+
+          let allIds = self.allIds;
           if(self.tooBig){
-            self.allIds = self.sampleIds
+            allIds = self.sampleIds;
           }
           let pts = {};
           let promises = [];
@@ -2098,12 +2123,12 @@
             // self.selectedPhenotype = "affected_status";
           }
 
-          for (let i = 0; i < self.allIds.length; i++) {
-            let metP = self.hubSession.promiseGetMetricsForSample(self.project_id, self.allIds[i])
+          for (let i = 0; i < allIds.length; i++) {
+            let metP = self.hubSession.promiseGetMetricsForSample(self.project_id, allIds[i])
               .then((data) => {
                 let pt = self.ptNameToId(self.selectedPhenotype);
                 let samplePhenotype = data.metrics[pt];
-                let sampleId = self.allIds[i];
+                let sampleId = allIds[i];
                 pts[sampleId] = samplePhenotype;
               });
             promises.push(metP);
