@@ -1822,10 +1822,10 @@
               self.opts.dataset[i].NA = true;
 
               self.cachedNulls.push(id);
-            } else if (typeof sens === 'string') {
-              if (sens.includes('>') || sens.includes('<')) {
-                sens = sens.slice(-1);
-              }
+            }
+            else{
+              let index = self.cachedNulls.indexOf(id);
+              self.cachedNulls = self.cachedNulls.splice(index, 1)
             }
 
             sens = parseInt(sens);
