@@ -8,7 +8,7 @@ import jsregression from 'js-regression'
 
 
 export default class Regression {
-  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds,  minThreshold, maxThreshold, inverted, ptIndex, launchedFrom, binaryType) {
+  constructor(rawGenotypes, rawPhenotypes, regressionType, dataset, sampleIds,  minThreshold, maxThreshold, inverted, ptIndex, binaryType) {
     this.rawGenotypes = rawGenotypes;
     this.rawPhenotypes = rawPhenotypes;
     this.minThreshold = minThreshold;
@@ -22,8 +22,6 @@ export default class Regression {
     this.sampleIds = sampleIds;
 
     this.ptIndex = ptIndex;
-
-    this.launchedFrom = launchedFrom;
 
     this.data = null;
     this.noVariants = false;
@@ -325,6 +323,95 @@ export default class Regression {
     return jDs;
   }
 
+  binaryJitter(data){
+
+    let coordsIdMap = {};
+
+    for (const i in data) {
+
+      let p = data[i];
+      if (p.hasOwnProperty("x") && p.hasOwnProperty("y") && p.hasOwnProperty("id")) {
+        let key = p.x.toString() + ',' + p.y.toString();
+
+        if(coordsIdMap.hasOwnProperty(key)){
+          coordsIdMap[key].push(p["id"]);
+        }
+        else{
+          coordsIdMap[key] = [];
+          coordsIdMap[key].push(p["id"]);
+        }
+      }
+    }
+
+
+    let jitterCoords = {};
+
+    for(let key of Object.keys(coordsIdMap)){
+      let value = coordsIdMap[key];
+
+      let s = key.split(',');
+
+      let xi = parseFloat(s[0]);
+      let yi = parseFloat(s[1]);
+
+      let rowIndex = 0;
+      let rowCount = 0;
+      let negZero = 1;
+
+
+      if(yi === 0){
+
+
+          for(let i = 0; i < value.length; i++) {
+
+            let im = (i % 4) ;
+            //interleaving positive and negative integers 0 base point
+           let ls =  (1-(-1)**im*(2*im+1))/4
+
+
+
+
+
+            console.log("i, ls", i, ls);
+
+            let x = xi + ls*0.1;
+            let y = rowIndex*0.075 + 0.075;
+
+            console.log("x, y", x, y);
+
+            if(rowCount === 3){
+              rowIndex++;
+              rowCount = 0;
+            }
+            else{
+              rowCount++;
+            }
+
+                jitterCoords[value[i]] = [x,y];
+          }
+        }
+
+
+      }
+
+    let jDs = [];
+
+    for(let key of Object.keys(jitterCoords)) {
+      let value = jitterCoords[key];
+      let x = value[0];
+      let y = value[1];
+      let id = key;
+
+      let jD = {id: id, x: x, y: y};
+      jDs.push(jD);
+    }
+
+    console.log("jds in binary jitter", jDs)
+
+    return jDs;
+  }
+
+
 
 
   populateScatterplotData(){
@@ -547,7 +634,18 @@ export default class Regression {
 
     let self = this;
 
-    let jDs = self.linearJitter(self.data);
+    let jDs = [];
+
+    console.log("self.binaryType", self.binaryType);
+
+
+    if(self.binaryType === "Number" || self.binaryType === "unknown") {
+      jDs = self.linearJitter(self.data);
+    }
+    else{
+      console.log("in binary jitter", self.binaryType);
+      jDs = self.binaryJitter(self.data);
+    }
 
     self.scatterplotDataLog = self.mapJitterToData(jDs, self.data);
 

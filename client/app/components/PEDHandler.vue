@@ -1134,7 +1134,8 @@
         else if(self.launchedFrom === "H"){
           self.buildGTMapFromHub();
           let gts = self.genotypeMap[self.selectedGenotype];
-          self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, -1);
+
+          self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, -1, self.binaryType);
 
         }
         else{
@@ -1963,7 +1964,6 @@
             let opacity = 1;
 
             if (typeof sens === 'undefined' || sens === 'nan' || sens === null) {
-              console.log("sens = null", sens);
               self.opts.dataset[i].NA = true;
               self.cachedNulls.push(id);
             }
@@ -2370,7 +2370,6 @@
         } else {
           self.noVariants = false;
           self.buildGenotypes();
-          self.buildRegression();
           self.buildPhenotypes();
 
         }
@@ -2380,7 +2379,6 @@
         let self = this;
         self.populateSampleIds();
         self.buildPhenotypes();
-        self.buildRegression();
         self.buildSlider();
         self.linePoints = self.regression.getLinePoints();
       },
@@ -2392,7 +2390,7 @@
         }
         else {
           this.regressionTypes = ["Linear", "Logistic"];
-          // this.selectedRegression = "Linear";
+          this.selectedRegression = "Linear";
           this.buildSlider();
 
         }
