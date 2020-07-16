@@ -5,7 +5,7 @@
     <v-toolbar style="padding-top: 10px" color="#123d53" dark>
 
 
-      <v-toolbar-title class="white--text">pedigree.iobio</v-toolbar-title>
+      <v-toolbar-title class="white--text" v-on:click="openHome" style="cursor: pointer;">pedigree.iobio</v-toolbar-title>
 
       <v-spacer></v-spacer>
 
@@ -393,7 +393,7 @@
     mounted() {
       let self = this;
 
-      if(self.allIds.length > 99){
+      if(self.launchedFrom === "H" && self.allIds.length > 99){
         self.tooBig = true;
       }
 
@@ -2322,7 +2322,11 @@
           d3.selectAll(".gt-bars").remove();
           d3.selectAll(".indi_details").remove();
         }
-      }
+      },
+      openHome(){
+        console.log("open home");
+        window.open("/", "_self")
+      },
     },
     watch: {
 

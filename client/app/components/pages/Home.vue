@@ -271,6 +271,7 @@
       window.open("https://mosaic.frameshift.io","_blank")
     },
 
+
     buildTxt: function () {
       let self = this;
       self.hubTxt.promiseGetPedTxt()
