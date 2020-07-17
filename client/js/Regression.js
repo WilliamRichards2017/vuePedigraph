@@ -101,21 +101,26 @@ export default class Regression {
         self.familyFN += 1;
       }
     }
-
-
-    self.familyAccuracy = (self.familyTP + self.familyTN) / y.length;
+    self.familyAccuracy = (self.familyTP + self.familyTN) / (self.familyTP + self.familyFP + self.familyTN + self.familyFN);
 
     // Precision = tp / (tp+fp)
     self.familyPrecision = self.familyTP / (self.familyTP + self.familyFP);
 
+    self.familyF1 = 2 * ((self.familyPrecision * self.familyRecall) / (self.familyPrecision + self.familyRecall))
 
     //Recall tp/tp+fn
 
     self.familyRecall = self.familyTP / (self.familyTP + self.familyFN);
+    if(self.familyTP === 0 && self.familyFP  === 0 && self.familyFN === 0){
+      self.familyRecall = 0;
+      self.familyPrecision = 0;
+      self.familyF1 = 0;
+    }
+
+
 
 
     //F1
-    self.familyF1 = 2 * ((self.familyPrecision * self.familyRecall) / (self.familyPrecision + self.familyRecall))
   }
 
   populateProjectClassificationMetrics(y, yPred) {
@@ -393,11 +398,23 @@ export default class Regression {
 
     let yB = [];
 
-    for (let i = 0; i < y.length; i++) {
-      if (y[i] <= this.minThreshold || y[i] >= this.maxThreshold) {
-        yB.push(0);
-      } else {
-        yB.push(1);
+    if(this.binaryType !== "Number"){
+      for (let i = 0; i < y.length; i++) {
+        if (y[i]  === 0) {
+          yB.push(0);
+        } else {
+          yB.push(1);
+        }
+      }
+    }
+
+    else {
+      for (let i = 0; i < y.length; i++) {
+        if (y[i] < this.minThreshold || y[i] > this.maxThreshold) {
+          yB.push(0);
+        } else {
+          yB.push(1);
+        }
       }
     }
 
@@ -414,6 +431,8 @@ export default class Regression {
 
     let yBF = self.translateYtoLogCategories(yF);
 
+
+
     if (self.inverted) {
       yBF = self.invertArr(yBF);
     }
@@ -423,7 +442,12 @@ export default class Regression {
     }
 
     // === Create the linear regression === //
-    var logistic = new jsregression.LogisticRegression();
+    var logistic = new jsregression.LogisticRegression({
+        alpha: 0.001,
+        iterations: 1000,
+        lambda: 0.0
+      }
+    );
 // can also use default configuration: var logistic = new jsregression.LogisticRegression();
 
 // === Create training data and testing data ===//
@@ -439,7 +463,8 @@ export default class Regression {
 
     for (let i = 0; i < testingDataF.length; ++i) {
 
-      let prob = logistic.transform(testingDataF[i]);
+      let prob = logistic.transform(testingDataF[i], modelF[i]);
+
 
       if (!probs.includes(prob)) {
         probs.push(prob);
@@ -486,7 +511,6 @@ export default class Regression {
       yPredF.push(predicted);
     }
 
-
     this.populateProjectClassificationMetrics(yBF, yPredF);
   }
 
@@ -510,7 +534,6 @@ export default class Regression {
     let self = this;
 
     var testingDataF = [];
-
 
     let yBF = self.translateYtoLogCategories(yF);
 
@@ -536,7 +559,7 @@ export default class Regression {
 
 // === Testing the trained logistic regression === //
     for (let i = 0; i < testingDataF.length; ++i) {
-      var prob = logistic.transform(testingDataF[i]);
+      var prob = logistic.transform(testingDataF[i], modelF[i]);
       if (!probs.includes(prob)) {
         if (testingDataF[i][1] === 1) {
           probs.push(prob);
@@ -548,10 +571,7 @@ export default class Regression {
     probs = probs.sort();
 
     for (let i = 0; i < testingDataF.length; ++i) {
-
-
       var prob = logistic.transform(testingDataF[i]);
-
       let predicted = 0;
 
       if (probs.includes(prob)) {
@@ -569,8 +589,6 @@ export default class Regression {
 
   populateLogisticMetrics(xF, yF, xP, yP) {
     let self = this;
-
-    console.log("xF", xF, "yF", yF, "xP", xP, "yP", yP );
 
 
     if (!self.noVariants) {
