@@ -1858,17 +1858,14 @@
 
 
             if (typeof sens === 'undefined' || sens === 'nan') {
-              self.opts.dataset[i].NA = true;
-
+              self.opts.dataset[i].NA = true
               self.cachedNulls.push(id);
             }
             else{
               let index = self.cachedNulls.indexOf(id);
               self.cachedNulls = self.cachedNulls.splice(index, 1)
             }
-
             sens = parseInt(sens);
-
             self.opts.dataset[i].sens = sens;
 
             let aff = 0;
@@ -2432,9 +2429,14 @@
           self.ptMap = null;
         }
 
-        self.populateThresholds();
-        self.buildPhenotypes();
-
+        if(self.launchedFrom !== "H"){
+          self.buildPhenotypes();
+          self.populateThresholds();
+        }
+        else{
+          self.populateThresholds();
+          self.buildPhenotypes();
+        }
         //
         //
         self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);

@@ -1131,7 +1131,7 @@ function mouseout() {
       })
       .style("fill", opts.background)
       .style("stroke-dasharray", function (d) {
-        if(d.data.NA || d.data.col === "none"){
+        if(d.data.NA){
           return "5,5"
         }
       });

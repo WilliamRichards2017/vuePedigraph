@@ -844,7 +844,7 @@ export default class Regression {
       } else if (gt === "0/0") {
         af = 0;
       } else {
-        console.log("error: could not interpret GT", gt);
+        // console.log("error: could not interpret GT", gt);
         af = "not a number";
       }
 
@@ -883,7 +883,7 @@ export default class Regression {
           };
           self.data.push(d);
         } else {
-          console.log("did not make data for key, sex, color, x, y", key, sex, color, x, pt);
+          // console.log("did not make data for key, sex, color, x, y", key, sex, color, x, pt);
         }
       }
     }
