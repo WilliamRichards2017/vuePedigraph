@@ -974,6 +974,7 @@
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex, self.binaryType);
         }
         else if(self.launchedFrom === "H"){
+          gts = self.genotypeMap[self.selectedGenotype];
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, -1, self.binaryType);
         }
         else{
@@ -2346,6 +2347,7 @@
 
       selectedFamily: function () {
         let self = this;
+        self.isolateFamily = false;
         let gt = self.selectedGenotype;
         let pt = null;
         if(self.selectedPhenotype){

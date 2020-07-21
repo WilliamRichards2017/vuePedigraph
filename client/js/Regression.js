@@ -817,16 +817,12 @@ export default class Regression {
       self.noVariants = true;
     }
 
-
     self.data = [];
 
     for (let i = 0; i < self.sampleIds.length; i++) {
 
       let af = -1;
-
-
       let key = self.sampleIds[i].toString();
-
       let gt = null;
 
       if (!this.noVariants) {
