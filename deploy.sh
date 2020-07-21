@@ -13,10 +13,10 @@ fi
 
 # upload to cloudfront
 echo "** Uploaded to stage s3 bucket **"
-aws s3 cp ./server/views/index.html s3://static.iobio.io/stage/pedigree.iobio.io/
-aws s3 cp ./client/dist/build.js s3://static.iobio.io/stage/pedigree.iobio.io/dist/
+aws s3 cp ./server/views/index.html s3://static.iobio.io/prod/pedigree.iobio.io/
+aws s3 cp ./client/dist/build.js s3://static.iobio.io/prod/pedigree.iobio.io/dist/
 
-aws s3 cp ./  s3://static.iobio.io/stage/pedigree.iobio.io/ --exclude "node_modules/*" --recursive
+aws s3 cp ./  s3://static.iobio.io/prod/pedigree.iobio.io/ --exclude "node_modules/*" --recursive
 
 echo "** Renew cloudfrount cache **"
 aws cloudfront create-invalidation --distribution-id E1LEVW3LS06XCX --paths /

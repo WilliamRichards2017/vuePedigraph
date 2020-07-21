@@ -101,6 +101,15 @@ export default class Regression {
         self.familyFN += 1;
       }
     }
+
+    if(self.familyFP + self.familyFN > self.familyTP + self.familyTN){
+      let familyFP = self.familyFP;
+      let familyFN = self.familyFN;
+      self.familyFP = self.familyTP;
+      self.familyFN = self.familyTN;
+      self.familyTP = familyFP;
+      self.familyTN = familyFN;
+    }
     self.familyAccuracy = (self.familyTP + self.familyTN) / (self.familyTP + self.familyFP + self.familyTN + self.familyFN);
 
     // Precision = tp / (tp+fp)
