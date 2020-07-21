@@ -2396,19 +2396,30 @@
       isolateFamily: function () {
         let self = this;
 
+
+        console.log("self.highlightedSampleIds in isolateFamily", self.highlightedSampleIDs);
         if(self.highlightedSampleIDs.length > 0) {
 
           $('#pedigree').remove();
           $('#pedigrees').append($("<div id='pedigree'></div>"));
           if (self.isolateFamily) {
-            self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
-            self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
-            self.opts = self.addCachedValuesToOpts(self.opts);
-            self.opts = ptree.build(self.opts);
-            // self.drawGenotypeBars();
-            // self.populateSampleIds();
-            self.buildPhenotypes();
-            self.buildRegression();
+            if(self.launchedFrom === "H") {
+              self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
+              self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
+              self.opts = self.addCachedValuesToOpts(self.opts);
+              self.opts = ptree.build(self.opts);
+              self.buildPhenotypes();
+              self.buildRegression();
+            }
+            else{
+              self.isolatedPedTxt = self.isolatePedTxt(self.highlightedSampleIDs);
+              self.opts.dataset = io.readLinkage(self.isolatedPedTxt);
+              self.opts = self.addCachedValuesToOpts(self.opts);
+              self.opts = ptree.build(self.opts);
+              self.drawGenotypeBars();
+              self.populateSampleIds();
+              self.buildRegression();
+            }
             $('#pedigree').on('nodeClick', self.onNodeClick);
             $('#pedigree').on('bgClick', self.onBGClick);
           } else {
