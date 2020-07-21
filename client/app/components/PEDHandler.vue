@@ -435,6 +435,7 @@
       }
       if (self.launchedFrom === "U") {
         self.buildFromUpload();
+        self.buildSlider();
       }
 
 
@@ -1178,7 +1179,7 @@
         }
         else{
           let gts = self.fullGTMap[self.selectedGenotype];
-          self.regression = new Regression(gts, self.ptMap, "ogistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex, self.binaryType);
+          self.regression = new Regression(gts, self.ptMap, "Logistic", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex, self.binaryType);
         }
 
 
@@ -1937,7 +1938,6 @@
       },
 
       buildRegression: function () {
-
         if (this.selectedGenotype === null || this.selectedPhenotype === null) {
           return;
         }
