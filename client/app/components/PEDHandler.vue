@@ -293,9 +293,6 @@
 
         fullGTMap: {},
         noVariants: true,
-
-        allIds: null,
-
         PTIndex: null,
 
         linearMetrics: [],
@@ -682,15 +679,15 @@
 
       buildFromUpload() {
         let self = this;
-
+        self.binaryType = "Number";
         self.pedTxt= self.validatePedFile(self.txt);
         self.populateModel();
         self.selectedRegression = "Linear";
         self.selectedFamily = self.pedTxt.split(" ")[0];
         self.genotypeMap = self.buildGTMapFromVcf();
         self.parsedVariants = Object.keys(self.genotypeMap);
-
         self.populatePhenotypes();
+
 
       },
 
@@ -977,11 +974,7 @@
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex, self.binaryType);
         }
         else if(self.launchedFrom === "H"){
-
-
-          gts = self.genotypeMap[self.selectedGenotype];
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, -1, self.binaryType);
-
         }
         else{
           self.regression = new Regression(gts, self.ptMap, "Linear", self.opts.dataset, self.sampleIds, self.minThreshold, self.maxThreshold, self.inverted, self.ptIndex, self.binaryType);
@@ -1215,9 +1208,6 @@
         self.rebuildPedDict();
         self.highlightFamily();
 
-        if (self.launchedFrom !== "U") {
-          // self.parseVariants();
-        }
       },
       buildPhenotypes: function () {
         let self = this;
@@ -1663,6 +1653,7 @@
 
       populateThresholds: function () {
         let self = this;
+
         if (this.launchedFrom === "U") {
           self.minPt = Math.min();
           self.maxPt = Math.max();
@@ -1686,7 +1677,9 @@
             self.minThreshold = 0;
             self.maxThreshold = 12;
           } else if (self.selectedPhenotype === "Androstenone Sensitivity") {
+
             self.minPt = 0;
+            self.maxPt = 12;
             self.minThreshold = 0;
             self.maxThreshold = 12;
           } else if (self.selectedPhenotype === "Asparagus Sensitivity") {
@@ -1843,6 +1836,7 @@
           self.opts = self.addCachedValuesToOpts(self.opts);
           self.opts = ptree.build(self.opts);
           self.drawGenotypeBars();
+          self.buildRegression();
         }
       },
 
@@ -2324,7 +2318,6 @@
         }
       },
       openHome(){
-        console.log("open home");
         window.open("/", "_self")
       },
     },
@@ -2447,7 +2440,6 @@
         self.ptIndex = self.phenotypes.indexOf(self.selectedPhenotype);
         self.buildSlider();
         //
-        // self.buildRegression();
 
       },
 
@@ -2468,9 +2460,12 @@
       selectedRegression: function () {
         let self = this;
         self.populateSampleIds();
-        self.buildPhenotypes();
+        if(self.launchedFrom !== "U") {
+          self.buildPhenotypes();
+        }
         self.buildSlider();
         self.linePoints = self.regression.getLinePoints();
+
       },
 
       binaryType:function(){
